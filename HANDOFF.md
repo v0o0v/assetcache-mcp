@@ -12,7 +12,7 @@
 
 ## 2. 검증된 사실 (M1 시점)
 
-자동 — `pytest -v` 결과 **63/63 통과** (1.14s, Windows 10 / Python 3.12.10).
+자동 — `pytest -v` 결과 **67/67 통과** (1.14s, Windows 10 / Python 3.12.10).
 
 ```
 tests/test_asset_kind.py           4 passed
@@ -25,6 +25,7 @@ tests/test_pack_manager.py         8 passed
 tests/test_scanner.py              5 passed
 tests/test_single_instance.py      4 passed (M0)
 tests/test_store.py               12 passed
+tests/test_tray.py                 4 passed (트레이 폴리시)
 tests/test_ui_smoke.py             3 passed
 tests/test_watcher.py              5 passed  (PackDebouncer 단위)
 ```
@@ -69,33 +70,52 @@ cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
 pytest -q
 ```
 
-→ `63 passed` 확인. 그러면 M0+M1 기준점은 유지되고 있다는 뜻.
+→ `67 passed` 확인 (M0 18 + M1 45 + 트레이 폴리시 4). 그러면 M0+M1 기준점은 유지되고 있다는 뜻.
 
 venv가 없는 새 PC라면 [`CLAUDE.md §6`](./CLAUDE.md) 의 셋업 절차 그대로.
 
 ## 5. M2 시작 절차
 
-[`CLAUDE.md §8`](./CLAUDE.md) 와 [`DESIGN.md`](./DESIGN.md) 의 다음 섹션을 본떠 마일스톤 사이클을 다시 돈다.
+M2 범위는 본 인계 시점에 **CLIP 라벨 스코어러까지 편입**되어 일정 3주로 확정. 로드맵 재번호도 같이 반영(기존 M4~M6 → M5~M7, 신설 M4 = 검색 UX). 다음 세션 진입 시:
 
-- `DESIGN.md §4.2` Asset Analyzer (스프라이트·시트·사운드 파이프라인)
-- `DESIGN.md §4.3` Embedding 인덱스 (`nomic-embed-text`)
-- `DESIGN.md §5.1` 의 `sprite_meta`, `sound_meta`, `assets_fts`, `asset_embeddings` 스키마 — **M2에서 새로 추가**
-- `DESIGN.md §6.x` 의 응답 JSON 스키마 (Pydantic 검증)
-- `DESIGN.md §8.1/§8.2` 분석 트리거 흐름과 폴백 체인
+1. **새 브랜치 생성** — PR #1 머지 후 `main` 에서 `feat/m2-analysis-pipeline` (또는 적당한 이름) 생성. PR 미머지 상태라면 `feat/m1-and-roadmap` 에서 분기.
+2. **MEMORY.md 자동 로드 확인** — 새 세션은 다음 5개 메모리를 자동 컨텍스트로 받는다:
+   - 마일스톤 수동 검증 항목 표시 방식 (feedback)
+   - PR/커밋 한글 (feedback)
+   - M2 분석 클라이언트 백엔드 추상화 (project)
+   - Ollama 멀티모달 API 형식 실측 (project)
+   - 모델 출력 듀얼 언어 + GUI i18n (project)
+   - 라벨 가중치 + CLIP v1 편입 (project)
+   - 검색 UX 전용 마일스톤 신설 M4 (project)
+3. **DESIGN.md 참조 섹션** — §4.2 (분석기), §4.2.4 (백엔드 추상화 ADR), §4.3 (임베딩), §5.1 (M2 신규 테이블 `sprite_meta`/`sound_meta`/`assets_fts`/`asset_embeddings`/`asset_labels`), §5.3 (응답 JSON 듀얼 언어), §8.1/§8.2 (분석 트리거 + 폴백), §10 (의존성 표 — `open_clip_torch` + `torch` 신규), §11 (로드맵).
+4. **M2 plan 작성** — [`milestones/M1_plan.md`](./milestones/M1_plan.md) 를 템플릿으로 `M2_plan.md`. 핵심 산출물:
+   - `src/gah/core/ollama_client.py` (OpenAI 호환 우선 + Ollama 네이티브 폴백)
+   - `src/gah/core/embedding.py` (`nomic-embed-text`)
+   - `src/gah/core/analyzer/{base,sprite,spritesheet,sound}.py`
+   - `src/gah/core/clip_labeler.py` (open_clip + 라벨 화이트리스트 사전 임베딩)
+   - DB 마이그레이션 — M2 신규 테이블, `asset_labels(asset_id, label, score, source)` 신설
+   - `Config` 확장 — `analysis_timeout_seconds`, `analysis_concurrency`, `clip_model`, `label_language` 등
+   - 시스템 프롬프트가 `language` 파라미터 받아 description 만 호출 언어로
+   - 기존 M1 GUI 문자열 일괄 `tr()` 래핑 (M7 i18n 준비)
+5. **M2_todo.md** — TDD 순서 체크리스트.
+6. **테스트 먼저** — `tests/test_ollama_client.py`, `tests/test_analyzer_sprite.py`, `tests/test_analyzer_sound.py`, `tests/test_clip_labeler.py`, `tests/test_embedding.py`, `tests/test_store_m2.py` 등.
+7. **구현 → 통과 → `M2_verification.md`** (사용자 수동 검증 항목은 마일스톤 끝 응답 본문에 단계별 체크리스트로 별도 제시 — 메모리 feedback 참조).
 
-요약:
+M2 plan 작성 단계에서 **세부로 결정해야 할 항목** (메모리 `project_label_scoring_clip_inclusion.md` 마지막 절 참조):
 
-1. [`milestones/M1_plan.md`](./milestones/M1_plan.md) 를 템플릿으로 `M2_plan.md` 작성.
-2. `M2_todo.md` — TDD 순서 체크리스트.
-3. `tests/test_analyzer_sprite.py`, `tests/test_analyzer_sound.py`, `tests/test_ollama_client.py`, `tests/test_store_m2.py` 등 실패 테스트 먼저.
-4. `src/gah/core/analyzer/`, `src/gah/core/ollama_client.py`, `src/gah/core/embedding.py` 구현.
-5. `M2_verification.md` 작성.
+- CLIP 모델 변주(권장: OpenAI ViT-B/32 ~600 MB)
+- 라벨 화이트리스트 어휘 정의(목표 100~300개)
+- CLIP 추론 동시성·자원 공유
+- CLIP 모델 가중치 배포 방식(번들 vs 첫 실행 다운로드)
+- 사용자 자유 태그 ↔ 화이트리스트 통합 규칙
 
-M2 범위 밖 (M3 이후):
+M2 범위 밖 (M3 이후 — 신 로드맵):
 
-- 검색·통일성·MCP 도구(`find_asset`, `suggest_packs` 등) — M3
-- 시트 자동 분할·애니메이션 추정 — M4
-- Unity Asset Store 임포트 — M5
+- 검색 백엔드·통일성·MCP 도구 — M3
+- 풍부한 검색 UX (라이브러리 탭 부울 쿼리·다축 필터·가중치 슬라이더) — **M4 (신설)**
+- 시트 자동 분할·애니메이션 추정 — M5
+- Unity Asset Store 임포트 — M6
+- GUI 마감 + Qt i18n + 패키징 — M7
 - 라이브러리 탭 필터/썸네일 그리드 등 GUI 마감 — M6
 
 ## 6. M1 에서 의도적으로 남겨둔 자리
