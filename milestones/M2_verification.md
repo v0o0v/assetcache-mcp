@@ -1,6 +1,10 @@
 # M2 검증 보고서
 
-## 1. 자동 검증 결과: ✅ 204/204 통과
+**최종 상태**: ✅ 자동 + 수동 모두 통과 (2026-05-17)
+
+수동 검증 중 발견·즉시 fix 한 두 항목은 §4 참고.
+
+## 1. 자동 검증 결과: ✅ 205/205 통과
 
 `pytest -q` 전체 실행 결과 — M0/M1 회귀 67 + M2 신규 134 + M1 트레이/스모크 보존 3 = **204 통과** (`clip_integration` 마크 2 옵트인 제외).
 
@@ -192,6 +196,26 @@ Ollama 가 꺼진 상태에서 PNG 한 장을 라이브러리에 떨어뜨리면
 - 워커는 죽지 않고 다음 항목을 계속 처리 (큐 헤드가 비도록 진행).
 
 Ollama 를 다시 켜고 라이브러리에 파일을 더 추가하면 새 행은 정상 분석된다(`failed` 행은 그대로 — 재분석은 M3 의 `request_rescan` 도구로 다룬다).
+
+## 3.8 수동 검증 결과 요약 (2026-05-17)
+
+Claude 가 명령줄로 자동 가능한 1~9 항목을 모두 직접 실행. 사용자는 GUI 시각 4 항목 (트레이 아이콘 / 트레이 메뉴 / 메인 윈도우 + 컬럼 + 상태바 / 라벨 관리 다이얼로그) 확인 — 모두 OK.
+
+자동 검증 중 발견 → 즉시 fix → 회귀 테스트 추가한 두 항목:
+
+| # | 발견 | Fix |
+|---|---|---|
+| 1 | `Config.analysis_timeout_seconds = 30s` 가 CPU 환경 native 오디오 호출 (~36s 측정) 보다 짧아 매번 timeout → heuristic 폴백으로 강등 | default 60s 로 상향. `test_config_m2.py::test_new_fields_have_documented_defaults` 갱신. |
+| 2 | Gemma 가 단일 enum 필드(`category` 등)를 list 로 돌려주는 경우 `_validate` 의 `cat not in cat_allowed` 가 `TypeError: unhashable type: 'list'` 폭주 | `_squash_single` 헬퍼로 첫 요소 채택. sprite/sound 양쪽 적용. `test_analyze_handles_list_typed_single_enum_fields` 신규 케이스. |
+
+두 fix 모두 한 커밋(`1aa3b3e`)에 포함.
+
+분석 결과 샘플:
+- `kenney_m2_verify/alarm.wav` (sound, 5.6s) — state=ok, native path, 7축 10개 라벨, 768d 임베딩
+- `kenney_m2_verify/hello.jpg` (sprite, 3840×2160) — state=partial(Gemma chat timeout), CLIP 14축 179개 라벨, 768d 임베딩, sprite_meta 정상
+- `my_custom_sfx/alarm.wav` (sound, 5.6s) — state=partial(cold-start), heuristic 폴백 (`category=sfx`)
+
+graceful fallback 으로 partial 도 검색 가능한 데이터는 채워짐 (라벨 + 임베딩 + 메타). Ollama 호출 자체의 cold-start 지연은 M2.1 동시성 패치에서 함께 검토.
 
 ## 4. 알려진 한계 / M3 로 미룬 것
 

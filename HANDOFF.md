@@ -12,7 +12,9 @@
 
 ## 2. 검증된 사실 (M2 시점)
 
-자동 — `pytest -q` 결과 **204/204 통과** (18.5s, Windows 10 / Python 3.12, `clip_integration` 2 옵트인 deselected).
+자동 — `pytest -q` 결과 **205/205 통과** (20s, Windows 10 / Python 3.12, `clip_integration` 2 옵트인 deselected). 자동 검증 중 발견·즉시 fix 한 2 항목(`analysis_timeout_seconds` 30→60s, list-coerce squash) 포함.
+
+수동 — 사용자 PC 에서 GUI 시각 4 항목 (트레이 아이콘 / 우클릭 메뉴 / 메인 윈도우 + 컬럼 + 상태바 / 라벨 관리 다이얼로그) 모두 OK 확인. 자세한 결과는 [`milestones/M2_verification.md`](./milestones/M2_verification.md) §3.8.
 
 ```
 M0 회귀:      18 passed  (config 6 + logging 4 + single_instance 4 + entrypoint 3 + imports 1)
