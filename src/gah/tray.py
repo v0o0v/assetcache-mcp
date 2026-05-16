@@ -13,6 +13,8 @@ if TYPE_CHECKING:  # pragma: no cover
     from PySide6.QtGui import QIcon
     from PySide6.QtWidgets import QApplication, QSystemTrayIcon
 
+    from .core.analysis_queue import AnalysisProgress
+
 log = logging.getLogger(__name__)
 
 
@@ -66,6 +68,7 @@ def make_tray_icon(
     qapp: "QApplication",
     *,
     on_open_main: Optional[Callable[[], None]] = None,
+    on_open_labels: Optional[Callable[[], None]] = None,
 ) -> "QSystemTrayIcon":
     """Build a tray icon and return it.
 
@@ -78,28 +81,42 @@ def make_tray_icon(
         the tray icon.  ``None`` hides the menu entry and disables the
         double-click handler, which is convenient for tests that don't
         have a window to raise.
+    on_open_labels : callable, optional
+        Invoked when the user picks "라벨 관리…".  ``None`` hides the
+        menu entry.
 
     Imports of PySide6 are deferred to function scope so that simply
     importing ``gah.tray`` (e.g. from the test suite) doesn't drag in
     the Qt platform plugin.
     """
+    from PySide6.QtCore import QCoreApplication
     from PySide6.QtGui import QAction
     from PySide6.QtWidgets import QMenu, QSystemTrayIcon
+
+    def _tr(text: str) -> str:
+        return QCoreApplication.translate("Tray", text)
 
     icon = _build_app_icon()
 
     tray = QSystemTrayIcon(icon, qapp)
-    tray.setToolTip("Game Asset Helper")
+    tray.setToolTip(_tr("Game Asset Helper"))
 
     menu = QMenu()
 
     if on_open_main is not None:
-        open_action = QAction("메인 창 열기", menu)
+        open_action = QAction(_tr("메인 창 열기"), menu)
         open_action.triggered.connect(on_open_main)
         menu.addAction(open_action)
+
+    if on_open_labels is not None:
+        labels_action = QAction(_tr("라벨 관리…"), menu)
+        labels_action.triggered.connect(on_open_labels)
+        menu.addAction(labels_action)
+
+    if on_open_main is not None or on_open_labels is not None:
         menu.addSeparator()
 
-    quit_action = QAction("종료", menu)
+    quit_action = QAction(_tr("종료"), menu)
     quit_action.triggered.connect(qapp.quit)
     menu.addAction(quit_action)
     tray.setContextMenu(menu)
@@ -109,3 +126,28 @@ def make_tray_icon(
     tray.show()
     log.info("Tray icon initialised")
     return tray
+
+
+def update_tray_tooltip(
+    tray: "QSystemTrayIcon", snapshot: "AnalysisProgress"
+) -> None:
+    """Reflect analysis progress in the tray icon's hover tooltip."""
+    from PySide6.QtCore import QCoreApplication
+
+    from .core.analysis_queue import _format_duration_kor
+
+    def _tr(text: str) -> str:
+        return QCoreApplication.translate("Tray", text)
+
+    completed = int(snapshot.completed_in_session)
+    pending = int(snapshot.pending)
+    total = completed + pending
+    if pending == 0 and snapshot.in_flight_path is None:
+        tray.setToolTip(_tr("Game Asset Helper — 분석 대기 중"))
+        return
+    eta = _format_duration_kor(snapshot.eta_seconds)
+    tray.setToolTip(
+        _tr("분석 중 {done}/{total} — 약 {eta} 남음").format(
+            done=completed, total=total, eta=eta,
+        )
+    )

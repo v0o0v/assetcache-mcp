@@ -1,7 +1,9 @@
-"""Main application window — packs / library tabs.
+"""Main application window — packs / library tabs + status bar.
 
-M1 ships only two tabs because the data we have to show is still
-minimal.  Detail / projects / settings / logs land in M6.
+M2 additions: status-bar progress widget showing ``현재 분석 N/M — 약 X 남음``,
+a ``Ctrl+L`` shortcut to open the labels admin dialog, and a slot to
+absorb :class:`AnalysisQueue` progress snapshots without blocking the
+GUI thread.
 """
 
 from __future__ import annotations
@@ -10,8 +12,16 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
-from PySide6.QtCore import Qt, Signal, Slot
-from PySide6.QtWidgets import QMainWindow, QTabWidget, QWidget
+from PySide6.QtCore import QCoreApplication, Qt, Signal, Slot
+from PySide6.QtGui import QKeySequence, QShortcut
+from PySide6.QtWidgets import (
+    QLabel,
+    QMainWindow,
+    QProgressBar,
+    QStatusBar,
+    QTabWidget,
+    QWidget,
+)
 
 from ..core.pack_manager import ingest_pack
 from ..core.scanner import reconcile_library
@@ -19,54 +29,123 @@ from .library_view import LibraryView
 from .pack_view import PackView
 
 if TYPE_CHECKING:  # pragma: no cover
+    from ..core.analysis_queue import AnalysisProgress
+    from ..core.labels import LabelRegistry
     from ..core.store import Store
 
 log = logging.getLogger(__name__)
 
 
-class MainWindow(QMainWindow):
-    """Top-level window backed by a :class:`gah.core.store.Store`.
+def _tr(text: str) -> str:
+    return QCoreApplication.translate("MainWindow", text)
 
-    The :attr:`packChanged` signal is the bridge between the background
-    watcher thread and the GUI thread.  Emitting it from any thread
-    causes :meth:`_on_pack_changed` to run inside the Qt event loop.
-    """
+
+class MainWindow(QMainWindow):
+    """Top-level window backed by a :class:`gah.core.store.Store`."""
 
     packChanged = Signal(str)
 
     def __init__(self, store: "Store", parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Game Asset Helper")
+        self.setWindowTitle(_tr("Game Asset Helper"))
         self.resize(900, 600)
         self.setWindowFlag(Qt.Window)
 
         self._store = store
         self._library_root: Optional[Path] = None
+        self._label_registry: Optional["LabelRegistry"] = None
 
-        tabs = QTabWidget(self)
-        self.pack_view = PackView(store, tabs)
-        self.library_view = LibraryView(store, tabs)
+        self.tab_widget = QTabWidget(self)
+        self.pack_view = PackView(store, self.tab_widget)
+        self.library_view = LibraryView(store, self.tab_widget)
 
-        tabs.addTab(self.pack_view, "팩")
-        tabs.addTab(self.library_view, "라이브러리")
-        self.setCentralWidget(tabs)
+        self.tab_widget.addTab(self.pack_view, _tr("팩"))
+        self.tab_widget.addTab(self.library_view, _tr("라이브러리"))
+        self.setCentralWidget(self.tab_widget)
+
+        # ── 상태바 — 분석 진행 표시 ─────────────────────────────────
+        bar = QStatusBar(self)
+        self.setStatusBar(bar)
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setRange(0, 1)
+        self.progress_bar.setValue(1)
+        self.progress_bar.setMaximumWidth(180)
+        self.progress_label = QLabel(_tr("분석 대기 중"))
+        bar.addPermanentWidget(self.progress_bar)
+        bar.addPermanentWidget(self.progress_label, 1)
 
         self.packChanged.connect(self._on_pack_changed)
 
+        self._labels_shortcut = QShortcut(
+            QKeySequence("Ctrl+L"), self
+        )
+        self._labels_shortcut.activated.connect(self.open_labels_admin)
+
+    # -- wiring -------------------------------------------------------
+
     def set_library_root(self, path: Path) -> None:
-        """Tell the window where ``library/`` lives so it can re-ingest on events."""
         self._library_root = Path(path)
 
+    def set_label_registry(self, registry: "LabelRegistry") -> None:
+        self._label_registry = registry
+
+    def open_labels_admin(self) -> None:
+        if self._label_registry is None:
+            log.warning("label registry not set; cannot open admin dialog")
+            return
+        # 지연 import: 다이얼로그가 매번 살아 있을 필요는 없음
+        from .labels_admin import LabelsAdminDialog
+
+        dlg = LabelsAdminDialog(self._label_registry, parent=self)
+        dlg.exec()
+
     def refresh(self) -> None:
-        """Re-query the store and repaint both tabs."""
         self.pack_view.refresh()
         self.library_view.refresh()
 
     def show_and_raise(self) -> None:
-        """Bring the window to the foreground (used by the tray menu)."""
         self.show()
         self.raise_()
         self.activateWindow()
+
+    # -- M2 progress slot --------------------------------------------
+
+    @Slot(object)
+    def update_progress(self, snapshot: "AnalysisProgress") -> None:
+        # 지연 import — 모듈 결합 줄이기 위해
+        from ..core.analysis_queue import _format_duration_kor
+
+        completed = int(snapshot.completed_in_session)
+        pending = int(snapshot.pending)
+        total = completed + pending
+        if total <= 0:
+            self.progress_bar.setRange(0, 1)
+            self.progress_bar.setValue(1)
+        else:
+            self.progress_bar.setRange(0, total)
+            self.progress_bar.setValue(completed)
+
+        if pending == 0 and snapshot.in_flight_path is None:
+            self.progress_label.setText(_tr("분석 완료"))
+            return
+
+        eta = _format_duration_kor(snapshot.eta_seconds)
+        path_segment = ""
+        if snapshot.in_flight_path:
+            path_segment = f" — {self._shorten_path(snapshot.in_flight_path)}"
+        self.progress_label.setText(
+            _tr("분석 중 {done}/{total}{path} — 약 {eta} 남음").format(
+                done=completed, total=total,
+                path=path_segment, eta=eta,
+            )
+        )
+
+    @Slot(int)
+    def on_asset_analyzed(self, asset_id: int) -> None:
+        # 단순 새로고침 — M3 풍부 UX 가 부분 갱신을 도입
+        self.refresh()
+
+    # -- pack ingest event flow --------------------------------------
 
     @Slot(str)
     def _on_pack_changed(self, pack_name: str) -> None:
@@ -78,8 +157,15 @@ class MainWindow(QMainWindow):
             if pack_dir.is_dir():
                 ingest_pack(self._store, pack_dir, self._library_root)
             else:
-                # The pack folder disappeared (rename / delete) — fall back to a full reconcile.
                 reconcile_library(self._store, self._library_root)
         except Exception:
             log.exception("failed to ingest pack %r", pack_name)
         self.refresh()
+
+    # -- helpers ------------------------------------------------------
+
+    @staticmethod
+    def _shorten_path(path: str, *, max_len: int = 48) -> str:
+        if len(path) <= max_len:
+            return path
+        return "…" + path[-(max_len - 1):]

@@ -1,12 +1,10 @@
 """SQLite store for Game Asset Helper.
 
-M1 owns the ``packs``, ``assets``, ``tags`` and ``asset_tags`` tables
-described in ``DESIGN.md §5.1``.  The richer schema (``sprite_meta``,
-``sound_meta``, ``assets_fts``, ``asset_embeddings``, ``projects``,
-``asset_usage``, ``search_queries``, ``unity_imports``) is the
-responsibility of later milestones — adding them here would inflate
-M1's surface area and lock decisions about analyzer fields that we have
-not validated yet.
+M1 owns ``packs`` / ``assets`` / ``tags`` / ``asset_tags``.  M2 extends
+the schema with ``sprite_meta`` / ``sound_meta`` / ``assets_fts``
+(FTS5) / ``asset_embeddings`` / ``asset_labels`` / ``clip_label_cache``
+and ``labels``.  ``initialize()`` runs both scripts so the same DB
+file boots cleanly on first run *and* on upgrade.
 """
 
 from __future__ import annotations
@@ -20,6 +18,9 @@ from typing import Iterable, Optional
 from .manifest import PackManifest
 
 log = logging.getLogger(__name__)
+
+
+# ── dataclasses ──────────────────────────────────────────────────────
 
 
 @dataclass(frozen=True)
@@ -47,9 +48,62 @@ class AssetRow:
     added_at: int
     analyzed_at: Optional[int]
     analysis_state: str
+    analysis_error: Optional[str] = None
 
 
-_SCHEMA = """
+@dataclass(frozen=True)
+class SpriteMeta:
+    width: int
+    height: int
+    has_alpha: bool
+    is_pixel_art: bool
+    dominant_colors: list[str]
+    frame_w: int | None = None
+    frame_h: int | None = None
+    frame_count: int | None = None
+    animation_tags: list[str] | None = None  # M5 가 채움
+
+
+@dataclass(frozen=True)
+class SoundMeta:
+    duration_ms: int
+    sample_rate: int
+    channels: int
+    loudness_db: float | None
+    bpm: float | None
+    category: str | None
+    loopable: bool | None
+    instruments: list[str] | None
+    tempo: str | None
+    intensity: str | None
+    genre: str | None
+    voice_type: str | None
+    audio_path_used: str  # 'native' | 'spectrogram' | 'heuristic'
+
+
+@dataclass(frozen=True)
+class LabelScore:
+    axis: str
+    label: str
+    score: float
+    source: str           # 'gemma' | 'clip' | 'user'
+    weight: str | None    # 'primary'/'secondary'/'tertiary' (Gemma 만)
+
+
+@dataclass(frozen=True)
+class LabelRow:
+    id: int
+    axis: str
+    label: str
+    description: str | None
+    source: str           # 'seed' | 'user'
+    enabled: bool
+
+
+# ── schemas ──────────────────────────────────────────────────────────
+
+
+_M1_SCHEMA = """
 CREATE TABLE IF NOT EXISTS packs (
   id              INTEGER PRIMARY KEY,
   name            TEXT NOT NULL UNIQUE,
@@ -93,30 +147,116 @@ CREATE TABLE IF NOT EXISTS asset_tags (
 """
 
 
+_M2_SCHEMA = """
+CREATE TABLE IF NOT EXISTS sprite_meta (
+  asset_id        INTEGER PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE,
+  width           INTEGER NOT NULL,
+  height          INTEGER NOT NULL,
+  has_alpha       INTEGER NOT NULL,
+  is_pixel_art    INTEGER NOT NULL,
+  dominant_colors TEXT,
+  frame_w         INTEGER,
+  frame_h         INTEGER,
+  frame_count     INTEGER,
+  animation_tags  TEXT
+);
+
+CREATE TABLE IF NOT EXISTS sound_meta (
+  asset_id        INTEGER PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE,
+  duration_ms     INTEGER NOT NULL,
+  sample_rate     INTEGER NOT NULL,
+  channels        INTEGER NOT NULL,
+  loudness_db     REAL,
+  bpm             REAL,
+  category        TEXT,
+  loopable        INTEGER,
+  instruments     TEXT,
+  tempo           TEXT,
+  intensity       TEXT,
+  genre           TEXT,
+  voice_type      TEXT,
+  audio_path_used TEXT
+);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS assets_fts USING fts5(
+  asset_id UNINDEXED,
+  searchable_text,
+  tokenize = 'porter unicode61'
+);
+
+CREATE TABLE IF NOT EXISTS asset_embeddings (
+  asset_id INTEGER PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE,
+  model    TEXT NOT NULL,
+  dim      INTEGER NOT NULL,
+  vector   BLOB NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS asset_labels (
+  asset_id INTEGER NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
+  axis     TEXT NOT NULL,
+  label    TEXT NOT NULL,
+  score    REAL NOT NULL,
+  source   TEXT NOT NULL,
+  weight   TEXT,
+  PRIMARY KEY (asset_id, axis, label, source)
+);
+CREATE INDEX IF NOT EXISTS idx_labels_label ON asset_labels(label);
+CREATE INDEX IF NOT EXISTS idx_labels_asset ON asset_labels(asset_id);
+
+CREATE TABLE IF NOT EXISTS clip_label_cache (
+  label    TEXT NOT NULL,
+  model    TEXT NOT NULL,
+  dim      INTEGER NOT NULL,
+  vector   BLOB NOT NULL,
+  PRIMARY KEY (label, model)
+);
+
+CREATE TABLE IF NOT EXISTS labels (
+  id          INTEGER PRIMARY KEY,
+  axis        TEXT NOT NULL,
+  label       TEXT NOT NULL,
+  description TEXT,
+  source      TEXT NOT NULL,
+  enabled     INTEGER NOT NULL DEFAULT 1,
+  created_at  INTEGER NOT NULL,
+  updated_at  INTEGER NOT NULL,
+  UNIQUE (axis, label)
+);
+CREATE INDEX IF NOT EXISTS idx_labels_axis_enabled ON labels(axis, enabled);
+"""
+
+
+# ── Store ────────────────────────────────────────────────────────────
+
+
 class Store:
-    """Thin wrapper around a ``sqlite3.Connection`` with the M1 schema."""
+    """Thin wrapper around a ``sqlite3.Connection``."""
 
     def __init__(self, db_path: Path | str) -> None:
-        self.db_path = Path(db_path) if not isinstance(db_path, str) or db_path != ":memory:" else db_path
+        self.db_path = (
+            Path(db_path)
+            if not isinstance(db_path, str) or db_path != ":memory:"
+            else db_path
+        )
         if isinstance(self.db_path, Path):
             self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        # isolation_level=None → autocommit; we use explicit transactions only where needed.
+        # autocommit; we use explicit transactions only where needed.
         self.conn: sqlite3.Connection = sqlite3.connect(
             str(self.db_path), isolation_level=None, check_same_thread=False
         )
         self.conn.execute("PRAGMA foreign_keys = ON")
         self.conn.execute("PRAGMA synchronous = NORMAL")
-        # WAL is incompatible with :memory:, but every production path uses an on-disk DB.
         try:
             self.conn.execute("PRAGMA journal_mode = WAL")
         except sqlite3.DatabaseError:  # pragma: no cover - memory DB fallback
             pass
 
-    # -- lifecycle -----------------------------------------------------
+    # -- lifecycle ----------------------------------------------------
 
     def initialize(self) -> None:
-        """Create the M1 tables.  Safe to call repeatedly."""
-        self.conn.executescript(_SCHEMA)
+        """Create M1 + M2 tables.  Safe to call repeatedly."""
+        self.conn.executescript(_M1_SCHEMA)
+        self.conn.executescript(_M2_SCHEMA)
 
     def close(self) -> None:
         try:
@@ -130,15 +270,11 @@ class Store:
     def __exit__(self, exc_type, exc, tb) -> None:
         self.close()
 
-    # -- pack CRUD -----------------------------------------------------
+    # -- pack CRUD ----------------------------------------------------
 
-    def upsert_pack(self, name: str, manifest: PackManifest, *, scanned_at: int) -> int:
-        """Insert or update a pack identified by ``name``.
-
-        Returns the row's primary key.  ``added_at`` is only set on the
-        very first insert; subsequent calls leave it untouched and
-        merely refresh manifest fields plus ``scanned_at``.
-        """
+    def upsert_pack(
+        self, name: str, manifest: PackManifest, *, scanned_at: int
+    ) -> int:
         cur = self.conn.execute("SELECT id FROM packs WHERE name = ?", (name,))
         row = cur.fetchone()
         if row is None:
@@ -160,7 +296,11 @@ class Store:
                     scanned_at,
                 ),
             )
-            return int(self.conn.execute("SELECT id FROM packs WHERE name = ?", (name,)).fetchone()[0])
+            return int(
+                self.conn.execute(
+                    "SELECT id FROM packs WHERE name = ?", (name,)
+                ).fetchone()[0]
+            )
 
         pack_id = int(row[0])
         self.conn.execute(
@@ -191,7 +331,8 @@ class Store:
 
     def set_pack_enabled(self, pack_id: int, enabled: bool) -> None:
         self.conn.execute(
-            "UPDATE packs SET enabled = ? WHERE id = ?", (1 if enabled else 0, pack_id)
+            "UPDATE packs SET enabled = ? WHERE id = ?",
+            (1 if enabled else 0, pack_id),
         )
 
     def get_pack_by_name(self, name: str) -> Optional[PackRow]:
@@ -213,7 +354,13 @@ class Store:
         sql += " ORDER BY name"
         return [_pack_row(r) for r in self.conn.execute(sql).fetchall()]
 
-    # -- asset CRUD ----------------------------------------------------
+    def update_pack_aggregate(self, pack_id: int, aggregate_json: str) -> None:
+        self.conn.execute(
+            "UPDATE packs SET aggregate_meta = ? WHERE id = ?",
+            (aggregate_json, pack_id),
+        )
+
+    # -- asset CRUD ---------------------------------------------------
 
     def upsert_asset(
         self,
@@ -225,13 +372,6 @@ class Store:
         *,
         added_at: int,
     ) -> int:
-        """Insert/refresh an asset row.
-
-        If the path is new, the row enters with ``analysis_state='pending'``.
-        If the path exists and the hash changed, the analysis state is
-        rolled back to ``pending`` so M2 can re-analyse.  An unchanged
-        hash leaves any existing analysis result untouched.
-        """
         cur = self.conn.execute(
             "SELECT id, file_hash FROM assets WHERE path = ?", (rel_path,)
         )
@@ -246,18 +386,21 @@ class Store:
                 """,
                 (pack_id, rel_path, kind, file_hash, file_size, added_at),
             )
-            return int(self.conn.execute("SELECT id FROM assets WHERE path = ?", (rel_path,)).fetchone()[0])
+            return int(
+                self.conn.execute(
+                    "SELECT id FROM assets WHERE path = ?", (rel_path,)
+                ).fetchone()[0]
+            )
 
         asset_id = int(existing[0])
         if existing[1] == file_hash:
-            # nothing meaningful changed; just keep pack_id/kind/size in sync
             self.conn.execute(
                 "UPDATE assets SET pack_id = ?, kind = ?, file_size = ? WHERE id = ?",
                 (pack_id, kind, file_size, asset_id),
             )
             return asset_id
 
-        # hash changed → byte-level change; force re-analysis on next pass
+        # hash changed → re-analyse on next pass
         self.conn.execute(
             """
             UPDATE assets SET
@@ -275,12 +418,18 @@ class Store:
         return asset_id
 
     def delete_asset(self, asset_id: int) -> None:
+        # FTS5 is not bound by FK — clean it explicitly.
+        self.conn.execute("DELETE FROM assets_fts WHERE asset_id = ?", (asset_id,))
         self.conn.execute("DELETE FROM assets WHERE id = ?", (asset_id,))
 
-    def delete_assets_outside(self, pack_id: int, kept_rel_paths: Iterable[str]) -> None:
+    def delete_assets_outside(
+        self, pack_id: int, kept_rel_paths: Iterable[str]
+    ) -> None:
         kept = list(kept_rel_paths)
         if not kept:
-            self.conn.execute("DELETE FROM assets WHERE pack_id = ?", (pack_id,))
+            self.conn.execute(
+                "DELETE FROM assets WHERE pack_id = ?", (pack_id,)
+            )
             return
         placeholders = ",".join("?" * len(kept))
         self.conn.execute(
@@ -291,7 +440,7 @@ class Store:
     def assets_for_pack(self, pack_id: int) -> list[AssetRow]:
         rows = self.conn.execute(
             "SELECT id, pack_id, path, kind, file_hash, file_size, added_at,"
-            "       analyzed_at, analysis_state"
+            "       analyzed_at, analysis_state, analysis_error"
             " FROM assets WHERE pack_id = ? ORDER BY path",
             (pack_id,),
         ).fetchall()
@@ -300,7 +449,7 @@ class Store:
     def list_assets(self, *, limit: int = 500, offset: int = 0) -> list[AssetRow]:
         rows = self.conn.execute(
             "SELECT id, pack_id, path, kind, file_hash, file_size, added_at,"
-            "       analyzed_at, analysis_state"
+            "       analyzed_at, analysis_state, analysis_error"
             " FROM assets ORDER BY path LIMIT ? OFFSET ?",
             (limit, offset),
         ).fetchall()
@@ -308,8 +457,224 @@ class Store:
 
     def count_assets_in_pack(self, pack_id: int) -> int:
         return int(
-            self.conn.execute("SELECT COUNT(*) FROM assets WHERE pack_id = ?", (pack_id,)).fetchone()[0]
+            self.conn.execute(
+                "SELECT COUNT(*) FROM assets WHERE pack_id = ?", (pack_id,)
+            ).fetchone()[0]
         )
+
+    def get_asset_by_id(self, asset_id: int) -> Optional[AssetRow]:
+        row = self.conn.execute(
+            "SELECT id, pack_id, path, kind, file_hash, file_size, added_at,"
+            "       analyzed_at, analysis_state, analysis_error"
+            " FROM assets WHERE id = ?",
+            (asset_id,),
+        ).fetchone()
+        return _asset_row(row) if row else None
+
+    # -- M2: analysis state transitions -------------------------------
+
+    def mark_asset_analyzing(self, asset_id: int) -> None:
+        self.conn.execute(
+            "UPDATE assets SET analysis_state = 'analyzing' WHERE id = ?",
+            (asset_id,),
+        )
+
+    def mark_asset_state(
+        self,
+        asset_id: int,
+        state: str,
+        *,
+        error: str | None = None,
+        analyzed_at: int | None = None,
+    ) -> None:
+        self.conn.execute(
+            "UPDATE assets SET analysis_state = ?, analysis_error = ?, analyzed_at = ?"
+            " WHERE id = ?",
+            (state, error, analyzed_at, asset_id),
+        )
+
+    def next_pending_asset(self) -> Optional[AssetRow]:
+        row = self.conn.execute(
+            "SELECT id, pack_id, path, kind, file_hash, file_size, added_at,"
+            "       analyzed_at, analysis_state, analysis_error"
+            " FROM assets WHERE analysis_state = 'pending'"
+            " ORDER BY added_at ASC, id ASC LIMIT 1"
+        ).fetchone()
+        return _asset_row(row) if row else None
+
+    def pending_assets_for_pack(self, pack_id: int) -> list[AssetRow]:
+        rows = self.conn.execute(
+            "SELECT id, pack_id, path, kind, file_hash, file_size, added_at,"
+            "       analyzed_at, analysis_state, analysis_error"
+            " FROM assets WHERE pack_id = ? AND analysis_state = 'pending'"
+            " ORDER BY added_at, id",
+            (pack_id,),
+        ).fetchall()
+        return [_asset_row(r) for r in rows]
+
+    def count_pending_assets(self) -> int:
+        return int(
+            self.conn.execute(
+                "SELECT COUNT(*) FROM assets WHERE analysis_state = 'pending'"
+            ).fetchone()[0]
+        )
+
+    # -- M2: meta writers ---------------------------------------------
+
+    def save_sprite_meta(self, asset_id: int, meta: SpriteMeta) -> None:
+        import json
+
+        self.conn.execute(
+            """
+            INSERT OR REPLACE INTO sprite_meta (
+              asset_id, width, height, has_alpha, is_pixel_art,
+              dominant_colors, frame_w, frame_h, frame_count, animation_tags
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                asset_id,
+                meta.width,
+                meta.height,
+                1 if meta.has_alpha else 0,
+                1 if meta.is_pixel_art else 0,
+                json.dumps(meta.dominant_colors),
+                meta.frame_w,
+                meta.frame_h,
+                meta.frame_count,
+                json.dumps(meta.animation_tags) if meta.animation_tags else None,
+            ),
+        )
+
+    def save_sound_meta(self, asset_id: int, meta: SoundMeta) -> None:
+        import json
+
+        self.conn.execute(
+            """
+            INSERT OR REPLACE INTO sound_meta (
+              asset_id, duration_ms, sample_rate, channels, loudness_db,
+              bpm, category, loopable, instruments,
+              tempo, intensity, genre, voice_type, audio_path_used
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                asset_id,
+                meta.duration_ms,
+                meta.sample_rate,
+                meta.channels,
+                meta.loudness_db,
+                meta.bpm,
+                meta.category,
+                None if meta.loopable is None else (1 if meta.loopable else 0),
+                json.dumps(meta.instruments) if meta.instruments else None,
+                meta.tempo,
+                meta.intensity,
+                meta.genre,
+                meta.voice_type,
+                meta.audio_path_used,
+            ),
+        )
+
+    def save_asset_labels(
+        self, asset_id: int, labels: list[LabelScore]
+    ) -> None:
+        # 트랜잭션 안에서 기존 라벨 제거 후 일괄 INSERT.
+        self.conn.execute("BEGIN")
+        try:
+            self.conn.execute(
+                "DELETE FROM asset_labels WHERE asset_id = ?", (asset_id,)
+            )
+            self.conn.executemany(
+                "INSERT INTO asset_labels (asset_id, axis, label, score, source, weight)"
+                " VALUES (?, ?, ?, ?, ?, ?)",
+                [
+                    (asset_id, lbl.axis, lbl.label, lbl.score, lbl.source, lbl.weight)
+                    for lbl in labels
+                ],
+            )
+            self.conn.execute("COMMIT")
+        except Exception:
+            self.conn.execute("ROLLBACK")
+            raise
+
+    def labels_for_asset(self, asset_id: int) -> list[LabelScore]:
+        rows = self.conn.execute(
+            "SELECT axis, label, score, source, weight FROM asset_labels"
+            " WHERE asset_id = ? ORDER BY score DESC",
+            (asset_id,),
+        ).fetchall()
+        return [
+            LabelScore(axis=r[0], label=r[1], score=r[2], source=r[3], weight=r[4])
+            for r in rows
+        ]
+
+    def save_embedding(
+        self, asset_id: int, model: str, vector_bytes: bytes, dim: int
+    ) -> None:
+        self.conn.execute(
+            "INSERT OR REPLACE INTO asset_embeddings (asset_id, model, dim, vector)"
+            " VALUES (?, ?, ?, ?)",
+            (asset_id, model, dim, vector_bytes),
+        )
+
+    def update_fts(self, asset_id: int, searchable_text: str) -> None:
+        self.conn.execute(
+            "DELETE FROM assets_fts WHERE asset_id = ?", (asset_id,)
+        )
+        self.conn.execute(
+            "INSERT INTO assets_fts (asset_id, searchable_text) VALUES (?, ?)",
+            (asset_id, searchable_text),
+        )
+
+    # -- M2: CLIP label vector cache ----------------------------------
+
+    def clip_label_cache_get(self, label: str, model: str) -> bytes | None:
+        row = self.conn.execute(
+            "SELECT vector FROM clip_label_cache WHERE label = ? AND model = ?",
+            (label, model),
+        ).fetchone()
+        return row[0] if row else None
+
+    def clip_label_cache_put(
+        self, label: str, model: str, dim: int, vector: bytes
+    ) -> None:
+        self.conn.execute(
+            "INSERT OR REPLACE INTO clip_label_cache (label, model, dim, vector)"
+            " VALUES (?, ?, ?, ?)",
+            (label, model, dim, vector),
+        )
+
+    # -- M2: labels (vocabulary) --------------------------------------
+
+    def list_labels_raw(
+        self, axis: str | None = None, *, enabled_only: bool = True
+    ) -> list[LabelRow]:
+        sql = (
+            "SELECT id, axis, label, description, source, enabled FROM labels"
+        )
+        params: list = []
+        where: list[str] = []
+        if axis is not None:
+            where.append("axis = ?")
+            params.append(axis)
+        if enabled_only:
+            where.append("enabled = 1")
+        if where:
+            sql += " WHERE " + " AND ".join(where)
+        sql += " ORDER BY axis, label"
+        return [
+            LabelRow(
+                id=int(r[0]),
+                axis=r[1],
+                label=r[2],
+                description=r[3],
+                source=r[4],
+                enabled=bool(r[5]),
+            )
+            for r in self.conn.execute(sql, params).fetchall()
+        ]
+
+
+# ── helpers ──────────────────────────────────────────────────────────
 
 
 def _pack_row(r: tuple) -> PackRow:
@@ -338,4 +703,5 @@ def _asset_row(r: tuple) -> AssetRow:
         added_at=int(r[6]),
         analyzed_at=int(r[7]) if r[7] is not None else None,
         analysis_state=r[8],
+        analysis_error=r[9] if len(r) > 9 else None,
     )

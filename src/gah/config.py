@@ -78,6 +78,10 @@ def default_app_paths(data_root: str | os.PathLike[str] | None = None) -> AppPat
     )
 
 
+_VALID_DESCRIPTION_LANGUAGES = ("ko", "en")
+_VALID_AUDIO_CHUNK_STRATEGIES = ("smart", "first", "rms_peak")
+
+
 @dataclass
 class Config:
     ollama_url: str = "http://127.0.0.1:11434"
@@ -90,12 +94,33 @@ class Config:
     # M1 fields
     watch_debounce_seconds: float = 2.0
     library_dir_override: str | None = None
+    # M2 fields
+    # 60s: CPU 환경에서 gemma4:e4b 오디오 1청크 호출이 ~36s 측정 (Windows/CPU only).
+    # 30s 면 매번 timeout → native/spectrogram 둘 다 실패 → 휴리스틱 폴백으로 강등된다.
+    # GPU 환경에서는 훨씬 빠르지만 default 는 양쪽 모두 안전한 값으로 둔다.
+    analysis_timeout_seconds: float = 60.0
+    analysis_concurrency: int = 1
+    analysis_max_retries: int = 3
+    description_language: str = "ko"   # "ko" | "en" — anything else falls back to "ko"
+    clip_model: str = "ViT-B-32"
+    clip_pretrained: str = "openai"
+    clip_enable: bool = True
+    audio_max_seconds: int = 30
+    audio_chunk_strategy: str = "smart"  # "smart" | "first" | "rms_peak"
 
     @classmethod
     def from_mapping(cls, data: dict[str, Any]) -> "Config":
         # ignore unknown keys for forward-compat with later milestones
         allowed = {f for f in cls.__dataclass_fields__}
         filtered = {k: v for k, v in data.items() if k in allowed}
+        # Validate enum-like fields; fall back to defaults on unknown values
+        # so a typo in config.toml can't crash boot.
+        lang = filtered.get("description_language")
+        if lang is not None and lang not in _VALID_DESCRIPTION_LANGUAGES:
+            filtered.pop("description_language")
+        strat = filtered.get("audio_chunk_strategy")
+        if strat is not None and strat not in _VALID_AUDIO_CHUNK_STRATEGIES:
+            filtered.pop("audio_chunk_strategy")
         return cls(**filtered)
 
     def to_mapping(self) -> dict[str, Any]:

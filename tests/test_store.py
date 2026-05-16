@@ -18,8 +18,10 @@ def _all_table_names(conn: sqlite3.Connection) -> set[str]:
 def test_initialize_creates_required_tables(store) -> None:
     names = _all_table_names(store.conn)
     assert {"packs", "assets", "tags", "asset_tags"}.issubset(names)
-    # M2+ tables should NOT exist yet — guard against accidental scope creep
-    for forbidden in ("sprite_meta", "sound_meta", "asset_embeddings", "projects", "asset_usage"):
+    # M3+ tables are not part of this milestone — they belong to search /
+    # consistency / unity-import work and showing up early would mean we
+    # widened the schema by accident.
+    for forbidden in ("projects", "asset_usage", "search_queries", "unity_imports"):
         assert forbidden not in names, f"{forbidden} should be created in a later milestone"
 
 
