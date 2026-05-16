@@ -20,8 +20,8 @@
 |---|---|---|
 | M0 — 뼈대 | ✅ 완료 | 패키지 스캐폴딩, config/logging/single-instance, 트레이 셸, CLI |
 | M1 — 워처 + Pack Manager + DB | ✅ 완료 | watchdog 래퍼+디바운서, 매니페스트/벤더 휴리스틱, SQLite 4테이블, 부팅 풀스캔, GUI 팩/라이브러리 탭 |
-| M2 — 분석 파이프라인 + CLIP (3주) | 다음 | Pillow·librosa·Ollama·CLIP·임베딩·듀얼 언어 출력 |
-| M3 — 검색 백엔드 + 통일성 + MCP (2주) | 대기 | FTS5+벡터+라벨 점수·MCP 도구 7~8개·GUI 최소 동작 |
+| M2 — 분석 파이프라인 + CLIP | ✅ 완료 | Pillow·numpy 기술 특성·librosa+soundfile·Ollama 클라이언트·`nomic-embed-text`·CLIP zero-shot·24축 ≈ 316 라벨 시드+`LabelRegistry`+라벨 관리 다이얼로그·분석 큐+ETA 상태바·M3 인계 stub |
+| M3 — 검색 백엔드 + 통일성 + MCP (2주) | 다음 | FTS5+벡터+라벨 점수·MCP 도구 7~8개·GUI 최소 동작 |
 | M4 — 검색 UX 풍부화 (1.5주, 신설) | 대기 | 부울 라벨 쿼리·다축 필터·가중치 슬라이더·저장된 검색 |
 | M5 — 시트 분석 + 애니메이션 (1주) | 대기 | 격자 분할·`suggest_animation_frames` |
 | M6 — Unity Asset Store 임포트 (1주) | 대기 | `.unitypackage` 파서·캐시 스캐너 |
@@ -135,7 +135,7 @@ cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
 pytest -q
 ```
 
-`pytest -q`가 63 passed로 떨어지면 준비 완료 (M0 18 + M1 45). M1 시점 검증 결과는 [`milestones/M1_verification.md`](./milestones/M1_verification.md).
+`pytest -q`가 204 passed (+ 2 deselected) 로 떨어지면 준비 완료 (M0 18 + M1 49 + M2 134 + 추가 회귀 3). M2 시점 검증 결과는 [`milestones/M2_verification.md`](./milestones/M2_verification.md).
 
 ## 7. 자주 쓰는 명령
 
@@ -163,29 +163,33 @@ python -m gah --tray
 python -m gah --version
 ```
 
-## 8. 다음 작업 (M2)
+## 8. 다음 작업 (M3)
 
-M2 — **분석 파이프라인** (예상 2주 분량).
+M3 — **검색 백엔드 + 통일성 스코어러 + MCP stdio** (예상 2주 분량).
 
-핵심 산출물 (자세한 건 M1 사이클을 본떠 `milestones/M2_plan.md`부터 작성):
+핵심 산출물 (자세한 건 M2 사이클을 본떠 `milestones/M3_plan.md`부터 작성):
 
-- Pillow / `numpy` 로 스프라이트 기술 특성 (해상도·알파·도미넌트 컬러·픽셀아트 판정)
-- `librosa` / `soundfile` 로 사운드 기술 특성 (길이·sample rate·RMS·BPM)
-- Ollama HTTP 클라이언트 (`gemma4:e4b` 멀티모달 + `nomic-embed-text` 임베딩)
-- Gemma 4 응답 Pydantic 검증 + 화이트리스트 (`DESIGN.md §5.3`)
-- 사운드 1·2·3차 폴백 체인 (네이티브 오디오 → 멜 스펙트로그램 비전 → 휴리스틱)
-- 새 SQLite 테이블 추가 (`sprite_meta`, `sound_meta`, `assets_fts`, `asset_embeddings`)
-- `assets.analysis_state` 전이: `pending → analyzing → ok / partial / failed`
-- 분석 큐 워커 (M1 의 `LibraryWatcher.on_pack_changed` 콜백 + 부팅 시 pending 행 드레인)
+- `src/gah/core/search.py` — FTS5 BM25 + 벡터 코사인 + 라벨 점수 가중합
+- `src/gah/core/consistency.py` — 같은 팩/벤더 사용 이력 가중치(`DESIGN.md §4.6`)
+- `src/gah/core/usage_tracker.py` — 명시 `record_asset_use` + 암묵 top-1 추정
+- `src/gah/mcp/server.py` + `src/gah/mcp/tools.py` — MCP stdio 서버 + 도구 7~8개:
+  - `find_asset` (라벨 부울 필터 `labels_any`/`labels_all`/`labels_none` 포함, `matched_labels` 응답)
+  - `suggest_packs`, `list_packs`, `list_assets`, `get_asset`
+  - `record_asset_use`, `set_project_pin`, `request_rescan`, `report_feedback`
+  - **메타 도구 3개**: `list_label_axes`, `list_labels(with_description)`, `describe_label` (`docs/MCP_USAGE_GUIDE.md` 권고)
+- DB 마이그레이션: `projects`, `asset_usage`, `search_queries` 신설
+- `--mcp` CLI 플래그 — M2 의 "not implemented" 자리 채움
+- GUI 라이브러리 탭에 검색 박스 + 결과 그리드 (최소 동작; 풍부 UX 는 M4)
+- `docs/MCP_USAGE_GUIDE.md` stub 을 본격 가이드로 풀어쓰기 (실제 응답 JSON, signature 캐시 무효화)
 
-**M2 시작 방법**
+**M3 시작 방법**
 
-1. `milestones/M2_plan.md` 작성 (M1 plan을 템플릿 삼아)
-2. `milestones/M2_todo.md` 작성
-3. `tests/test_analyzer_sprite.py`, `tests/test_analyzer_sound.py`, `tests/test_ollama_client.py`, `tests/test_store_m2.py` 등 실패 테스트부터 작성
-4. 구현 → 통과 → `milestones/M2_verification.md`
+1. `milestones/M3_plan.md` 작성 (M2 plan을 템플릿 삼아)
+2. `milestones/M3_todo.md` 작성
+3. `tests/test_search.py`, `tests/test_consistency.py`, `tests/test_usage_tracker.py`, `tests/test_mcp_tools.py`, `tests/test_mcp_server_stdio.py`, `tests/test_store_m3.py` 등 실패 테스트부터 작성
+4. 구현 → 통과 → `milestones/M3_verification.md`
 
-참고할 DESIGN 섹션: §4.2 / §4.3 / §5.1 (M2 신규 테이블) / §5.3 / §8.1 / §8.2 / §8.3.
+참고할 DESIGN 섹션: §4.3 / §4.5 / §4.6 / §4.7 / §5.1 (M3 신규 테이블 `projects`/`asset_usage`/`search_queries`) / §6 (MCP 도구 명세 전체) / §8.1 (검색 흐름 2단계 + 1단계) / §13 (Claude Code 워크플로 가이드).
 
 ## 9. 알려진 이슈·주의사항
 

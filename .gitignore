@@ -24,3 +24,8 @@ Thumbs.db
 
 # Runtime data (do not commit user data)
 /runtime/
+
+# Generated test fixtures (M2) — conftest 가 결정적 PRNG 로 매번 동일하게 생성
+tests/fixtures/*.png
+tests/fixtures/*.wav
+!tests/fixtures/.gitkeep
