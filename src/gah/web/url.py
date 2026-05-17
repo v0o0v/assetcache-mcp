@@ -30,6 +30,10 @@ def read_web_port(data_dir: Path) -> int | None:
         return None
     try:
         return int(final.read_text(encoding="utf-8").strip())
-    except (ValueError, OSError) as e:
+    except FileNotFoundError:
+        # race: exists() 체크 이후 파일이 사라짐 — 정상적으로 None 반환
+        return None
+    except ValueError as e:
         log.warning("web.port 파일 파싱 실패: %s", e)
         return None
+    # 다른 OSError (PermissionError 등) 는 propagate — caller 가 알 필요 있음

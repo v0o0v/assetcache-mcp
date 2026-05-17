@@ -38,8 +38,11 @@ class PendingPick:
     created_at: float
     status: str  # "pending" | "resolved" | "cancelled" | "expired"
     future: asyncio.Future = field(repr=False)
-    _loop: asyncio.AbstractEventLoop = field(repr=False)  # future 의 own loop
-    _seq: int = field(default=0, repr=False)  # 삽입 순서 — LIFO 정렬 동점 해소용
+    _loop: asyncio.AbstractEventLoop = field(repr=False)
+    # ^ register() 시점의 asyncio.get_running_loop() — future 의 own loop 여야 함.
+    #   call_soon_threadsafe 는 반드시 이 loop 로 호출해야 thread-safe 하게 future 에 접근.
+    _seq: int = field(default=0, repr=False)
+    # ^ 삽입 순서 — LIFO 정렬 동점 해소용. self._lock 보호 하에서만 읽고 씀.
 
 
 class PendingPickQueue:
@@ -81,40 +84,55 @@ class PendingPickQueue:
     def resolve(
         self, rid: str, picked_asset_id: int, user_note: str | None,
     ) -> bool:
-        """사용자 응답 → future.set_result. 이미 결정된 항목은 False."""
+        """사용자 응답 → future.set_result. 이미 결정된 항목은 False.
+
+        call_soon_threadsafe 를 lock 안에서 호출한다.
+        - 원본 코드도 이미 안전했다: RLock 의 happens-before 보장으로
+          Thread B 가 lock 을 획득하는 시점에는 Thread A 의 status 쓰기가
+          이미 가시(visible)하므로, "pending" → 두 번 통과하는 경로가 없다.
+        - 그러나 lock 안에서 호출하면 추론이 단순해지고, future 상태 변경이
+          항상 status 변경과 원자적으로 묶인다.
+        - call_soon_threadsafe 자체는 lock 친화적 (내부에서 lock-free 큐 사용).
+        """
         with self._lock:
             p = self._items.get(rid)
             if p is None or p.status != "pending":
                 return False
             p.status = "resolved"
-        result = {
-            "picked_asset_id": picked_asset_id,
-            "user_note": user_note,
-            "picked_at": int(time.time()),
-        }
-        p._loop.call_soon_threadsafe(p.future.set_result, result)
+            result = {
+                "picked_asset_id": picked_asset_id,
+                "user_note": user_note,
+                "picked_at": int(time.time()),
+            }
+            p._loop.call_soon_threadsafe(p.future.set_result, result)
         return True
 
     def cancel(self, rid: str, reason: str) -> bool:
-        """사용자 거부 → future.set_exception(UserCancelledError)."""
+        """사용자 거부 → future.set_exception(UserCancelledError).
+
+        call_soon_threadsafe 를 lock 안에서 호출 — resolve/expire 와 동일 불변식.
+        """
         with self._lock:
             p = self._items.get(rid)
             if p is None or p.status != "pending":
                 return False
             p.status = "cancelled"
-        p._loop.call_soon_threadsafe(
-            p.future.set_exception, UserCancelledError(reason),
-        )
+            p._loop.call_soon_threadsafe(
+                p.future.set_exception, UserCancelledError(reason),
+            )
         return True
 
     def expire(self, rid: str) -> bool:
-        """TTL 초과 → future.cancel."""
+        """TTL 초과 → future.cancel.
+
+        call_soon_threadsafe 를 lock 안에서 호출 — resolve/cancel 과 동일 불변식.
+        """
         with self._lock:
             p = self._items.get(rid)
             if p is None or p.status != "pending":
                 return False
             p.status = "expired"
-        p._loop.call_soon_threadsafe(p.future.cancel)
+            p._loop.call_soon_threadsafe(p.future.cancel)
         return True
 
     def cleanup_expired(self, now: float, ttl: float) -> int:
