@@ -32,7 +32,7 @@ html, body {
   background: var(--chip-bg);
 }
 .notif-badge {
-  background: var(--accent);
+  background: var(--purple-strip);
   color: white;
   padding: 4px 10px;
   border-radius: 12px;
@@ -827,3 +827,109 @@ html, body {
 }
 
 .usage-detail-btn:hover { background: var(--chip-bg); }
+
+/* === M5 Phase 4B — Claude pick 요청 카드 === */
+
+/* 컨테이너 — 여러 pick-card-group 이 #pick-cards 에 쌓임 */
+#pick-cards {
+  padding: 0 0 8px;
+}
+
+/* pick 요청 그룹 전체 */
+.pick-card-group {
+  background: var(--card-bg);
+  border: 2px solid var(--purple-strip);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+/* 헤더 — 배지 + reason + 거부 버튼 */
+.pick-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--purple-strip) 12%, var(--card-bg));
+  border-bottom: 1px solid var(--purple-strip);
+  flex-wrap: wrap;
+}
+
+.pick-header .badge {
+  background: var(--purple-strip);
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.82em;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pick-header .reason {
+  flex: 1;
+  font-size: 0.9em;
+  font-style: italic;
+  color: var(--fg);
+  opacity: 0.85;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* [✕ 거부] 버튼 */
+.cancel-pick {
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--purple-strip);
+  background: transparent;
+  color: var(--purple-strip);
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  flex-shrink: 0;
+}
+.cancel-pick:hover {
+  background: var(--purple-strip);
+  color: #fff;
+}
+
+/* 후보 카드 목록 — 세로 스택 */
+.pick-candidates {
+  padding: 8px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* purple-strip — card-wide 에 보라색 왼쪽 테두리 추가 */
+.card-wide.purple-strip {
+  border-left: 4px solid var(--purple-strip);
+  cursor: default;  /* pick-candidate 는 모달 클릭 비활성 */
+  position: relative;
+  align-items: center;
+}
+
+/* [채택] 버튼 */
+.adopt-pick {
+  flex-shrink: 0;
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: none;
+  background: var(--purple-strip);
+  color: #fff;
+  font-size: 0.88em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.1s;
+  white-space: nowrap;
+}
+.adopt-pick:hover { opacity: 0.85; }
+.adopt-pick:active { opacity: 0.7; }
+
+/* 모바일: pick-header 에서 reason 을 두 번째 줄로 */
+@media (max-width: 600px) {
+  .pick-header { gap: 6px; }
+  .pick-header .reason { min-width: 100%; order: 3; white-space: normal; }
+}
