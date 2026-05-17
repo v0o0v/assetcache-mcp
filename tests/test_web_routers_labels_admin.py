@@ -7,6 +7,7 @@ populated_client fixture 를 사용한다:
 from __future__ import annotations
 
 import asyncio
+import io
 import json
 
 import pytest
@@ -54,14 +55,14 @@ def test_get_labels_label_fields(populated_client):
 
 
 def test_post_label_creates_new_label(populated_client):
-    """POST valid → 201 + DB 반영 확인."""
+    """POST valid → 201 + HTML fragment (<tr>) + DB 반영 확인."""
     body = {"axis": "style", "label": "test_new_label", "description": "테스트용"}
     r = populated_client.post("/api/labels", json=body)
     assert r.status_code == 201
-    data = r.json()
-    assert data["axis"] == "style"
-    assert data["label"] == "test_new_label"
-    assert data["id"] > 0
+    # HTML fragment 반환 확인
+    assert "text/html" in r.headers.get("content-type", "")
+    assert "<tr" in r.text
+    assert "test_new_label" in r.text
 
     # GET 에서도 보여야 함
     r2 = populated_client.get("/api/labels?axis=style")
@@ -100,7 +101,7 @@ def test_post_label_invalid_token_with_spaces_returns_400(populated_client):
 
 
 def test_patch_label_updates_description(populated_client):
-    """PATCH /api/labels/{id} {description: ...} → DB 반영."""
+    """PATCH /api/labels/{id} {description: ...} → 200 + HTML fragment + DB 반영."""
     # 먼저 label_id 를 조회
     labels = populated_client.get("/api/labels?axis=style").json()["labels"]
     target = next(lb for lb in labels if lb["label"] == "pixel_art")
@@ -111,13 +112,18 @@ def test_patch_label_updates_description(populated_client):
         json={"description": "수정된 설명"},
     )
     assert r.status_code == 200
-    data = r.json()
-    assert data["description"] == "수정된 설명"
-    assert data["id"] == label_id
+    # HTML fragment 반환 확인
+    assert "text/html" in r.headers.get("content-type", "")
+    assert "<tr" in r.text
+    assert "수정된 설명" in r.text
+    # DB 반영 확인
+    r2 = populated_client.get("/api/labels?axis=style")
+    updated = next(lb for lb in r2.json()["labels"] if lb["id"] == label_id)
+    assert updated["description"] == "수정된 설명"
 
 
 def test_patch_label_updates_enabled(populated_client):
-    """PATCH {enabled: false} → 해당 라벨 비활성화."""
+    """PATCH {enabled: false} → 200 + HTML fragment (비활성 표시)."""
     labels = populated_client.get("/api/labels?axis=style").json()["labels"]
     # enabled_only=False 로 모든 라벨 포함 쿼리
     r_all = populated_client.get("/api/labels?axis=style")
@@ -126,7 +132,9 @@ def test_patch_label_updates_enabled(populated_client):
 
     r = populated_client.patch(f"/api/labels/{label_id}", json={"enabled": False})
     assert r.status_code == 200
-    assert r.json()["enabled"] is False
+    assert "text/html" in r.headers.get("content-type", "")
+    assert "<tr" in r.text
+    assert "disabled" in r.text
 
 
 def test_patch_label_unknown_id_returns_404(populated_client):
@@ -139,17 +147,21 @@ def test_patch_label_unknown_id_returns_404(populated_client):
 
 
 def test_delete_label_succeeds_when_unused(populated_client):
-    """사용 중이 아닌 라벨 DELETE → 200 + {"ok": true}."""
-    # 새 라벨 추가 (asset_labels 에 없음)
+    """사용 중이 아닌 라벨 DELETE → 200 빈 응답 + DB 에서 제거."""
+    # 새 라벨 추가 (asset_labels 에 없음) — POST 는 이제 HTML 반환
     r = populated_client.post(
         "/api/labels", json={"axis": "style", "label": "delete_me_label"}
     )
     assert r.status_code == 201
-    label_id = r.json()["id"]
+    # label_id 는 GET 으로 조회
+    labels_before = populated_client.get("/api/labels?axis=style").json()["labels"]
+    target = next(lb for lb in labels_before if lb["label"] == "delete_me_label")
+    label_id = target["id"]
 
     r2 = populated_client.delete(f"/api/labels/{label_id}")
     assert r2.status_code == 200
-    assert r2.json().get("ok") is True
+    # 빈 응답 — JSON 파싱 불필요, Content-Type 이 없거나 비어 있음
+    assert r2.content == b""
 
     # GET 에서 사라졌는지 확인
     labels_after = populated_client.get("/api/labels?axis=style").json()["labels"]
@@ -237,20 +249,32 @@ def test_get_export_returns_json_attachment(populated_client):
 
 
 def test_post_import_bulk_inserts_labels(populated_client):
-    """POST /api/labels/import JSON body → imported/skipped 통계 반환."""
+    """POST /api/labels/import (multipart file) → imported/skipped 통계 반환."""
     payload = [
         {"axis": "style", "label": "import_label_1", "description": "import 1"},
         {"axis": "style", "label": "import_label_2", "description": "import 2"},
         # 이미 존재하는 seed 라벨 → skipped
         {"axis": "style", "label": "pixel_art", "description": "updated desc"},
     ]
-    r = populated_client.post("/api/labels/import", json=payload)
+    labels_json = json.dumps(payload).encode("utf-8")
+    files = {"file": ("labels.json", io.BytesIO(labels_json), "application/json")}
+    r = populated_client.post("/api/labels/import", files=files)
     assert r.status_code == 200
     data = r.json()
     assert "imported" in data
     assert "skipped" in data
     # 신규 2개는 imported 에 포함
     assert data["imported"] >= 2
+
+
+def test_post_import_invalid_json_returns_400(populated_client):
+    """POST /api/labels/import 에 잘못된 JSON 파일 → 400."""
+    bad_json = b"this is not json {"
+    files = {"file": ("bad.json", io.BytesIO(bad_json), "application/json")}
+    r = populated_client.post("/api/labels/import", files=files)
+    assert r.status_code == 400
+    detail = r.json().get("detail", {})
+    assert detail.get("code") == "400_invalid_json"
 
 
 # ── Task 5.3: GET /ui/labels/admin ────────────────────────────────────

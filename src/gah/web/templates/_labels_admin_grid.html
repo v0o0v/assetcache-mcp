@@ -29,9 +29,8 @@
     <form class="label-add-form"
           hx-post="/api/labels"
           hx-ext="json-enc"
-          hx-target="#axis-table-{{ axis }}"
-          hx-swap="outerHTML"
-          @htmx:before-request="this.elements.axis.value = '{{ axis }}'">
+          hx-target="#axis-tbody-{{ axis }}"
+          hx-swap="beforeend">
       <input type="hidden" name="axis" value="{{ axis }}">
       <div class="label-add-row">
         <input type="text"
@@ -49,7 +48,7 @@
     </form>
 
     {# 라벨 목록 테이블 #}
-    <table id="axis-table-{{ axis }}" class="label-table">
+    <table class="label-table">
       <thead>
         <tr>
           <th>{{ _('라벨') }}</th>
@@ -59,51 +58,10 @@
           <th>{{ _('작업') }}</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="axis-tbody-{{ axis }}">
         {% for lb in labels_by_axis[axis] %}
-        <tr class="label-row{% if not lb.enabled %} disabled{% endif %}"
-            data-label-id="{{ lb.id }}">
-          <td class="label-token">
-            <span class="chip{% if lb.enabled %} matched{% endif %}">{{ lb.label }}</span>
-          </td>
-          <td class="label-desc">
-            <span class="desc-text" x-data="{ editing: false }">
-              <span x-show="!editing"
-                    @dblclick="editing = true">{{ lb.description or '' }}</span>
-              <form x-show="editing"
-                    @submit.prevent="editing = false"
-                    hx-patch="/api/labels/{{ lb.id }}"
-                    hx-ext="json-enc"
-                    hx-target="closest tr"
-                    hx-swap="outerHTML">
-                <input type="text"
-                       name="description"
-                       value="{{ lb.description or '' }}"
-                       @blur="editing = false">
-              </form>
-            </span>
-          </td>
-          <td class="label-source">{{ lb.source }}</td>
-          <td class="label-enabled">
-            <button class="btn btn-sm{% if lb.enabled %} btn-active{% else %} btn-inactive{% endif %}"
-                    hx-patch="/api/labels/{{ lb.id }}"
-                    hx-ext="json-enc"
-                    hx-vals='{"enabled": {{ "false" if lb.enabled else "true" }}}'
-                    hx-target="closest tr"
-                    hx-swap="outerHTML">
-              {% if lb.enabled %}{{ _('활성') }}{% else %}{{ _('비활성') }}{% endif %}
-            </button>
-          </td>
-          <td class="label-actions">
-            <button class="btn btn-sm btn-danger"
-                    hx-delete="/api/labels/{{ lb.id }}"
-                    hx-confirm="{{ _('정말 삭제하시겠습니까?') }}"
-                    hx-target="closest tr"
-                    hx-swap="outerHTML swap:0s">
-              {{ _('삭제') }}
-            </button>
-          </td>
-        </tr>
+        {% set label = lb %}
+        {% include "_label_row.html" %}
         {% endfor %}
       </tbody>
     </table>
@@ -121,7 +79,8 @@
     <form class="import-form"
           hx-post="/api/labels/import"
           hx-target=".labels-admin-grid"
-          hx-swap="outerHTML">
+          hx-swap="outerHTML"
+          hx-encoding="multipart/form-data">
       <label class="btn btn-secondary" for="import-file">
         {{ _('가져오기 (JSON)') }}
       </label>

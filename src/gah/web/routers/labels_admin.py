@@ -10,7 +10,7 @@ import json
 import time
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 
@@ -66,6 +66,19 @@ def _broadcast_signature(registry: Any) -> None:
     sse_bus.broadcast("labels_signature_changed", {"signature": sig})
 
 
+def _label_row_response(
+    request: Request, label_dict: dict, *, status_code: int = 200
+) -> Response:
+    """단일 라벨 행 HTML fragment 반환 (HTMX outerHTML/beforeend 용)."""
+    templates = request.app.state.templates
+    return templates.TemplateResponse(
+        request=request,
+        name="_label_row.html",
+        context={"label": label_dict},
+        status_code=status_code,
+    )
+
+
 # ── GET /api/labels ─────────────────────────────────────────────────────
 
 
@@ -97,13 +110,13 @@ def api_get_labels(request: Request, axis: str | None = None) -> dict:
 # ── POST /api/labels ────────────────────────────────────────────────────
 
 
-@router.post("/labels", status_code=201)
-def api_post_label(body: LabelCreateBody, request: Request) -> dict:
+@router.post("/labels")
+def api_post_label(body: LabelCreateBody, request: Request) -> Response:
     """새 라벨 추가.
 
     * axis 가 24 seed axis 에 없으면 400.
     * 라벨 토큰이 regex 불일치면 400 (``LabelValidationError``).
-    * 성공 시 201 + 새 라벨 dict.
+    * 성공 시 201 + ``_label_row.html`` HTML fragment (HTMX beforeend 용).
     * SSE ``labels_signature_changed`` broadcast.
     """
     if body.axis not in _VALID_AXES:
@@ -127,18 +140,18 @@ def api_post_label(body: LabelCreateBody, request: Request) -> dict:
         raise HTTPException(status_code=500, detail="라벨 조회 실패")
 
     _broadcast_signature(deps.registry)
-    return _label_row_to_dict(row)
+    return _label_row_response(request, _label_row_to_dict(row), status_code=201)
 
 
 # ── PATCH /api/labels/{label_id} ────────────────────────────────────────
 
 
 @router.patch("/labels/{label_id}")
-def api_patch_label(label_id: int, body: LabelUpdateBody, request: Request) -> dict:
+def api_patch_label(label_id: int, body: LabelUpdateBody, request: Request) -> Response:
     """라벨 description / enabled 갱신.
 
     * 존재하지 않는 label_id → 404.
-    * 성공 시 갱신된 라벨 dict + SSE broadcast.
+    * 성공 시 ``_label_row.html`` HTML fragment (HTMX outerHTML 용) + SSE broadcast.
     """
     deps = request.app.state.deps
     existing = deps.store.get_label_by_id(label_id)
@@ -163,19 +176,20 @@ def api_patch_label(label_id: int, body: LabelUpdateBody, request: Request) -> d
         raise HTTPException(status_code=500, detail="라벨 갱신 후 조회 실패")
 
     _broadcast_signature(deps.registry)
-    return _label_row_to_dict(row)
+    return _label_row_response(request, _label_row_to_dict(row))
 
 
 # ── DELETE /api/labels/{label_id} ───────────────────────────────────────
 
 
 @router.delete("/labels/{label_id}")
-def api_delete_label(label_id: int, request: Request) -> dict:
+def api_delete_label(label_id: int, request: Request) -> Response:
     """라벨 삭제.
 
     * 존재하지 않으면 404.
     * asset_labels 에서 참조 중이면 400 (in-use 보호).
-    * 성공 시 {"ok": true} + SSE broadcast.
+    * 성공 시 200 빈 응답 + SSE broadcast.
+      HTMX ``hx-swap="delete"`` 가 클라이언트 측에서 행을 제거한다.
     """
     deps = request.app.state.deps
     existing = deps.store.get_label_by_id(label_id)
@@ -192,7 +206,7 @@ def api_delete_label(label_id: int, request: Request) -> dict:
     deps.store.delete_label(label_id)
     deps.registry.invalidate()
     _broadcast_signature(deps.registry)
-    return {"ok": True}
+    return Response(status_code=200)
 
 
 # ── GET /api/labels/export ──────────────────────────────────────────────
@@ -236,8 +250,11 @@ def api_export_labels(request: Request) -> Response:
 
 
 @router.post("/labels/import")
-def api_import_labels(request: Request, body: list[dict]) -> dict:
-    """라벨 어휘 bulk import.
+async def api_import_labels(
+    request: Request,
+    file: UploadFile = File(...),
+) -> dict:
+    """라벨 어휘 bulk import (multipart/form-data 파일 업로드).
 
     각 항목: {"axis": str, "label": str, "description"?: str, "enabled"?: bool}
 
@@ -246,6 +263,17 @@ def api_import_labels(request: Request, body: list[dict]) -> dict:
     * 신규이면 insert (imported 카운트).
     * SSE broadcast.
     """
+    try:
+        raw = await file.read()
+        body = json.loads(raw)
+        if not isinstance(body, list):
+            raise ValueError("최상위 레벨이 JSON 배열이어야 합니다")
+    except (json.JSONDecodeError, ValueError) as exc:
+        raise HTTPException(
+            status_code=400,
+            detail={"code": "400_invalid_json", "message": str(exc)},
+        ) from exc
+
     deps = request.app.state.deps
     imported = 0
     skipped = 0
