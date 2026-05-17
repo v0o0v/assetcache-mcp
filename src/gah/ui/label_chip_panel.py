@@ -1,9 +1,14 @@
-"""M4 — LabelChipPanel: axis 별 라벨 칩 다중 선택 + AND/OR/NOT 모드 라디오.
+"""M4 — LabelChipPanel: 종류별 탭 + axis 칩 다중 선택 + AND/OR/NOT 모드 라디오.
 
-LibraryView 좌측 사이드 패널에 들어간다.  ``selectionChanged`` 시그널이
-모든 칩 토글 + 모드 변경에서 발화 — 상위 위젯이 받아 검색 재호출.
+LibraryView 좌측 사이드 패널.  ``selectionChanged`` 시그널이 칩 토글 / 모드
+변경에서 발화 — 상위 위젯이 받아 검색 재호출.
 
-v1 한계: 모드는 패널 전체 단위 (axis 별 모드 다르게 못 잡음).
+종류 분류 (M4 follow-up 2026-05-17):
+- ``sound_*`` axis → **사운드** 탭
+- ``sheet_*`` axis → **스프라이트시트** 탭 (현재는 비어 있음, M5+ 가 채움)
+- 그 외 → **스프라이트** 탭
+
+매칭 모드 라디오는 탭 위에 1 줄로 둔다 (패널 전체 단위, 탭 무관).
 """
 
 from __future__ import annotations
@@ -18,6 +23,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QRadioButton,
     QScrollArea,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -36,8 +42,30 @@ def _tr(text: str) -> str:
 _MODES = ("all", "any", "none")
 
 
+def _classify_axis(axis_name: str) -> str:
+    """axis 이름 → 탭 키 ('sprite'|'spritesheet'|'sound').
+
+    분류 규칙:
+    - ``sound_`` prefix → ``sound``
+    - ``sheet_`` prefix → ``spritesheet``
+    - 그 외 → ``sprite`` (시각 axes: category/style/palette/mood/...)
+    """
+    if axis_name.startswith("sound_"):
+        return "sound"
+    if axis_name.startswith("sheet_"):
+        return "spritesheet"
+    return "sprite"
+
+
+_TAB_ORDER = (
+    ("sprite", "스프라이트"),
+    ("spritesheet", "스프라이트시트"),
+    ("sound", "사운드"),
+)
+
+
 class LabelChipPanel(QWidget):
-    """축별 라벨 체크박스 패널 + 매칭 모드 라디오 (AND/OR/NOT)."""
+    """매칭 모드 (상단) + 종류별 탭 (본문) — 칩 선택은 탭 무관 단일 풀."""
 
     selectionChanged = Signal()
 
@@ -46,14 +74,17 @@ class LabelChipPanel(QWidget):
     ) -> None:
         super().__init__(parent)
         self._registry = registry
+        # (axis, label) → QCheckBox — 모든 탭의 체크박스 합집합.
         self._checks: dict[tuple[str, str], QCheckBox] = {}
         self._mode_radios: dict[str, QRadioButton] = {}
         self._mode_group = QButtonGroup(self)
+        # 탭별 본문 호스트 위젯 (populate 시 재구성).
+        self._tab_hosts: dict[str, QWidget] = {}
 
         root = QVBoxLayout(self)
         root.setContentsMargins(4, 4, 4, 4)
 
-        # 매칭 모드 — 상단 라디오 1행.
+        # ── 매칭 모드 — 상단 라디오 1 줄 (탭 위, 패널 전체 단위) ───────
         mode_box = QGroupBox(_tr("매칭 모드"))
         mb = QHBoxLayout(mode_box)
         for key, label in (("all", "AND"), ("any", "OR"), ("none", "NOT")):
@@ -65,30 +96,40 @@ class LabelChipPanel(QWidget):
         self._mode_radios["all"].setChecked(True)
         root.addWidget(mode_box)
 
-        # axis 별 그룹 박스 (스크롤 가능)
-        scroll = QScrollArea(self)
-        scroll.setWidgetResizable(True)
-        host = QWidget()
-        self._host_layout = QVBoxLayout(host)
+        # ── QTabWidget — 종류별 탭 (sprite/spritesheet/sound) ────────
+        self._tabs = QTabWidget(self)
+        for key, title in _TAB_ORDER:
+            scroll = QScrollArea()
+            scroll.setWidgetResizable(True)
+            host = QWidget()
+            QVBoxLayout(host)   # populate 가 재구성
+            self._tab_hosts[key] = host
+            scroll.setWidget(host)
+            self._tabs.addTab(scroll, _tr(title))
+        root.addWidget(self._tabs)
+
         self.populate(registry)
-        scroll.setWidget(host)
-        root.addWidget(scroll)
 
     # -- public API ---------------------------------------------------
 
     def populate(self, registry: "LabelRegistry") -> None:
-        """등록된 axis/label 로 칩 그리드 빌드 (재호출 시 clear + rebuild)."""
-        # 기존 그룹 박스 모두 제거.
-        while self._host_layout.count():
-            it = self._host_layout.takeAt(0)
-            w = it.widget()
-            if w is not None:
-                w.deleteLater()
+        """등록된 axis/label 로 탭별 칩 그리드 빌드 (재호출 시 clear+rebuild)."""
+        # 기존 탭 본문 + 체크박스 모두 제거.
         self._checks.clear()
+        for host in self._tab_hosts.values():
+            layout = host.layout()
+            # 기존 그룹박스 + stretch 제거.
+            while layout.count():
+                it = layout.takeAt(0)
+                w = it.widget()
+                if w is not None:
+                    w.deleteLater()
+        # axis 별로 분류 후 해당 탭 본문에 그룹박스 추가.
         for axis in registry.list_axes():
             labels = registry.list_labels(axis=axis, enabled_only=True)
             if not labels:
                 continue
+            host = self._tab_hosts[_classify_axis(axis)]
             group = QGroupBox(axis)
             hl = QHBoxLayout(group)
             for label in labels:
@@ -96,11 +137,16 @@ class LabelChipPanel(QWidget):
                 cb.toggled.connect(self._on_check_toggled)
                 self._checks[(axis, label)] = cb
                 hl.addWidget(cb)
-            self._host_layout.addWidget(group)
-        self._host_layout.addStretch(1)
+            host.layout().addWidget(group)
+        # 마무리 stretch — 그룹박스가 위쪽으로 정렬되도록.
+        for host in self._tab_hosts.values():
+            host.layout().addStretch(1)
 
     def selected(self) -> tuple[str, list[LabelFilter]]:
-        """현재 선택 — `(mode, [LabelFilter, ...])`. mode ∈ {'all','any','none'}."""
+        """현재 선택 — `(mode, [LabelFilter, ...])`. 탭 무관 단일 풀.
+
+        mode ∈ {'all', 'any', 'none'}.
+        """
         mode = self.mode()
         chosen = [
             LabelFilter(axis=ax, label=lbl)

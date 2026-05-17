@@ -1179,6 +1179,62 @@ class Store:
                 (int(_time.time()), int(saved_search_id)),
             )
 
+    def upsert_saved_search(
+        self, project_id: int | None, name: str, query_json: str,
+    ) -> int:
+        """저장된 검색 INSERT or UPDATE — 이름 중복 시 query_json 만 교체.
+
+        같은 (project_id, name) 행이 있으면 그 행 ID 를 그대로 유지하고
+        ``query_json`` 만 교체.  없으면 새로 INSERT.  반환은 saved_search_id.
+
+        > NULL 처리 주의: SQLite 의 UNIQUE 는 NULL 을 distinct 로 본다.
+        > ``ON CONFLICT`` 는 ``project_id=NULL`` 케이스에서 발화 안 함.
+        > 명시적으로 ``IS NULL`` 분기해서 SELECT 후 INSERT/UPDATE 결정.
+        """
+        import time as _time
+
+        now = int(_time.time())
+        with self.write_lock:
+            if project_id is None:
+                row = self.conn.execute(
+                    "SELECT id FROM saved_searches "
+                    "WHERE project_id IS NULL AND name = ?",
+                    (name,),
+                ).fetchone()
+            else:
+                row = self.conn.execute(
+                    "SELECT id FROM saved_searches "
+                    "WHERE project_id = ? AND name = ?",
+                    (int(project_id), name),
+                ).fetchone()
+            if row is None:
+                self.conn.execute(
+                    "INSERT INTO saved_searches "
+                    "(project_id, name, query_json, created_at) "
+                    "VALUES (?, ?, ?, ?)",
+                    (project_id, name, query_json, now),
+                )
+                return int(
+                    self.conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+                )
+            self.conn.execute(
+                "UPDATE saved_searches SET query_json = ? WHERE id = ?",
+                (query_json, int(row[0])),
+            )
+            return int(row[0])
+
+    def rename_saved_search(self, saved_search_id: int, new_name: str) -> None:
+        """저장된 검색 이름 UPDATE.
+
+        같은 (project_id, new_name) 행이 이미 있으면 SQLite UNIQUE 위반 →
+        ``sqlite3.IntegrityError`` 가 raise — caller (GUI) 가 메시지 표시.
+        """
+        with self.write_lock:
+            self.conn.execute(
+                "UPDATE saved_searches SET name = ? WHERE id = ?",
+                (new_name, int(saved_search_id)),
+            )
+
     def list_saved_searches(self, project_id: int | None) -> list[SavedSearchRow]:
         """``last_used_at DESC NULLS LAST, created_at DESC`` 순."""
         if project_id is None:

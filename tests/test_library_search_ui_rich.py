@@ -163,16 +163,17 @@ def test_search_side_panel_saved_searches_load_on_open(qapp, populated_store, co
 def test_search_side_panel_save_button_emits_save_signal_with_name(
     qapp, populated_store, config_default
 ):
+    """M4 follow-up: saveCurrentRequested 시그널이 (name, overwrite) 2 인자."""
     from gah.ui.search_side_panel import SearchSidePanel
 
     store, _ = populated_store
     panel = SearchSidePanel(config_default, store)
-    fired: list[str] = []
-    panel.saveCurrentRequested.connect(fired.append)
-    # 이름 직접 주입 (다이얼로그 우회).
+    fired: list[tuple[str, bool]] = []
+    panel.saveCurrentRequested.connect(lambda n, o: fired.append((n, o)))
+    # 이름 직접 주입 (다이얼로그 우회) — 새 이름이라 overwrite=False.
     panel.request_save_with_name("my new search")
     _qwait(50)
-    assert fired == ["my new search"]
+    assert fired == [("my new search", False)]
 
 
 def test_search_side_panel_saved_search_double_click_emits_activated(
@@ -362,6 +363,263 @@ def test_library_view_works_without_registry_or_config(qapp, populated_store):
     # 위젯 3개는 아직 없음.
     assert view.findChild(LabelChipPanel) is None
     assert view.findChild(SearchSidePanel) is None
+
+
+# ── M4 follow-up: SearchSidePanel — delete / rename / overwrite ──────
+
+
+def test_search_side_panel_overwrite_helper_emits_overwrite_true(
+    qapp, populated_store, config_default,
+):
+    """이미 존재하는 이름을 강제 덮어쓰기 — overwrite=True."""
+    from gah.ui.search_side_panel import SearchSidePanel
+
+    store, _ = populated_store
+    panel = SearchSidePanel(config_default, store)
+    fired: list[tuple[str, bool]] = []
+    panel.saveCurrentRequested.connect(lambda n, o: fired.append((n, o)))
+    panel.request_overwrite_save("existing_name")
+    _qwait(50)
+    assert fired == [("existing_name", True)]
+
+
+def test_search_side_panel_delete_request_emits_signal(
+    qapp, populated_store, config_default,
+):
+    """우클릭 메뉴 삭제 헬퍼 → savedSearchDeleteRequested(name)."""
+    from gah.ui.search_side_panel import SearchSidePanel
+
+    store, _ = populated_store
+    panel = SearchSidePanel(config_default, store)
+    fired: list[str] = []
+    panel.savedSearchDeleteRequested.connect(fired.append)
+    panel.request_delete("some_name")
+    _qwait(50)
+    assert fired == ["some_name"]
+
+
+def test_search_side_panel_rename_request_emits_signal(
+    qapp, populated_store, config_default,
+):
+    """우클릭 메뉴 이름 수정 헬퍼 → savedSearchRenameRequested(old, new)."""
+    from gah.ui.search_side_panel import SearchSidePanel
+
+    store, _ = populated_store
+    panel = SearchSidePanel(config_default, store)
+    fired: list[tuple[str, str]] = []
+    panel.savedSearchRenameRequested.connect(
+        lambda o, n: fired.append((o, n)),
+    )
+    panel.request_rename("old_name", "new_name")
+    _qwait(50)
+    assert fired == [("old_name", "new_name")]
+
+
+def test_search_side_panel_name_exists_helper(
+    qapp, populated_store, config_default,
+):
+    """패널이 store 와 협력해 이름 존재 여부 확인 — 다이얼로그 분기에 사용."""
+    import json
+
+    from gah.ui.search_side_panel import SearchSidePanel
+
+    store, _ = populated_store
+    store.save_search(None, "已_existing", json.dumps({"q": "x"}))
+    panel = SearchSidePanel(config_default, store)
+    assert panel.name_exists("已_existing") is True
+    assert panel.name_exists("does_not_exist") is False
+
+
+# ── M4 follow-up: LabelChipPanel — 종류별 탭 (QTabWidget) ─────────────
+
+
+def test_label_chip_panel_uses_qtabwidget_for_kind_separation(
+    qapp, registry_with_axes,
+):
+    """LabelChipPanel 가 QTabWidget 으로 sprite/spritesheet/sound 3 탭."""
+    from PySide6.QtWidgets import QTabWidget
+    from gah.ui.label_chip_panel import LabelChipPanel
+
+    panel = LabelChipPanel(registry_with_axes)
+    tabs = panel.findChild(QTabWidget)
+    assert tabs is not None, "QTabWidget 가 LabelChipPanel 안에 없음"
+    # 3 탭 — sprite/spritesheet/sound
+    assert tabs.count() == 3
+    tab_titles = [tabs.tabText(i) for i in range(tabs.count())]
+    # 텍스트는 한국어 — "스프라이트"/"스프라이트시트"/"사운드" 포함.
+    assert any("스프라이트" in t and "시트" not in t for t in tab_titles), tab_titles
+    assert any("시트" in t for t in tab_titles), tab_titles
+    assert any("사운드" in t for t in tab_titles), tab_titles
+
+
+def test_label_chip_panel_sound_tab_only_has_sound_axes(
+    qapp, registry_with_axes,
+):
+    """사운드 탭에는 sound_* axis 만 노출."""
+    from PySide6.QtWidgets import QGroupBox, QTabWidget
+    from gah.ui.label_chip_panel import LabelChipPanel
+
+    panel = LabelChipPanel(registry_with_axes)
+    tabs = panel.findChild(QTabWidget)
+    sound_tab_idx = next(
+        i for i in range(tabs.count())
+        if "사운드" in tabs.tabText(i)
+    )
+    sound_widget = tabs.widget(sound_tab_idx)
+    boxes = sound_widget.findChildren(QGroupBox)
+    # 매칭 모드 그룹박스는 패널 전체 위쪽 (탭 밖) 이라 sound_widget 안엔
+    # 없어야. 안에 있는 모든 그룹박스는 sound_* axis 여야 한다.
+    box_titles = [b.title() for b in boxes if b.title()]
+    assert box_titles, "사운드 탭에 axis 그룹박스가 없음"
+    for title in box_titles:
+        assert title.startswith("sound_"), (
+            f"사운드 탭에 비-사운드 axis 가 섞임: {title}"
+        )
+
+
+def test_label_chip_panel_sprite_tab_has_visual_axes_only(
+    qapp, registry_with_axes,
+):
+    """스프라이트 탭에는 sound_/sheet_ 제외 axis 만 노출."""
+    from PySide6.QtWidgets import QGroupBox, QTabWidget
+    from gah.ui.label_chip_panel import LabelChipPanel
+
+    panel = LabelChipPanel(registry_with_axes)
+    tabs = panel.findChild(QTabWidget)
+    sprite_tab_idx = next(
+        i for i in range(tabs.count())
+        if "스프라이트" in tabs.tabText(i) and "시트" not in tabs.tabText(i)
+    )
+    sprite_widget = tabs.widget(sprite_tab_idx)
+    boxes = sprite_widget.findChildren(QGroupBox)
+    box_titles = [b.title() for b in boxes if b.title()]
+    assert box_titles, "스프라이트 탭에 axis 그룹박스가 없음"
+    for title in box_titles:
+        assert not title.startswith("sound_"), (
+            f"스프라이트 탭에 사운드 axis 가 섞임: {title}"
+        )
+        assert not title.startswith("sheet_"), (
+            f"스프라이트 탭에 시트 axis 가 섞임: {title}"
+        )
+
+
+def test_label_chip_panel_selection_shared_across_tabs(
+    qapp, registry_with_axes,
+):
+    """매칭 모드 + 칩 선택은 탭 무관 — selected() 가 모든 탭의 체크 합산."""
+    from PySide6.QtWidgets import QCheckBox
+    from gah.ui.label_chip_panel import LabelChipPanel
+
+    panel = LabelChipPanel(registry_with_axes)
+    # 첫 체크박스 (어떤 탭의 어떤 axis 든) 체크.
+    checks = panel.findChildren(QCheckBox)
+    assert checks
+    checks[0].setChecked(True)
+    mode, filters = panel.selected()
+    assert mode == "all"  # 디폴트
+    assert len(filters) == 1
+
+
+# ── M4 follow-up: LibraryView integration — overwrite/delete/rename ──
+
+
+def test_library_view_save_overwrite_calls_upsert(
+    qapp, populated_store, config_default, registry_with_axes,
+):
+    """saveCurrentRequested(name, overwrite=True) → store.upsert_saved_search 호출."""
+    import json
+
+    from gah.ui.library_view import LibraryView
+
+    store, _ = populated_store
+    # 기존 저장된 검색 1개 미리.
+    store.save_search(None, "to_overwrite", json.dumps({"query": "old"}))
+
+    view = LibraryView(store)
+    view.set_config(config_default)
+    view.set_label_registry(registry_with_axes)
+    view.search_input.setText("new query")
+
+    # 덮어쓰기 신호 직접 emit.
+    view._side_panel.request_overwrite_save("to_overwrite")
+    _qwait(50)
+
+    row = store.get_saved_search(None, "to_overwrite")
+    assert row is not None
+    payload = json.loads(row.query_json)
+    # 덮어쓰여 query 가 "new query" 가 됐어야.
+    assert payload["query"] == "new query"
+
+
+def test_library_view_delete_signal_removes_saved_search(
+    qapp, populated_store, config_default, registry_with_axes,
+):
+    """savedSearchDeleteRequested(name) → store.delete_saved_search 호출 + 리스트 reload."""
+    import json
+
+    from gah.ui.library_view import LibraryView
+
+    store, _ = populated_store
+    store.save_search(None, "to_delete", json.dumps({"query": "x"}))
+    assert store.get_saved_search(None, "to_delete") is not None
+
+    view = LibraryView(store)
+    view.set_config(config_default)
+    view.set_label_registry(registry_with_axes)
+
+    view._side_panel.request_delete("to_delete")
+    _qwait(50)
+
+    assert store.get_saved_search(None, "to_delete") is None
+
+
+def test_library_view_rename_signal_changes_name(
+    qapp, populated_store, config_default, registry_with_axes,
+):
+    """savedSearchRenameRequested(old, new) → store.rename_saved_search 호출."""
+    import json
+
+    from gah.ui.library_view import LibraryView
+
+    store, _ = populated_store
+    sid = store.save_search(None, "old_name", json.dumps({"query": "x"}))
+    assert sid > 0
+
+    view = LibraryView(store)
+    view.set_config(config_default)
+    view.set_label_registry(registry_with_axes)
+
+    view._side_panel.request_rename("old_name", "new_name")
+    _qwait(50)
+
+    assert store.get_saved_search(None, "old_name") is None
+    assert store.get_saved_search(None, "new_name") is not None
+
+
+def test_library_view_save_without_overwrite_silently_skips_duplicate(
+    qapp, populated_store, config_default, registry_with_axes,
+):
+    """overwrite=False 인데 중복 이름이면 silent skip (production 에선 다이얼로그가 막음)."""
+    import json
+
+    from gah.ui.library_view import LibraryView
+
+    store, _ = populated_store
+    store.save_search(None, "duplicate", json.dumps({"query": "old"}))
+
+    view = LibraryView(store)
+    view.set_config(config_default)
+    view.set_label_registry(registry_with_axes)
+    view.search_input.setText("new_text")
+
+    # overwrite=False 로 중복 이름 → 덮어써지지 않아야.
+    view._side_panel.request_save_with_name("duplicate")
+    _qwait(50)
+
+    row = store.get_saved_search(None, "duplicate")
+    payload = json.loads(row.query_json)
+    # 원본 "old" 가 보존되어야 (overwrite 인텐트 없으면 무시).
+    assert payload["query"] == "old"
 
 
 def test_chip_selection_triggers_search_with_labels_all(

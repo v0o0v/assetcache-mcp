@@ -139,6 +139,12 @@ class LibraryView(QWidget):
             self._side_panel.weightsChanged.connect(self._on_filter_changed)
             self._side_panel.savedSearchActivated.connect(self._on_saved_search_activated)
             self._side_panel.saveCurrentRequested.connect(self._on_save_current_requested)
+            self._side_panel.savedSearchDeleteRequested.connect(
+                self._on_saved_search_delete_requested,
+            )
+            self._side_panel.savedSearchRenameRequested.connect(
+                self._on_saved_search_rename_requested,
+            )
             self._right_layout.addWidget(self._side_panel)
             # 저장된 검색 초기 로드 (global = project_id None).
             self._side_panel.reload_saved_searches(None)
@@ -342,8 +348,11 @@ class LibraryView(QWidget):
         # 즉시 한 번 검색 (디바운스 우회).
         self._run_search()
 
-    def _on_save_current_requested(self, name: str) -> None:
-        """우측 패널 "현재 검색 저장…" 클릭 → 현재 SearchRequest 핵심만 JSON 직렬화."""
+    def _build_save_payload(self) -> dict:
+        """현재 검색 상태 (search_input + chip + filter) → SearchRequest JSON 페이로드.
+
+        MCP `save_search` 와 같은 포맷 (_schema_version=1, project_id 제외).
+        """
         text = self.search_input.text().strip()
         chip_mode = "all"
         chip_dump: list[dict] = []
@@ -353,8 +362,7 @@ class LibraryView(QWidget):
         fb_kind = None
         if self._filter_bar is not None:
             fb_kind = self._filter_bar.current_filters().get("kind")
-        # MCP save_search 와 같은 JSON 포맷 (project_id 제외, _schema_version=1).
-        payload: dict = {
+        return {
             "query": text,
             "label_query": text if (text and self._registry is not None) else None,
             "kind": fb_kind,
@@ -364,10 +372,72 @@ class LibraryView(QWidget):
             "count": 20,
             "_schema_version": 1,
         }
+
+    def _on_save_current_requested(self, name: str, overwrite: bool) -> None:
+        """우측 패널 "현재 검색 저장…" / 우클릭 덮어쓰기 → JSON 직렬화 + INSERT/UPSERT.
+
+        M4 follow-up:
+        - ``overwrite=True`` → ``store.upsert_saved_search`` (덮어쓰기 명시 의사)
+        - ``overwrite=False`` → ``store.save_search`` (중복 시 IntegrityError 로
+          silent skip — production 다이얼로그가 미리 차단해서 도달 안 함)
+        """
+        import sqlite3 as _sq
+
+        payload = self._build_save_payload()
+        payload_json = json.dumps(payload)
         try:
-            self._store.save_search(None, name, json.dumps(payload))
+            if overwrite:
+                self._store.upsert_saved_search(None, name, payload_json)
+            else:
+                self._store.save_search(None, name, payload_json)
+        except _sq.IntegrityError:
+            log.warning(
+                "save_search duplicate without overwrite intent: %s (production "
+                "dialog should have caught this)",
+                name,
+            )
+            return
         except Exception:
             log.exception("save_search failed: %s", name)
+            return
+        if self._side_panel is not None:
+            self._side_panel.reload_saved_searches(None)
+
+    def _on_saved_search_delete_requested(self, name: str) -> None:
+        """우측 패널 우클릭 → 삭제 확인 → savedSearchDeleteRequested → store."""
+        try:
+            ok = self._store.delete_saved_search(None, name)
+        except Exception:
+            log.exception("delete_saved_search failed: %s", name)
+            return
+        if not ok:
+            log.warning("saved_search not found for delete: %s", name)
+            return
+        if self._side_panel is not None:
+            self._side_panel.reload_saved_searches(None)
+
+    def _on_saved_search_rename_requested(
+        self, old_name: str, new_name: str,
+    ) -> None:
+        """우측 패널 우클릭 → 이름 수정 → savedSearchRenameRequested → store."""
+        import sqlite3 as _sq
+
+        if not new_name or new_name == old_name:
+            return
+        row = self._store.get_saved_search(None, old_name)
+        if row is None:
+            log.warning("rename target not found: %s", old_name)
+            return
+        try:
+            self._store.rename_saved_search(row.id, new_name)
+        except _sq.IntegrityError:
+            log.warning(
+                "rename collision: %s → %s (production dialog should have caught)",
+                old_name, new_name,
+            )
+            return
+        except Exception:
+            log.exception("rename_saved_search failed")
             return
         if self._side_panel is not None:
             self._side_panel.reload_saved_searches(None)

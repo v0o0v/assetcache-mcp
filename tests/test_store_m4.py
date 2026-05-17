@@ -207,3 +207,51 @@ def test_delete_project_cascades_saved_and_feedback(populated_store) -> None:
     assert store.feedback_records_for_project(
         pid, asset_ids=None, within_seconds=30 * 86400,
     ) == {}
+
+
+# ── M4 follow-up: upsert + rename ──────────────────────────────────────
+
+
+def test_upsert_saved_search_inserts_when_not_exist(populated_store) -> None:
+    store, _ = populated_store
+    pid = store.upsert_project("proj_upsert_new").id
+    sid = store.upsert_saved_search(pid, "new_name",
+                                     json.dumps({"query": "a"}))
+    assert isinstance(sid, int) and sid > 0
+    row = store.get_saved_search(pid, "new_name")
+    assert row is not None
+    assert json.loads(row.query_json)["query"] == "a"
+
+
+def test_upsert_saved_search_overwrites_when_exist(populated_store) -> None:
+    """기존 (project_id, name) 행이 있으면 query_json 만 교체."""
+    store, _ = populated_store
+    pid = store.upsert_project("proj_upsert_over").id
+    sid1 = store.save_search(pid, "overwrite_target", json.dumps({"query": "old"}))
+    sid2 = store.upsert_saved_search(pid, "overwrite_target",
+                                      json.dumps({"query": "new"}))
+    # 같은 행 ID 가 유지되어야 (UPDATE 라서).
+    assert sid1 == sid2
+    row = store.get_saved_search(pid, "overwrite_target")
+    assert json.loads(row.query_json)["query"] == "new"
+
+
+def test_rename_saved_search_changes_name(populated_store) -> None:
+    store, _ = populated_store
+    pid = store.upsert_project("proj_rename").id
+    sid = store.save_search(pid, "old_name", json.dumps({"q": "x"}))
+    store.rename_saved_search(sid, "new_name")
+    assert store.get_saved_search(pid, "old_name") is None
+    assert store.get_saved_search(pid, "new_name") is not None
+
+
+def test_rename_saved_search_raises_on_duplicate(populated_store) -> None:
+    """같은 project_id 안에서 target name 이 이미 존재하면 IntegrityError."""
+    import sqlite3
+
+    store, _ = populated_store
+    pid = store.upsert_project("proj_rename_conflict").id
+    sid_a = store.save_search(pid, "name_a", json.dumps({"q": "1"}))
+    store.save_search(pid, "name_b", json.dumps({"q": "2"}))
+    with pytest.raises(sqlite3.IntegrityError):
+        store.rename_saved_search(sid_a, "name_b")

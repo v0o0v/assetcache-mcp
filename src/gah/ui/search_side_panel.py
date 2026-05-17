@@ -3,6 +3,11 @@
 LibraryView 우측 사이드 패널.  슬라이더가 ``Config.weight_*`` 와 양방향
 바인딩 — 슬라이더 변경 시 즉시 Config 갱신.  저장된 검색은 ``Store`` 의
 ``saved_searches`` 테이블에서 가져온다.
+
+M4 follow-up (2026-05-17):
+- 우클릭 컨텍스트 메뉴 — "이름 수정" / "삭제"
+- 저장 다이얼로그 — 이름 중복 감지 시 덮어쓰기 확인 다이얼로그
+- 신호 시그니처 — ``saveCurrentRequested(str, bool)`` (overwrite 플래그)
 """
 
 from __future__ import annotations
@@ -10,6 +15,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QCoreApplication, Qt, Signal
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
@@ -17,6 +23,8 @@ from PySide6.QtWidgets import (
     QLabel,
     QListWidget,
     QListWidgetItem,
+    QMenu,
+    QMessageBox,
     QPushButton,
     QSlider,
     QVBoxLayout,
@@ -79,11 +87,13 @@ _PRESETS = {
 
 
 class SearchSidePanel(QWidget):
-    """6 슬라이더 + 3 프리셋 + 저장된 검색 패널."""
+    """6 슬라이더 + 3 프리셋 + 저장된 검색 (우클릭 메뉴) 패널."""
 
     weightsChanged = Signal()
-    savedSearchActivated = Signal(str)
-    saveCurrentRequested = Signal(str)
+    savedSearchActivated = Signal(str)                # (name)
+    saveCurrentRequested = Signal(str, bool)          # (name, overwrite)
+    savedSearchDeleteRequested = Signal(str)          # (name)
+    savedSearchRenameRequested = Signal(str, str)     # (old_name, new_name)
 
     def __init__(
         self,
@@ -130,11 +140,15 @@ class SearchSidePanel(QWidget):
             pl.addWidget(b)
         root.addWidget(preset_box)
 
-        # 저장된 검색 리스트.
+        # 저장된 검색 리스트 + 우클릭 컨텍스트 메뉴.
         root.addWidget(QLabel(_tr("저장된 검색")))
         self._saved_list = QListWidget(self)
         self._saved_list.itemDoubleClicked.connect(
             lambda it: self.savedSearchActivated.emit(it.text()),
+        )
+        self._saved_list.setContextMenuPolicy(Qt.CustomContextMenu)
+        self._saved_list.customContextMenuRequested.connect(
+            self._on_saved_list_context_menu,
         )
         root.addWidget(self._saved_list)
 
@@ -181,9 +195,26 @@ class SearchSidePanel(QWidget):
         """저장된 검색 더블클릭 동일 — 시그널 발화 헬퍼."""
         self.savedSearchActivated.emit(name)
 
+    def name_exists(self, name: str) -> bool:
+        """저장된 검색 이름 중복 감지 — production 다이얼로그 분기에 사용."""
+        return self._store.get_saved_search(getattr(self, "_current_project_id", None),
+                                              name) is not None
+
     def request_save_with_name(self, name: str) -> None:
-        """다이얼로그 우회 — 테스트가 직접 이름 주입."""
-        self.saveCurrentRequested.emit(name)
+        """다이얼로그 우회 — overwrite=False 로 emit (테스트 헬퍼)."""
+        self.saveCurrentRequested.emit(name, False)
+
+    def request_overwrite_save(self, name: str) -> None:
+        """다이얼로그 우회 — overwrite=True 로 emit (테스트 헬퍼)."""
+        self.saveCurrentRequested.emit(name, True)
+
+    def request_delete(self, name: str) -> None:
+        """다이얼로그 우회 — savedSearchDeleteRequested(name) (테스트 헬퍼)."""
+        self.savedSearchDeleteRequested.emit(name)
+
+    def request_rename(self, old_name: str, new_name: str) -> None:
+        """다이얼로그 우회 — savedSearchRenameRequested(old, new) (테스트 헬퍼)."""
+        self.savedSearchRenameRequested.emit(old_name, new_name)
 
     def bind_config(self, config: "Config") -> None:
         """Config 인스턴스 교체 — 슬라이더 값을 새 Config 기준으로 리프레시."""
@@ -205,8 +236,74 @@ class SearchSidePanel(QWidget):
         self.weightsChanged.emit()
 
     def _on_save_clicked(self) -> None:
-        # 다이얼로그로 이름 입력 (테스트는 request_save_with_name 우회 사용).
+        # 1) 이름 입력 다이얼로그.
         text, ok = QInputDialog.getText(self, _tr("저장된 검색 이름"),
                                          _tr("이름:"))
-        if ok and text.strip():
-            self.saveCurrentRequested.emit(text.strip())
+        if not ok or not text.strip():
+            return
+        name = text.strip()
+        # 2) 중복 감지 + 덮어쓰기 확인.
+        if self.name_exists(name):
+            reply = QMessageBox.question(
+                self,
+                _tr("이미 존재"),
+                _tr("'{name}' 은 이미 존재합니다. 덮어쓸까요?").format(name=name),
+                QMessageBox.Yes | QMessageBox.Cancel,
+                QMessageBox.Cancel,
+            )
+            if reply != QMessageBox.Yes:
+                return
+            self.saveCurrentRequested.emit(name, True)
+        else:
+            self.saveCurrentRequested.emit(name, False)
+
+    def _on_saved_list_context_menu(self, pos) -> None:
+        """저장된 검색 리스트 우클릭 — 이름 수정 / 삭제 메뉴."""
+        item = self._saved_list.itemAt(pos)
+        if item is None:
+            return
+        name = item.text()
+        menu = QMenu(self._saved_list)
+        rename_act = QAction(_tr("이름 수정…"), menu)
+        delete_act = QAction(_tr("삭제"), menu)
+        menu.addAction(rename_act)
+        menu.addAction(delete_act)
+        chosen = menu.exec(self._saved_list.viewport().mapToGlobal(pos))
+        if chosen is rename_act:
+            self._prompt_rename(name)
+        elif chosen is delete_act:
+            self._prompt_delete(name)
+
+    def _prompt_rename(self, old_name: str) -> None:
+        new_name, ok = QInputDialog.getText(
+            self,
+            _tr("이름 수정"),
+            _tr("새 이름:"),
+            text=old_name,
+        )
+        if not ok:
+            return
+        new_name = new_name.strip()
+        if not new_name or new_name == old_name:
+            return
+        # 중복 감지 — UNIQUE 충돌은 store 가 잡아내지만 미리 안내가 친절.
+        if self.name_exists(new_name):
+            QMessageBox.warning(
+                self,
+                _tr("이미 존재"),
+                _tr("'{name}' 이 이미 존재합니다. 다른 이름을 사용하세요.")
+                    .format(name=new_name),
+            )
+            return
+        self.savedSearchRenameRequested.emit(old_name, new_name)
+
+    def _prompt_delete(self, name: str) -> None:
+        reply = QMessageBox.question(
+            self,
+            _tr("삭제 확인"),
+            _tr("'{name}' 을 삭제할까요?").format(name=name),
+            QMessageBox.Yes | QMessageBox.Cancel,
+            QMessageBox.Cancel,
+        )
+        if reply == QMessageBox.Yes:
+            self.savedSearchDeleteRequested.emit(name)
