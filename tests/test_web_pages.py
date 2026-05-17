@@ -320,3 +320,10 @@ def test_library_page_sse_swap_user_pick_request(client):
     r = client.get("/library")
     assert r.status_code == 200
     assert 'user_pick_request' in r.text
+
+
+def test_library_page_loads_htmx_json_enc_extension(client):
+    """채택 버튼이 JSON body 로 POST 하려면 htmx-json-enc.js 가 로드돼야 한다."""
+    r = client.get("/library")
+    assert r.status_code == 200
+    assert "htmx-json-enc.js" in r.text
