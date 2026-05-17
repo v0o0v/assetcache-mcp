@@ -6,6 +6,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from .packs import _list_packs_dicts
+
 
 router = APIRouter(tags=["pages"])
 
@@ -34,8 +36,6 @@ def page_packs(request: Request) -> HTMLResponse:
 
     packs 를 인라인으로 렌더해 초기 로드 시 추가 왕복을 없앤다.
     """
-    from .packs import _list_packs_dicts  # 순환 import 방지용 지연 import
-
     templates = request.app.state.templates
     deps = request.app.state.deps
     packs = _list_packs_dicts(deps.store)
