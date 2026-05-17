@@ -282,7 +282,9 @@ async def ui_search_results(request: Request) -> HTMLResponse:
 
     templates = request.app.state.templates
     ctx = {"request": request, **result}
-    return templates.TemplateResponse(request=request, name="_results_grid.html", context=ctx)
+    # offset>0 은 페이지네이션 — toolbar 없이 카드만 반환해 중복을 방지한다.
+    template_name = "_results_grid.html" if body.offset == 0 else "_results_cards_only.html"
+    return templates.TemplateResponse(request=request, name=template_name, context=ctx)
 
 
 # ── /ui/asset-detail/{asset_id} GET ──────────────────────────────────

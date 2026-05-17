@@ -209,3 +209,20 @@ def test_default_state_sort_score_falls_back_to_added_desc(populated_client):
     assert r.status_code == 200
     body = r.json()
     assert len(body["rows"]) == 6
+
+
+# ── 페이지네이션 toolbar 중복 방지 (코드 리뷰 피드백) ────────────────────────
+
+
+def test_ui_search_results_initial_includes_toolbar(client):
+    """offset=0 응답은 toolbar 포함 (전체 fragment)."""
+    r = client.post("/ui/search-results", json={"query": "", "count": 5, "offset": 0})
+    assert r.status_code == 200
+    assert "results-toolbar" in r.text
+
+
+def test_ui_search_results_pagination_no_duplicate_toolbar(client):
+    """offset>0 페이지네이션 응답은 toolbar 없이 카드만 — 중복 방지."""
+    r = client.post("/ui/search-results", json={"query": "", "count": 5, "offset": 5})
+    assert r.status_code == 200
+    assert "results-toolbar" not in r.text
