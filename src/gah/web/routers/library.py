@@ -556,3 +556,49 @@ def api_thumbnail(asset_id: int, request: Request) -> Response:
             "Cache-Control": "public, max-age=86400",
         },
     )
+
+
+# ── /api/usage/summary + /ui/usage/detail ─────────────────────────────
+
+_USAGE_WINDOW_SECONDS = 2_592_000  # 30일
+
+
+@router.get("/usage/summary")
+def api_usage_summary(request: Request, project_id: int | None = None) -> dict[str, Any]:
+    """프로젝트 통일성/페널티 요약 반환.
+
+    project_id 없으면 글로벌 단순화 (v1 — top_packs=[], rejected_count=0).
+    project_id 있으면 Store.project_usage_summary 결과를 변환.
+    """
+    if project_id is None:
+        return {
+            "top_packs": [],
+            "rejected_count": 0,
+            "window_seconds": _USAGE_WINDOW_SECONDS,
+        }
+    deps = request.app.state.deps
+    summary = deps.store.project_usage_summary(project_id)
+    # pack_uses: {pack_id: count} → 상위 5개 팩
+    sorted_packs = sorted(summary.pack_uses.items(), key=lambda x: x[1], reverse=True)[:5]
+    top_packs = [
+        {"pack_id": pid, "pack_name": str(pid), "uses": cnt}
+        for pid, cnt in sorted_packs
+    ]
+    # rejected_count: feedback_records 는 별도 API — v1 은 0 고정
+    return {
+        "top_packs": top_packs,
+        "rejected_count": 0,
+        "window_seconds": _USAGE_WINDOW_SECONDS,
+    }
+
+
+@router_ui.get("/usage/detail", response_class=HTMLResponse)
+def ui_usage_detail(request: Request, project_id: int | None = None) -> HTMLResponse:
+    """통일성/페널티 상세 모달 fragment."""
+    summary = api_usage_summary(request, project_id=project_id)
+    templates = request.app.state.templates
+    return templates.TemplateResponse(
+        request=request,
+        name="_modal_usage.html",
+        context={"summary": summary},
+    )
