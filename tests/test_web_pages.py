@@ -263,10 +263,12 @@ def test_library_page_has_b_match_mode(client):
     assert "NOT" in r.text
 
 
-def test_library_page_has_c_placeholder(client):
-    """C 탭 placeholder 내용이 렌더된다."""
+def test_library_page_has_c_view_mode_toggle(client):
+    """C 탭 실 구현 — opt-group + $store.search.viewMode + 카드 크기 가 렌더된다."""
     r = client.get("/library")
-    assert "Phase 3C" in r.text
+    assert "opt-group" in r.text
+    assert "$store.search.viewMode" in r.text
+    assert "카드 크기" in r.text
 
 
 def test_library_page_has_d_placeholder(client):

@@ -534,3 +534,43 @@ html, body {
   background: var(--card-bg); color: var(--fg);
   border: 1px solid var(--border);
 }
+
+/* === C 탭 표시 옵션 === */
+.opt-group {
+  margin-bottom: 20px;
+}
+.opt-group h4 {
+  font-size: 0.85em;
+  font-weight: 600;
+  opacity: 0.7;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.opt-btn-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.opt-select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--fg);
+  font-size: 0.9em;
+  cursor: pointer;
+}
+.opt-check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.opt-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9em;
+  cursor: pointer;
+}
