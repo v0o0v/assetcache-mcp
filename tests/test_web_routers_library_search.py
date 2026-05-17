@@ -92,3 +92,27 @@ def test_api_search_offset_returns_different_rows(client, deps_fixture):
     if ids1 and ids2:
         # r2 는 r1[5:10] 과 동일해야 함
         assert ids2 == ids1[5:10]
+
+
+# ── Task 2.8: 페이지네이션 (더 보기 버튼) ────────────────────────────────
+
+
+def test_ui_search_results_no_load_more_when_empty(client):
+    """빈 라이브러리 → next_offset=None → 더 보기 버튼 없음."""
+    r = client.post("/ui/search-results", json={"query": "", "count": 100, "offset": 0})
+    assert r.status_code == 200
+    assert "load-more" not in r.text
+
+
+def test_ui_search_results_load_more_button(client, deps_fixture):
+    """빈 라이브러리 (count=5, offset=0) → next_offset=None → 더 보기 X."""
+    r = client.post("/ui/search-results", json={"query": "", "count": 5, "offset": 0})
+    assert r.status_code == 200
+    # 빈 라이브러리에는 더 보기 없음
+    assert "load-more" not in r.text
+
+
+def test_pagination_passes_offset_to_handler(client):
+    """offset=5 + count=5 → 정상 처리 (200)."""
+    r = client.post("/ui/search-results", json={"query": "", "count": 5, "offset": 5})
+    assert r.status_code == 200
