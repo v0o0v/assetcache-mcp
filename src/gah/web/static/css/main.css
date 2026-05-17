@@ -574,3 +574,143 @@ html, body {
   font-size: 0.9em;
   cursor: pointer;
 }
+
+/* === D 탭 — 프리셋 + 슬라이더 === */
+.side-panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-heading {
+  font-size: 0.85em;
+  font-weight: 600;
+  opacity: 0.7;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg);
+}
+
+/* 프리셋 섹션 */
+.preset-section {
+  margin-bottom: 4px;
+}
+
+.preset-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.preset-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--fg);
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: background 120ms, border-color 120ms;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preset-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.preset-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.preset-desc {
+  margin: 0;
+  font-size: 0.8em;
+  color: var(--fg);
+  opacity: 0.7;
+  line-height: 1.4;
+  min-height: 1.4em;
+}
+
+/* 슬라이더 섹션 */
+.weights-section {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.weights-summary {
+  padding: 8px 12px;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  color: var(--fg);
+  opacity: 0.8;
+}
+
+.weights-summary:hover {
+  opacity: 1;
+}
+
+.sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 12px 14px;
+}
+
+.slider-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+
+.slider-label {
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slider-row input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.slider-output {
+  min-width: 36px;
+  text-align: right;
+  font-size: 0.8em;
+  color: var(--fg);
+  opacity: 0.7;
+}
+
+/* Phase 3D-2 placeholder */
+.phase-3d2-placeholder {
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.placeholder-note {
+  margin: 0;
+  font-size: 0.8em;
+  color: var(--fg);
+  opacity: 0.5;
+  font-style: italic;
+}

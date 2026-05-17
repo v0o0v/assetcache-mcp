@@ -426,6 +426,98 @@ def ui_audio_player(asset_id: int, request: Request) -> HTMLResponse:
     )
 
 
+# ── 가중치 공통 헬퍼 ──────────────────────────────────────────────────
+
+
+def _apply_weights_to_config(deps: Any, w: dict[str, float]) -> None:
+    """Config 가중치 6채널을 runtime 에 즉시 반영.
+
+    Config 는 mutable @dataclass (frozen=False) 이므로 attribute 직접 할당.
+    HybridSearcher 는 hybrid() 호출 시마다 self.config.weight_* 를 읽으므로
+    동일 Config 객체를 mutate 하면 다음 검색부터 즉시 반영된다.
+    WebDeps 는 frozen=True 라 deps 자체는 교체 불가지만, deps.config 가
+    mutable 이라 내부 필드 직접 할당으로 충분.
+    """
+    deps.config.weight_semantic = float(w["semantic"])
+    deps.config.weight_keyword = float(w["keyword"])
+    deps.config.weight_label_match = float(w["label_match"])
+    deps.config.weight_consistency = float(w["consistency"])
+    deps.config.weight_recency = float(w["recency"])
+    deps.config.weight_feedback = float(w["feedback"])
+
+
+# ── /api/preset/{name} POST ────────────────────────────────────────────
+
+
+PRESETS: dict[str, dict[str, float]] = {
+    "balanced": {
+        "semantic": 0.35,
+        "keyword": 0.10,
+        "label_match": 0.20,
+        "consistency": 0.20,
+        "recency": 0.05,
+        "feedback": 0.10,
+    },
+    "consistency": {
+        "semantic": 0.25,
+        "keyword": 0.05,
+        "label_match": 0.20,
+        "consistency": 0.40,
+        "recency": 0.05,
+        "feedback": 0.05,
+    },
+    "novelty": {
+        "semantic": 0.40,
+        "keyword": 0.15,
+        "label_match": 0.20,
+        "consistency": 0.05,
+        "recency": 0.10,
+        "feedback": 0.10,
+    },
+}
+
+
+@router.post("/preset/{name}")
+def api_preset(name: str, request: Request) -> dict[str, Any]:
+    """가중치 프리셋 적용 — balanced / consistency / novelty 3가지.
+
+    Config 를 즉시 갱신하고 프리셋 이름 + 적용된 가중치를 반환한다.
+    디스크 저장은 하지 않음 (런타임 갱신만). 다음 부팅 시 디폴트로 복귀.
+    """
+    if name not in PRESETS:
+        raise HTTPException(status_code=404, detail=f"unknown preset: {name}")
+    deps = request.app.state.deps
+    weights = PRESETS[name]
+    _apply_weights_to_config(deps, weights)
+    return {"preset": name, "weights": weights}
+
+
+# ── /api/weights POST ──────────────────────────────────────────────────
+
+
+class WeightsBody(BaseModel):
+    """POST /api/weights 입력 모델 — 6채널 가중치 (0~1 각각)."""
+
+    semantic: float = Field(ge=0, le=1)
+    keyword: float = Field(ge=0, le=1)
+    label_match: float = Field(ge=0, le=1)
+    consistency: float = Field(ge=0, le=1)
+    recency: float = Field(ge=0, le=1)
+    feedback: float = Field(ge=0, le=1)
+
+
+@router.post("/weights")
+def api_weights(body: WeightsBody, request: Request) -> dict[str, float]:
+    """슬라이더 직접 조정 — 6채널 가중치를 즉시 갱신.
+
+    합이 1이 아니어도 허용 (정규화는 frontend 책임).
+    Config 런타임 갱신만 수행 (디스크 저장 없음).
+    """
+    deps = request.app.state.deps
+    _apply_weights_to_config(deps, body.model_dump())
+    return body.model_dump()
+
+
 # ── /api/thumbnail/{asset_id} GET ─────────────────────────────────────
 
 
