@@ -29,6 +29,12 @@ dependencies = [
   "matplotlib>=3.8",
   # M3: 검색 백엔드 + MCP stdio 서버
   "mcp>=1.27,<2",
+  # M5: 웹 GUI (FastAPI + HTMX + Alpine)
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.27",
+  "jinja2>=3.1",
+  "python-multipart>=0.0.9",
+  "sse-starlette>=2",
 ]
 
 [project.optional-dependencies]
