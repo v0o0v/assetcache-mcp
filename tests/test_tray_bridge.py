@@ -130,9 +130,15 @@ def test_notify_tray_pick_count_reflects_queue_size(deps_fixture):
         tray_bridge=mock_bridge,
     )
 
-    # asyncio 루프 없이 register 를 흉내내어 _items 에 직접 주입
-    # → snapshot() 의 len 만 확인하면 충분하므로 mock 교체
-    mock_snapshot = [{"id": 1}, {"id": 2}]
+    # asyncio 루프 없이 register 를 흉내내어 _items 에 직접 주입.
+    # status="pending" 만 카운트해야 하므로 resolved/expired 가 섞여 있어도
+    # 2 가 나오는지 회귀 가드 (Phase 6 fix: 채택 후에도 1건 표시되던 버그).
+    mock_snapshot = [
+        {"id": 1, "status": "pending"},
+        {"id": 2, "status": "pending"},
+        {"id": 3, "status": "resolved"},
+        {"id": 4, "status": "expired"},
+    ]
     deps.pending_picks.snapshot = lambda: mock_snapshot  # type: ignore[method-assign]
 
     _notify_tray_pick_count(deps)

@@ -34,10 +34,15 @@ def _notify_tray_pick_count(deps: WebDeps) -> None:
 
     uvicorn worker thread 에서 호출되어도 TrayBridge 의 AutoConnection 이
     main thread 로 마샬링하므로 thread-safe 하다.
+
+    snapshot 은 모든 status (pending/resolved/expired/cancelled) 항목을 반환
+    하므로 status="pending" 만 카운트해야 채택/거부/만료 후 0 으로 감소한다.
     """
     if deps.tray_bridge is None:
         return
-    count = len(deps.pending_picks.snapshot())
+    count = sum(
+        1 for p in deps.pending_picks.snapshot() if p["status"] == "pending"
+    )
     deps.tray_bridge.pickCountChanged.emit(count)
 
 
