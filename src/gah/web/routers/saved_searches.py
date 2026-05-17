@@ -61,16 +61,12 @@ def run_saved(ss_id: int, request: Request) -> dict:
     deps = request.app.state.deps
     # last_used_at 갱신
     deps.store.update_saved_search_last_used(ss_id)
-    # 전체 목록에서 해당 ID 조회 (project_id=None + project_id 있는 것 모두 탐색)
-    # v1: project_id=None (글로벌) 만 지원, project_id 있는 것도 허용 위해 raw SQL
-    row = deps.store.conn.execute(
-        "SELECT id, name, query_json, project_id FROM saved_searches WHERE id = ?",
-        (ss_id,),
-    ).fetchone()
-    if row is None:
+    # get_saved_search_by_id 헬퍼로 조회 (project_id 무관하게 id 로 직접 탐색)
+    ss = deps.store.get_saved_search_by_id(ss_id)
+    if ss is None:
         raise HTTPException(status_code=404, detail="not found")
     return {
-        "id": row[0],
-        "name": row[1],
-        "query": json.loads(row[2]),
+        "id": ss.id,
+        "name": ss.name,
+        "query": json.loads(ss.query_json),
     }

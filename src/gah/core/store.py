@@ -462,6 +462,16 @@ class Store:
         ).fetchone()
         return _pack_row(row) if row else None
 
+    def get_pack_by_id(self, pack_id: int) -> Optional[PackRow]:
+        """pack_id 로 팩 조회. 없으면 None."""
+        row = self.conn.execute(
+            "SELECT id, name, display_name, vendor, source_url, license, description,"
+            "       enabled, added_at, scanned_at"
+            " FROM packs WHERE id = ?",
+            (pack_id,),
+        ).fetchone()
+        return _pack_row(row) if row else None
+
     def list_packs(self, *, include_disabled: bool = True) -> list[PackRow]:
         sql = (
             "SELECT id, name, display_name, vendor, source_url, license, description,"
@@ -1270,6 +1280,15 @@ class Store:
         if row is None:
             return None
         return _saved_search_row(row)
+
+    def get_saved_search_by_id(self, ss_id: int) -> "SavedSearchRow | None":
+        """저장된 검색을 id 로 직접 조회. 없으면 None."""
+        row = self.conn.execute(
+            "SELECT id, project_id, name, query_json, created_at, last_used_at"
+            " FROM saved_searches WHERE id = ?",
+            (ss_id,),
+        ).fetchone()
+        return _saved_search_row(row) if row else None
 
     # -- M4: feedback_records --------------------------------------------
 

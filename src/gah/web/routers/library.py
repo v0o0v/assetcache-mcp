@@ -345,14 +345,11 @@ def ui_asset_detail(asset_id: int, request: Request) -> HTMLResponse:
     if asset is None:
         raise HTTPException(status_code=404, detail="asset not found")
 
-    # pack_name 조회 — pack_id 로 직접 SELECT
-    pack_row = deps.store.conn.execute(
-        "SELECT name, display_name FROM packs WHERE id = ?",
-        (asset.pack_id,),
-    ).fetchone()
+    # pack_name 조회 — get_pack_by_id 헬퍼 사용
+    pack_obj = deps.store.get_pack_by_id(asset.pack_id)
     pack_name = ""
-    if pack_row:
-        pack_name = pack_row[1] or pack_row[0]
+    if pack_obj:
+        pack_name = pack_obj.display_name or pack_obj.name
 
     # 해상도·파일크기 메타 조회
     width: int | None = None
@@ -580,10 +577,11 @@ def api_usage_summary(request: Request, project_id: int | None = None) -> dict[s
     summary = deps.store.project_usage_summary(project_id)
     # pack_uses: {pack_id: count} → 상위 5개 팩
     sorted_packs = sorted(summary.pack_uses.items(), key=lambda x: x[1], reverse=True)[:5]
-    top_packs = [
-        {"pack_id": pid, "pack_name": str(pid), "uses": cnt}
-        for pid, cnt in sorted_packs
-    ]
+    top_packs = []
+    for pid, cnt in sorted_packs:
+        pack_obj = deps.store.get_pack_by_id(int(pid))
+        pack_name = (pack_obj.display_name or pack_obj.name) if pack_obj else str(pid)
+        top_packs.append({"pack_id": pid, "pack_name": pack_name, "uses": cnt})
     # rejected_count: feedback_records 는 별도 API — v1 은 0 고정
     return {
         "top_packs": top_packs,
