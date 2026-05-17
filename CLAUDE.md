@@ -23,8 +23,8 @@
 | M2 — 분석 파이프라인 + CLIP | ✅ 완료 | Pillow·numpy 기술 특성·librosa+soundfile·Ollama 클라이언트·`nomic-embed-text`·CLIP zero-shot·24축 ≈ 316 라벨 시드+`LabelRegistry`+라벨 관리 다이얼로그·분석 큐+ETA 상태바 |
 | M2.1 — 분석 큐 병렬화 패치 | ✅ 완료 | 동시성 1→3, Ollama semaphore(parallel=2), CLIP threading.Lock, SQLite write_lock+busy_timeout, GUI 250ms 디바운스 |
 | M3 — 검색 백엔드 + 통일성 + MCP | ✅ 완료 | HybridSearcher 가중합 0.40/0.15/0.20/0.20/0.05, ConsistencyScorer §4.6 표, UsageTracker, MCP stdio 12 도구 (mcp 1.27), GUI 검색 박스, `docs/MCP_USAGE_GUIDE.md` 본격화 |
-| M4 — 검색 UX 풍부화 (1.5주) | 다음 | 자연어 라벨 부울 파서·다축 필터 칩·가중치 슬라이더·저장된 검색·suggest_packs samples 풍부화 |
-| M5 — 시트 분석 + 애니메이션 (1주) | 대기 | 격자 분할·`suggest_animation_frames` |
+| M4 — 검색 UX 풍부화 | ✅ 완료 | label_query 파서 AND/OR/NOT + axis:label + bare 자동매칭, HybridSearcher 6채널 재배분 0.35/0.10/0.20/0.20/0.05/**0.10 feedback**, diversity none/mmr/round_robin, saved_searches 4 신규 MCP 도구 (12→16), feedback_records signed weight 페널티 학습 asset/pack-level, suggest_packs samples 풍부화 thumbnail+blurb, GUI 풍부 UX (LabelChipPanel/SearchSidePanel/FilterBar) |
+| M5 — 시트 분석 + 애니메이션 (1주) | 다음 | 격자 분할·Aseprite/TexturePacker JSON·`suggest_animation_frames` |
 | M6 — Unity Asset Store 임포트 (1주) | 대기 | `.unitypackage` 파서·캐시 스캐너 |
 | M7 — GUI 마감 + 패키징 (1주) | 대기 | 상세/설정/프로젝트 탭·Qt i18n·PyInstaller |
 
@@ -136,7 +136,7 @@ cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
 pytest -q
 ```
 
-`pytest -q`가 333 passed (+ 4 deselected) 로 떨어지면 준비 완료 (M0~M2.1 합 221 + M3 110). `pytest -m mcp_integration` 으로 옵트인 2 케이스 (실 `python -m gah --mcp` subprocess + JSON-RPC) 추가 검증 가능. M3 시점 검증 결과는 [`milestones/M3_verification.md`](./milestones/M3_verification.md).
+`pytest -q`가 **433 passed** (+ 4 deselected) 로 떨어지면 준비 완료 (M0~M3 합 333 + M4 100). `pytest -m mcp_integration` 으로 옵트인 2 케이스 (실 `python -m gah --mcp` subprocess + JSON-RPC, **16 도구** 응답) 추가 검증 가능. M4 시점 검증 결과는 [`milestones/M4_verification.md`](./milestones/M4_verification.md).
 
 ## 7. 자주 쓰는 명령
 
@@ -164,26 +164,26 @@ python -m gah --tray
 python -m gah --version
 ```
 
-## 8. 다음 작업 (M4)
+## 8. 다음 작업 (M5)
 
-M4 — **검색 UX 풍부화** (예상 1.5주 분량, 메모리 `project_search_ux_milestone.md`).
+M5 — **시트 분석 + 애니메이션** (예상 1주 분량, DESIGN §11).
 
-핵심 산출물 (자세한 건 M3 사이클을 본떠 `milestones/M4_plan.md`부터 작성):
+핵심 산출물 (자세한 건 M4 사이클을 본떠 `milestones/M5_plan.md`부터 작성):
 
-- `src/gah/core/label_query.py` — 자연어 라벨 부울 파서 (`"pixel art AND dark"` → `LabelFilter[]` 변환). M3 의 `SearchRequest.labels_*` 구조화 입력 위에 얹힌다.
-- GUI 라이브러리 탭 풍부 UX — 사이드 패널 라벨 칩 다중 선택, 5 채널 가중치 슬라이더, 결과 행에 `matched_labels` 칩 + 점수 시각화, "저장된 검색" 사이드바.
-- `suggest_packs` 응답의 `samples` 필드 풍부화 — 썸네일 경로 + `preview_blurb` + 사운드 미리듣기 메타.
-- 결과 다양성 부스터 — `find_asset` 에 `cross_pack_filter` 옵션 (MMR / round-robin / softmax 중 결정).
-- `report_feedback` 페널티 학습 — `search_queries` + `asset_usage` 의 negative 신호를 다음 검색 가중치에 반영.
+- `src/gah/core/sheet_splitter.py` — 격자 자동 감지 (uniform grid / non-uniform JSON manifest) + frame bounding box 추출.
+- Aseprite JSON / TexturePacker JSON 파서 — `pack/<sheet>.json` 동봉이 있으면 우선, 없으면 격자 휴리스틱.
+- `assets.sprite_meta.frame_w/frame_h/frame_count/animation_tags` 4 컬럼 활용 (M2 가 이미 스키마 준비).
+- `suggest_animation_frames(asset_id, animation)` MCP 도구 — `frame_indices` + `fps_hint` 반환 (16 → 17 도구).
+- GUI 라이브러리 탭의 시트 자산 미리보기 패널 (옵션 — M7 로 미룰 수 있음).
 
-**M4 시작 방법**
+**M5 시작 방법**
 
-1. `milestones/M4_plan.md` 작성 (M3 plan 을 템플릿 삼아)
-2. `milestones/M4_todo.md` 작성
-3. `tests/test_label_query.py`, `tests/test_library_search_ui_rich.py`, `tests/test_search_diversity.py`, `tests/test_feedback_penalty.py` 등 실패 테스트부터 작성
-4. 구현 → 통과 → `milestones/M4_verification.md`
+1. `milestones/M5_plan.md` 작성 (M4 plan 을 템플릿 삼아)
+2. `milestones/M5_todo.md` 작성
+3. `tests/test_sheet_splitter.py`, `tests/test_animation_frames.py`, `tests/test_mcp_tools_m5.py` 등 실패 테스트부터 작성
+4. 구현 → 통과 → `milestones/M5_verification.md`
 
-참고할 DESIGN 섹션: §4.8 (GUI 탭 구성), §6.5 (suggest_packs samples), §11 (마일스톤 로드맵). M3 의 `SearchRequest` 구조화 입력 + `HybridSearcher.hybrid()` 가 그대로 백엔드 — M4 는 그 위 UI/UX + 자연어 파서 + 다양성/페널티 알고리즘만 추가.
+참고할 DESIGN 섹션: §4.2.2 (스프라이트 시트), §6.6 (`suggest_animation_frames`), §11 Milestone 5. M2/M3/M4 가 깔아둔 `assets.sprite_meta` 4 frame 컬럼 + `HybridSearcher` 6채널 + `label_query` 파서 + saved_searches 가 그대로 백엔드 — M5 는 시트 분할 + frame 단위 분석 + 1 신규 MCP 도구만 추가.
 
 ## 9. 알려진 이슈·주의사항
 
