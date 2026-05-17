@@ -1039,23 +1039,45 @@ mcp.find_asset(query, project_id, ...)
 - `label_query` 혼합 AND/OR (OR-of-AND DNF) — v1 순수형만.
 - Gemma description 통합한 풍부 `preview_blurb` — v1 은 top-2 라벨만. `assets.description` 컬럼 추가가 선행 필요.
 
-### Milestone 5 — 시트 분석 + 애니메이션 (1주)
-- 격자 자동 분할, Aseprite/TexturePacker JSON 지원.
-- `suggest_animation_frames` 도구.
+### Milestone 5 — 웹 GUI 전환 + 라이브러리 리디자인 + Claude pick 인터랙션 (5.5주, 2026-05-17 신규)
+**M4 의 사용자 GUI 검증 후 4 페인** (정보 과부하 / 좌우 스크롤 가림 / 섹션 불명 / 가중치 불가해) **+ Claude → GAH 사용자 선택 인터랙션 요구** 를 동시 해결하는 큰 마일스톤.
 
-### Milestone 6 — Unity Asset Store 임포트 (1주)
+**스택 전환** — Qt 데스크톱 UI 폐기 → FastAPI + HTMX + Alpine.js 로컬 웹서버. 시스템 기본 브라우저로 `http://localhost:9874` 진입. 트레이는 Qt 백그라운드 유지 (메뉴 "메인 창 열기" → 브라우저 열기로 변경).
+
+**라이브러리 탭 리디자인**:
+- 옵션 C 레이아웃 — 상단 자연어 검색 + ⚙ 고급 토글 + 우측 슬라이드 패널 (B/C/D 탭).
+- B 탭 (정밀 필터) — 평탄 axis + 칩 검색 + FlowLayout wrap (좌우 스크롤 금지). sprite/spritesheet/sound 종류 탭.
+- C 탭 (표시 옵션) — 그리드/리스트 토글 + 카드 크기 (S/M/L) + 정렬 + 카드 메타 토글.
+- D 탭 (고급 조정) — 프리셋 우선 (균형/통일성/참신성, 슬라이더 접힘) + 저장된 검색 (M4 의 4 기능 그대로) + 통일성/페널티 요약.
+- 결과 카드 — 와이드 (썸네일 60×60 좌 + 텍스트 우). 사운드는 인라인 ▶ 클릭 재생.
+
+**Claude pick 인터랙션** — 신규 MCP 도구 `request_user_pick(candidates, reason, timeout=300)` (총 17 도구). 동기 long-poll — Claude 가 호출 후 사용자 응답까지 5분 대기 → WebSocket push 로 웹 UI 알림 → 사용자 클릭 → 응답 회신 → 자동 `record_asset_use` (source='claude_pick').
+
+**M4 Qt 위젯 4개 폐기** — `library_view.py` / `label_chip_panel.py` / `search_side_panel.py` / `filter_bar.py` + 테스트 2 파일. M4 백엔드 (search 6채널 / saved_searches / feedback_records / mcp 16 도구) 100% 보존.
+
+**신규 의존성** — `fastapi>=0.110`, `uvicorn[standard]>=0.27`, `jinja2>=3.1`, `python-multipart>=0.0.9`, `websockets>=12`. 정적 JS (HTMX + Alpine) 는 vendoring.
+
+**spec**: [`docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md`](./docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md) — 13 섹션 + 10 결정 + 5 열린 질문 (M5 plan §3.x 에서 확정).
+
+### Milestone 6 — 시트 분석 + 애니메이션 (1주, 기존 M5)
+- 격자 자동 분할, Aseprite/TexturePacker JSON 지원.
+- `suggest_animation_frames` 도구 (17 → 18).
+- 와이드 카드 우상단에 `🎞 N frames` 배지 추가 (M5 카드 컴포넌트 옵셔널 메타).
+
+### Milestone 7 — Unity Asset Store 임포트 (1주, 기존 M6)
 - 캐시 경로 자동 검출(환경변수 + Preferences 폴백) + 사용자 오버라이드.
 - `.unitypackage` 파서, 선택적 추출(이미지/사운드만), 매니페스트 자동 생성.
 - 증분 동기화, `unity_imports` 테이블, `sync_unity_asset_store` MCP 도구.
-- GUI Unity Asset Store 탭.
+- 웹 UI 의 Unity Asset Store 페이지.
 - 비공식 publisher 패널 경로는 스켈레톤만(기본 비활성), 안정성 모니터링 후 별도 마일스톤에서 본 구현.
 
-### Milestone 7 — GUI 마감 + 패키징 (1주)
-- 상세/설정/프로젝트 탭, 메타 수정, manual_override, 프로젝트 pin/block UI.
-- Qt i18n 도입 — `.ts/.qm` 한국어/영어, `Config.ui_language` 토글 (§5.3, §12 #4).
-- PyInstaller로 단일 exe (CLIP 모델 가중치 사이즈 ~600 MB~1.7 GB 포함 또는 첫 실행 시 다운로드 옵션), 자동 시작 토글, 트레이 알림.
+### Milestone 8 — 패키징 + i18n + 풍부 UX 마감 (1~1.5주, 기존 M7)
+- 웹 UI i18n — Jinja2 + `babel` (또는 단순 JSON 변환기), `Config.ui_language` (`"ko"`/`"en"`/`"auto"`). M5 의 모든 사용자 노출 문자열을 `_()` 또는 `tr()` 로 감싸 둠.
+- Pack/프로젝트 탭 풍부 UX (메타 수정, manual_override, 프로젝트 pin/block, 사용 분포 차트).
+- 다크/라이트 모드 토글 UI (M5 는 prefers-color-scheme 자동만).
+- PyInstaller 단일 exe (CLIP 모델 가중치 ~600 MB~1.7 GB 포함 또는 첫 실행 시 다운로드), 자동 시작 토글, 트레이 알림.
 
-총 12주 가량을 v1 목표로 잡는다 (M2 CLIP +1주 + M4 검색 UX +1.5주). 각 마일스톤 끝에 Claude Code에서 직접 써보며 검증한다.
+총 v1 일정 ≈ 17.5주 (M2 CLIP +1주 + M4 검색 UX +1.5주 + M5 웹 GUI +5.5주). 각 마일스톤 끝에 Claude Code에서 직접 써보며 검증한다.
 
 
 ## 12. 열린 질문 / 결정 보류

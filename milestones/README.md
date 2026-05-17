@@ -33,10 +33,11 @@ M{N}_verification.md  # 자동/수동 검증 결과
 | [M2 — 분석 파이프라인 + CLIP](./M2_plan.md) | ✅ 완료 | 134/134 (전체 204/204, `clip_integration` 2 옵트인 제외) | 수동 시나리오는 `M2_verification.md` §3 | Pillow·numpy 기술 특성·librosa+soundfile·Ollama 클라이언트(OpenAI 호환+네이티브 폴백)·`nomic-embed-text`·CLIP zero-shot 라벨러·24축 ≈ 316 라벨 시드+`LabelRegistry`+라벨 관리 다이얼로그·분석 큐+ETA 상태바 |
 | [M2.1 — 분석 큐 병렬화 패치](./M2.1_plan.md) | ✅ 완료 | 16/16 (전체 221/221, `clip_integration` 2 옵트인 제외) | 수동 시나리오는 `M2.1_verification.md` §3 | 동시성 1→3, Ollama semaphore(parallel=2), CLIP threading.Lock, SQLite write_lock+busy_timeout, GUI 250ms 디바운스 |
 | [M3 — 검색 백엔드 + 통일성 + MCP](./M3_plan.md) | ✅ 완료 | 112/112 (전체 333/333, `clip_integration` 2 + `mcp_integration` 2 옵트인 제외) | 수동 시나리오는 `M3_verification.md` §4 (GUI 검색 박스 1 항목, 검증 중 발견된 `EmbeddingEncoder.decode_vector` 인터페이스 갭 fix + 회귀 가드 2 §3.6 참고) | HybridSearcher 가중합 0.40/0.15/0.20/0.20/0.05·ConsistencyScorer §4.6 표·UsageTracker·MCP stdio 12 도구 (mcp 1.27)·GUI 검색 박스·`docs/MCP_USAGE_GUIDE.md` 본격화 |
-| [M4 — 검색 UX 풍부화](./M4_plan.md) | ✅ 완료 | 100/100 (전체 433/433, `clip_integration` 2 + `mcp_integration` 2 옵트인 제외) | 수동 시나리오는 `M4_verification.md` §4 (GUI 풍부 UX 4 단계 — 좌 칩 패널 + 우 슬라이더/저장 패널 + label_query 입력 + 저장된 검색 라운드트립) | label_query 파서 AND/OR/NOT + axis:label + bare 자동매칭·HybridSearcher 6채널 재배분 0.35/0.10/0.20/0.20/0.05/0.10 feedback·diversity none/mmr/round_robin·saved_searches 4 신규 MCP 도구 (12→16)·feedback_records signed weight 페널티 학습 asset/pack-level·suggest_packs samples 풍부화 thumbnail+blurb·GUI 풍부 UX (LabelChipPanel/SearchSidePanel/FilterBar) |
-| M5 — 시트 분석 + 애니메이션 (1주) | 다음 | — | — | 격자 자동 분할·Aseprite/TexturePacker JSON·suggest_animation_frames |
-| M6 — Unity Asset Store 임포트 (1주) | 대기 | — | — | .unitypackage 파서·캐시 스캐너 |
-| M7 — GUI 마감 + 패키징 (1주) | 대기 | — | — | 상세/설정/프로젝트 탭·Qt i18n·PyInstaller |
+| [M4 — 검색 UX 풍부화](./M4_plan.md) | ✅ 완료 (머지 대기) | 100 + follow-up 19 (전체 452/452, `clip_integration` 2 + `mcp_integration` 2 옵트인 제외) | 수동 시나리오는 `M4_verification.md` §4 (GUI 풍부 UX 4 단계 — 좌 칩 패널 + 우 슬라이더/저장 패널 + label_query 입력 + 저장된 검색 라운드트립). **사용자 검증 보고로 4 페인 도출 → M5 spec** | label_query 파서·HybridSearcher 6채널 재배분·diversity·saved_searches 4 신규 MCP (12→16)·feedback_records signed weight 페널티·suggest_packs samples 풍부화·GUI 풍부 UX (M5 가 폐기 예정) |
+| **M5 — 웹 GUI 전환 + 라이브러리 리디자인 + Claude pick** (5.5주) | **다음** (spec 작성됨) | — | — | FastAPI + HTMX + Alpine 로컬 웹서버 / 옵션 C 레이아웃 (상단 검색 + ⚙ 고급 + 우측 슬라이드 B/C/D 탭) / 와이드 카드 그리드 (썸네일 60×60 좌 + 텍스트 우, 사운드 인라인 ▶) / `request_user_pick` 신규 MCP 도구 (동기 long-poll 5분) / Qt 위젯 4개 + 테스트 2 파일 폐기. spec: [`docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md`](../docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md) |
+| M6 — 시트 분석 + 애니메이션 (1주) | 대기 | — | — | 격자 자동 분할·Aseprite/TexturePacker JSON·suggest_animation_frames |
+| M7 — Unity Asset Store 임포트 (1주) | 대기 | — | — | .unitypackage 파서·캐시 스캐너 |
+| M8 — 패키징 + i18n (1주) | 대기 | — | — | PyInstaller/Tauri·gettext/Jinja i18n (Pack/프로젝트 탭 풍부 UX 도 여기로) |
 
 ## 새 마일스톤 시작 방법
 
