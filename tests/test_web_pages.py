@@ -213,3 +213,66 @@ def test_resize_handle_has_mousedown(client):
     """resize-handle 요소가 @mousedown 이벤트를 처리한다."""
     r = client.get("/library")
     assert "mousedown" in r.text
+
+
+# ── Task 3.3: B/C/D 탭 헤더 + 컨테이너 ─────────────────────────────────
+
+
+def test_side_panel_b_partial_exists():
+    """_side_panel_b.html partial 파일이 존재한다."""
+    from pathlib import Path
+    p = Path(__file__).parent.parent / "src/gah/web/templates/_side_panel_b.html"
+    assert p.exists(), f"{p} 파일이 없음"
+
+
+def test_side_panel_c_partial_exists():
+    """_side_panel_c.html partial 파일이 존재한다."""
+    from pathlib import Path
+    p = Path(__file__).parent.parent / "src/gah/web/templates/_side_panel_c.html"
+    assert p.exists(), f"{p} 파일이 없음"
+
+
+def test_side_panel_d_partial_exists():
+    """_side_panel_d.html partial 파일이 존재한다."""
+    from pathlib import Path
+    p = Path(__file__).parent.parent / "src/gah/web/templates/_side_panel_d.html"
+    assert p.exists(), f"{p} 파일이 없음"
+
+
+def test_library_page_has_side_tabs(client):
+    """library 페이지에 class="side-tabs" 탭 헤더가 존재한다."""
+    r = client.get("/library")
+    assert r.status_code == 200
+    assert 'class="side-tabs"' in r.text
+
+
+def test_library_page_has_tab_labels(client):
+    """탭 헤더에 B 필터, C 표시, D 조정 레이블이 존재한다."""
+    r = client.get("/library")
+    assert "B 필터" in r.text
+    assert "C 표시" in r.text
+    assert "D 조정" in r.text
+
+
+def test_library_page_has_b_placeholder(client):
+    """B 탭 placeholder 내용이 렌더된다 (Jinja include)."""
+    r = client.get("/library")
+    assert "Phase 3B" in r.text
+
+
+def test_library_page_has_c_placeholder(client):
+    """C 탭 placeholder 내용이 렌더된다."""
+    r = client.get("/library")
+    assert "Phase 3C" in r.text
+
+
+def test_library_page_has_d_placeholder(client):
+    """D 탭 placeholder 내용이 렌더된다."""
+    r = client.get("/library")
+    assert "Phase 3D" in r.text
+
+
+def test_side_tab_content_has_x_show(client):
+    """탭 컨테이너가 x-show 로 activeTab 을 확인한다."""
+    r = client.get("/library")
+    assert "activeTab" in r.text

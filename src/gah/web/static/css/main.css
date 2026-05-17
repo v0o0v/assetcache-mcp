@@ -108,6 +108,40 @@ html, body {
 }
 .side-panel-placeholder .hint { font-size: 0.85em; opacity: 0.7; }
 
+/* === 사이드 패널 B/C/D 탭 === */
+.side-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.side-tabs button {
+  flex: 1;
+  padding: 8px 4px;
+  background: var(--card-bg);
+  color: var(--fg);
+  border: none;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 0.85em;
+  font-weight: 500;
+  transition: background 0.1s;
+}
+.side-tabs button:last-child { border-right: none; }
+.side-tabs button.active {
+  background: var(--accent);
+  color: white;
+}
+.side-tabs button:hover:not(.active) { background: var(--chip-bg); }
+
+.side-tab-content { padding: 4px 0; }
+
+.placeholder-content { color: var(--fg); opacity: 0.7; padding: 8px 0; }
+.placeholder-content h3 { margin: 0 0 8px; font-size: 0.95em; }
+.placeholder-content p { margin: 0; font-size: 0.85em; line-height: 1.5; }
+
 /* === 사이드 패널 슬라이드 transition 유틸 === */
 .side-panel-enter { transition: transform 200ms ease, opacity 200ms ease; }
 .translate-x-full { transform: translateX(100%); opacity: 0; }

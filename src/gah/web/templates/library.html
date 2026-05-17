@@ -52,9 +52,26 @@
            @mousedown.prevent="startDrag($event)"
            @mousemove.window="onDrag($event)"
            @mouseup.window="stopDrag"></div>
-      <div class="side-panel-placeholder">
-        <p>{{ _("고급 필터·표시·조정") }}</p>
-        <p class="hint">{{ _("Phase 3 에서 B/C/D 탭이 채워집니다.") }}</p>
+
+      {# B/C/D 탭 헤더 #}
+      <nav class="side-tabs">
+        <button @click="$store.advanced.activeTab='b'"
+                :class="{ active: $store.advanced.activeTab === 'b' }">{{ _("B 필터") }}</button>
+        <button @click="$store.advanced.activeTab='c'"
+                :class="{ active: $store.advanced.activeTab === 'c' }">{{ _("C 표시") }}</button>
+        <button @click="$store.advanced.activeTab='d'"
+                :class="{ active: $store.advanced.activeTab === 'd' }">{{ _("D 조정") }}</button>
+      </nav>
+
+      {# B/C/D 탭 컨테이너 — Jinja include 로 모두 렌더, Alpine x-show 로 가시성 제어 #}
+      <div class="side-tab-content" x-show="$store.advanced.activeTab === 'b'">
+        {% include "_side_panel_b.html" %}
+      </div>
+      <div class="side-tab-content" x-show="$store.advanced.activeTab === 'c'">
+        {% include "_side_panel_c.html" %}
+      </div>
+      <div class="side-tab-content" x-show="$store.advanced.activeTab === 'd'">
+        {% include "_side_panel_d.html" %}
       </div>
     </aside>
   </div>
