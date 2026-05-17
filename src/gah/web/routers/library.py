@@ -6,6 +6,7 @@
 """
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any, Literal
 
@@ -14,6 +15,9 @@ from fastapi.responses import FileResponse, HTMLResponse, Response
 from pydantic import BaseModel, Field
 
 from ..deps import resolve_asset_path
+from ...core.ollama_client import OllamaError
+
+log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["library"])
 router_ui = APIRouter(prefix="/ui", tags=["library-ui"])
@@ -202,7 +206,18 @@ def _do_search(deps: Any, body: SearchBody) -> dict[str, Any]:
         labels_any=labels_any_list,
         labels_none=labels_none_list,
     )
-    response = deps.search.hybrid(sr)
+    try:
+        response = deps.search.hybrid(sr)
+    except OllamaError as e:
+        log.warning("검색 실패 — Ollama 미가용: %s", e)
+        return {
+            "query_id": None,
+            "total": 0,
+            "rows": [],
+            "next_offset": None,
+            "error": "ollama_unavailable",
+            "error_message": "검색 서비스 (Ollama) 가 사용 가능하지 않습니다. Ollama 서버가 떠 있는지 확인하세요.",
+        }
 
     all_rows = [_row_to_dict(r) for r in response.results]
 
@@ -279,7 +294,16 @@ def api_search(body: SearchBody, request: Request) -> dict[str, Any]:
         }
     """
     deps = request.app.state.deps
-    return _do_search(deps, body)
+    result = _do_search(deps, body)
+    if result.get("error") == "ollama_unavailable":
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "503_ollama_unavailable",
+                "message": result.get("error_message", "Ollama unavailable"),
+            },
+        )
+    return result
 
 
 # ── /ui/search-results POST (HTML fragment) ────────────────────────────
@@ -334,6 +358,16 @@ async def ui_search_results(request: Request) -> HTMLResponse:
     result = _do_search(deps, body)
 
     templates = request.app.state.templates
+
+    # Ollama 미가용 등 검색 실패 → 친화 메시지 fragment (200)
+    if result.get("error"):
+        return templates.TemplateResponse(
+            request=request,
+            name="_search_error.html",
+            context={"request": request, **result},
+            status_code=200,
+        )
+
     ctx = {"request": request, **result}
     # offset>0 은 페이지네이션 — toolbar 없이 카드만 반환해 중복을 방지한다.
     template_name = "_results_grid.html" if body.offset == 0 else "_results_cards_only.html"

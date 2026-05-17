@@ -1174,3 +1174,32 @@ html, body {
 .btn-back:hover {
   opacity: 0.85;
 }
+
+/* M5 — 검색 실패 친화 메시지 (Ollama 미가용 등) */
+.search-error {
+  padding: 24px;
+  text-align: center;
+  color: var(--fg);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 16px 0;
+}
+.search-error-icon {
+  font-size: 32px;
+  margin: 0 0 8px 0;
+}
+.search-error-title {
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+.search-error-message {
+  color: var(--fg);
+  opacity: 0.85;
+  margin: 0 0 8px 0;
+}
+.search-error-hint {
+  font-size: 0.9em;
+  opacity: 0.7;
+  margin: 0;
+}
