@@ -193,3 +193,69 @@ html, body {
     grid-template-columns: 1fr;
   }
 }
+
+/* === 결과 영역 툴바 === */
+.results-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+.view-toggle, .size-toggle {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.view-btn, .size-btn {
+  padding: 6px 12px;
+  background: var(--card-bg);
+  color: var(--fg);
+  border: none;
+  cursor: pointer;
+  border-right: 1px solid var(--border);
+}
+.view-btn:last-child, .size-btn:last-child { border-right: none; }
+.view-btn.active, .size-btn.active {
+  background: var(--accent);
+  color: white;
+}
+.sort-control select {
+  padding: 6px 10px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.total-count {
+  margin-left: auto;
+  color: var(--fg);
+  opacity: 0.8;
+}
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); border: 0;
+}
+
+/* === 카드 크기 (S/M/L) === */
+.card-size-s .card-wide { padding: 8px; gap: 8px; }
+.card-size-s .card-thumb { width: 40px; height: 40px; }
+.card-size-s .card-thumb img { width: 40px; height: 40px; }
+.card-size-s .card-body { font-size: 0.85em; }
+
+.card-size-m .card-wide { padding: 12px; gap: 12px; }
+.card-size-m .card-thumb { width: 60px; height: 60px; }
+.card-size-m .card-thumb img { width: 60px; height: 60px; }
+
+.card-size-l .card-wide { padding: 16px; gap: 16px; }
+.card-size-l .card-thumb { width: 96px; height: 96px; font-size: 40px; }
+.card-size-l .card-thumb img { width: 96px; height: 96px; }
+.card-size-l .card-body { font-size: 1.05em; }
+
+.card-size-s .card-list-thumb { width: 32px; height: 32px; }
+.card-size-l .card-list-thumb { width: 56px; height: 56px; }

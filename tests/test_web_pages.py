@@ -72,3 +72,33 @@ def test_library_page_has_load_trigger(client):
 def test_results_container_exists(client):
     r = client.get("/library")
     assert 'id="results"' in r.text
+
+
+# ── Task 2.7: 결과 툴바 ─────────────────────────────────────────────────
+
+
+def test_results_grid_includes_toolbar(client):
+    """결과 영역에 그리드/리스트 토글 + 카드 크기 + 정렬 + 카운트."""
+    r = client.post("/ui/search-results", json={"query": "", "count": 5})
+    assert r.status_code == 200
+    assert "results-toolbar" in r.text
+    assert "view-toggle" in r.text or "view-mode" in r.text
+
+
+def test_results_toolbar_has_size_buttons(client):
+    r = client.post("/ui/search-results", json={"query": "", "count": 5})
+    # S/M/L 버튼 — Alpine 의 $store.search.cardSize 조작
+    assert "cardSize" in r.text
+
+
+def test_results_toolbar_has_sort_dropdown(client):
+    r = client.post("/ui/search-results", json={"query": "", "count": 5})
+    # 정렬 옵션 포함 검증
+    assert "정렬" in r.text or "sort" in r.text
+
+
+def test_results_toolbar_shows_total_count(client):
+    """총 자산 카운트 표시."""
+    r = client.post("/ui/search-results", json={"query": "", "count": 5})
+    # 빈 라이브러리 → "0 자산" 같은 표현
+    assert "자산" in r.text or "total" in r.text
