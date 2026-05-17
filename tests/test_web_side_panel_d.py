@@ -244,14 +244,14 @@ def test_api_weights_updates_config(deps_fixture):
         assert abs(updated_config.weight_semantic - 0.10) < 1e-6
 
 
-# ── Phase 3D-2 placeholder 존재 확인 ──────────────────────────────────
+# ── Phase 3D-2 실 구현 확인 (Phase 3D-2 완료 후 갱신) ─────────────────
 
 
-def test_d_tab_has_phase3d2_placeholder(client):
-    """D 탭에 Phase 3D-2 작업을 위한 placeholder 가 존재한다."""
+def test_d_tab_has_saved_and_usage_sections(client):
+    """D 탭에 Phase 3D-2 실 구현 (저장된 검색 + 통일성/페널티) 섹션이 있다."""
     r = client.get("/library")
-    # 저장된 검색 또는 통일성 요약 영역의 placeholder
-    assert "Phase 3D-2" in r.text
+    assert "저장된 검색" in r.text
+    assert "통일성 / 페널티" in r.text
 
 
 # ── Alpine.store 초기화 확인 ────────────────────────────────────────────
