@@ -36,6 +36,8 @@ class WebServer:
         """포트를 확보하고 uvicorn 서버를 백그라운드 스레드에서 시작한다."""
         port = self._find_available_port()
         app = build_app(self.deps)
+        # health endpoint 가 실 port 를 반환할 수 있도록 app.state 에 기록한다.
+        app.state.web_port = port
         config = uvicorn.Config(
             app,
             host=self.deps.config.web_host,
