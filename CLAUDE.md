@@ -24,7 +24,7 @@
 | M2.1 — 분석 큐 병렬화 패치 | ✅ 완료 | 동시성 1→3, Ollama semaphore(parallel=2), CLIP threading.Lock, SQLite write_lock+busy_timeout, GUI 250ms 디바운스 |
 | M3 — 검색 백엔드 + 통일성 + MCP | ✅ 완료 | HybridSearcher 가중합 0.40/0.15/0.20/0.20/0.05, ConsistencyScorer §4.6 표, UsageTracker, MCP stdio 12 도구 (mcp 1.27), GUI 검색 박스, `docs/MCP_USAGE_GUIDE.md` 본격화 |
 | M4 — 검색 UX 풍부화 | ✅ 완료 (main 머지됨, [PR #5](https://github.com/v0o0v/game-asset-helper/pull/5)) | label_query 파서 AND/OR/NOT + axis:label + bare 자동매칭, HybridSearcher 6채널 0.35/0.10/0.20/0.20/0.05/0.10 feedback, diversity none/mmr/round_robin, saved_searches 4 신규 MCP 도구 (12→16), feedback_records signed weight 페널티 학습, suggest_packs samples 풍부화. Qt UI 위젯 4개는 M5 가 폐기 예정 |
-| **M5 — 웹 GUI 전환 + 라이브러리 리디자인 + Claude pick 인터랙션** (~5.5주) | **🔄 진행 중** (Phase 0~2 완료, **약 38%**, `feat/m5-web-gui` 브랜치 main 위 25 commit) | **완료**: FastAPI/uvicorn/Jinja2/sse-starlette 의존성, Config 7 신규 필드 + UsageSource enum, HTMX 1.9.12 + Alpine 3.13.10 vendoring, `web/url.py` (web.port 공유), `web/pending.py` (PendingPickQueue + asyncio.Future), `web/deps.py` (WebDeps), `web/app.py` (FastAPI factory + lifespan), `web/server.py` (uvicorn 별 스레드 + 포트 폴백), `web/sse_bus.py` (Qt↔uvicorn broadcast), `web/i18n.py` (`_t()` passthrough), 9 router stub + `health.py` 실 구현, 트레이 메뉴 → 브라우저, MainWindow 의존성 0, m4 Qt UI 7 파일 module-skip (Phase 5 폐기 예정), **라이브러리 페이지** (base/library/nav/CSS 변수 light/dark/검색 바 300ms 디바운스/⚙ 토글/결과 툴바 view+size+sort+count/페이지네이션/디폴트 상태/와이드+리스트 카드 partial/상세 모달/사운드 인라인 ▶ 재생). **506 passed + 7 skipped**. **다음**: Phase 3 (B/C/D 사이드 패널). spec: [`docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md`](./docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md), plan: [`milestones/M5_plan.md`](./milestones/M5_plan.md) |
+| **M5 — 웹 GUI 전환 + 라이브러리 리디자인 + Claude pick 인터랙션** (~5.5주) | **🔄 진행 중** (Phase 0~3 완료, **약 56%**, `feat/m5-web-gui` 브랜치 main 위 43+ commit) | **완료**: Phase 0~2 (인프라/페이지/검색/결과/카드/상세 모달/사운드 — `506 passed` baseline) + **Phase 3 (B/C/D 사이드 패널 18 task — ⚙ 토글 + 슬라이드 transition + 리사이즈 핸들 (240~640) + B 탭 (매칭 모드 AND/OR/NOT + 라벨 검색 + 종류 탭 + axis 칩 FlowLayout + 다축 필터 4 드롭다운 + selectedLabels → SearchRequest 매핑) + C 탭 (그리드/리스트/카드 크기/정렬 양방향 + 카드 메타 4 토글) + D 탭 (프리셋 3 + 슬라이더 6 + Config 즉시 갱신 + 저장된 검색 CRUD + 통일성 요약 + 모달) + 768px 반응형). Store 헬퍼 2 (`get_pack_by_id`, `get_saved_search_by_id`) + endpoint 7 신규 (`/api/filters/labels` `/api/filters/packs` `/api/preset/{name}` `/api/weights` `/api/saved-searches`*4 `/api/usage/summary` `/ui/usage/detail`). populated_deps fixture 6 파일 → conftest 통합.** **692 passed + 7 skipped**. **다음**: Phase 4 (`request_user_pick` + SSE push). spec: [`docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md`](./docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md), plan: [`milestones/M5_plan.md`](./milestones/M5_plan.md) |
 | M6 — 시트 분석 + 애니메이션 (1주) | 대기 | 격자 분할·Aseprite/TexturePacker JSON·`suggest_animation_frames` |
 | M7 — Unity Asset Store 임포트 (1주) | 대기 | `.unitypackage` 파서·캐시 스캐너 |
 | M8 — 패키징 + i18n (1주) | 대기 | PyInstaller/Tauri 빌드, gettext / Jinja i18n |
@@ -137,7 +137,7 @@ cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
 pytest -q
 ```
 
-`pytest -q`가 **506 passed + 7 skipped + 4 deselected** 로 떨어지면 준비 완료 (M0~M4 의 452 baseline + M5 Phase 0~2 의 +108 신규 - 폐기 예정 m4 Qt UI 7 파일 ~50 skip = 506). `pytest -m mcp_integration` 으로 옵트인 2 케이스 (실 `python -m gah --mcp` subprocess + JSON-RPC, **16 도구** 응답 — Phase 4 가 17 도구로 갱신 예정) 추가 검증 가능. M4 시점 검증 결과는 [`milestones/M4_verification.md`](./milestones/M4_verification.md). **M4 + M5 spec 은 [PR #5](https://github.com/v0o0v/game-asset-helper/pull/5) 로 main 머지됨**. **M5 작업 브랜치는 `feat/m5-web-gui`** (main 위 25+ commit, Phase 0~2 완료, Phase 3~6 진행 예정).
+`pytest -q`가 **692 passed + 7 skipped + 4 deselected** 로 떨어지면 준비 완료 (M0~M4 의 452 baseline + M5 Phase 0~3 의 +290 신규 - 폐기 예정 m4 Qt UI 7 파일 ~50 skip = 692). `pytest -m mcp_integration` 으로 옵트인 2 케이스 (실 `python -m gah --mcp` subprocess + JSON-RPC, **16 도구** 응답 — Phase 4 가 17 도구로 갱신 예정) 추가 검증 가능. M4 시점 검증 결과는 [`milestones/M4_verification.md`](./milestones/M4_verification.md). **M4 + M5 spec 은 [PR #5](https://github.com/v0o0v/game-asset-helper/pull/5) 로 main 머지됨**. **M5 작업 브랜치는 `feat/m5-web-gui`** (main 위 43+ commit, Phase 0~3 완료, Phase 4~6 진행 예정).
 
 ## 7. 자주 쓰는 명령
 
@@ -165,18 +165,21 @@ python -m gah --tray
 python -m gah --version
 ```
 
-## 8. 다음 작업 (M5 Phase 3)
+## 8. 다음 작업 (M5 Phase 4)
 
-**M5 — 웹 GUI 전환 + 라이브러리 리디자인 + Claude pick 인터랙션** 이 **🔄 진행 중** (Phase 0~2 완료, 약 38%). 다음 phase 는 **Phase 3 (우측 사이드 패널 B/C/D 탭)** — [`milestones/M5_plan.md`](./milestones/M5_plan.md) §4.3 의 18 task, ~1.5주.
+**M5 — 웹 GUI 전환 + 라이브러리 리디자인 + Claude pick 인터랙션** 이 **🔄 진행 중** (Phase 0~3 완료, 약 56%). 다음 phase 는 **Phase 4 (Claude `request_user_pick` MCP 도구 + SSE push + 자동 record_asset_use)** — [`milestones/M5_plan.md`](./milestones/M5_plan.md) §4.4, ~1주.
 
-### 8.1 현재 상태 (Phase 0~2 완료)
+### 8.1 현재 상태 (Phase 0~3 완료)
 
-- 브랜치 `feat/m5-web-gui` — main 위 **25 commit** (미머지).
-- 506 passed + 7 skipped + 4 deselected. 회귀 0.
+- 브랜치 `feat/m5-web-gui` — main 위 **43 commit** (미머지).
+- 692 passed + 7 skipped + 4 deselected. 회귀 0.
 - 완료된 인프라:
-  - **Phase 0** — FastAPI/uvicorn/Jinja2/sse-starlette/python-multipart 의존성 + Config 7 신규 필드 + `UsageSource` enum + HTMX 1.9.12 + Alpine 3.13.10 vendoring
-  - **Phase 1** — `web/url.py` (web.port 파일 R/W), `web/pending.py` (PendingPickQueue + asyncio.Future), `web/deps.py` (WebDeps), `web/app.py` (FastAPI factory + lifespan + 9 router), `web/server.py` (uvicorn 별 스레드 + 포트 폴백 9874→9883), `web/sse_bus.py` (Qt↔uvicorn broadcast), `web/i18n.py` (`_t()` placeholder), 트레이 메뉴 → 브라우저, `run_tray` 가 `MainWindow` 의존성 제거 후 WebServer 시작
-  - **Phase 2** — 라이브러리 페이지 (base/library/nav + CSS 변수 light/dark + 검색 바 300ms 디바운스 + ⚙ 토글), 결과 영역 (와이드/리스트 카드 partial + 그리드/리스트 토글 + 카드 크기 S/M/L + 정렬 + 카운트 + 페이지네이션 toolbar 중복 fix), 디폴트 상태 (빈 검색 → 라이브러리 전체 추가일↓), 자산 상세 모달, 사운드 인라인 ▶ 재생, `/api/search` + `/ui/search-results` + `/api/thumbnail` + `/ui/asset-detail` + `/api/audio` + `/ui/audio-player`
+  - **Phase 0~2** — FastAPI/uvicorn/Jinja2/sse-starlette 의존성 + Config 7 신규 필드 + UsageSource enum + HTMX/Alpine vendoring + WebServer 별 스레드 + 포트 폴백 + SSE bus + 트레이 → 브라우저 + 라이브러리 페이지 + 검색/결과/카드/모달/사운드 (`506 passed`)
+  - **Phase 3A** — 사이드 패널 ⚙ 토글 200ms 슬라이드 transition + `resizeHandle()` Alpine 컴포넌트 (240~640 클램프) + B/C/D 탭 헤더 + 3 partial 스캐폴딩 + sticky 정정
+  - **Phase 3B** — B 탭 매칭 모드 (AND/OR/NOT 라디오 + form hidden input) + 라벨 검색 input + `.chip.matched` (box-shadow 단독) + 종류 탭 (sprite/sheet/sound) + `/api/filters/labels` (axis prefix 분류) + axis 칩 `chip-flow` FlowLayout + `toggleLabel()` + 다축 필터 4 `<details>` (팩 다중/벤더/라이선스/상태) + `/api/filters/packs` (vendors/licenses distinct + asset_count) + `_do_search` 가 labels list[int] → `Store.list_labels_raw` 룩업 → LabelFilter + match_mode → `labels_all/any/none` 분배 + `pack_ids` Python 후처리 필터 + form-data JSON parse + library.html hidden input 3개 (`match_mode`, `labels`, `pack_ids` JSON.stringify)
+  - **Phase 3C** — C 탭 표시 옵션 (그리드/리스트, S/M/L, sort — 양방향 `$store.search.*` + 결과 툴바와 자동 동기) + 카드 메타 4 체크박스 (라벨/팩/점수/크기 — 즉시 카드 `x-show` 반영, 와이드 카드만 지원)
+  - **Phase 3D** — 프리셋 3 (균형/통일성/참신성 — `PRESETS` dict + `POST /api/preset/{name}` + `_apply_weights_to_config` + Config mutate + activePreset 표시) + 슬라이더 6 (`<details>` 펼침 + `<input type="range" min="0" max="100">` + `WeightsBody` Pydantic + `POST /api/weights` + `syncWeights()` 자동 정규화) + 저장된 검색 CRUD (`saved_searches` 라우터 4 endpoint + `savedSearches()` Alpine + 복원 7 필드) + 통일성/페널티 요약 (`Store.project_usage_summary` 활용 + `/api/usage/summary` + `/ui/usage/detail` + `_modal_usage.html`) + 768px 반응형 (`position: fixed` + `transform: translateX` + resize 리스너 자동 닫힘)
+  - **Phase 3 cleanup** — `Store.get_pack_by_id` + `Store.get_saved_search_by_id` 헬퍼 + endpoint 3 곳 raw SQL → 헬퍼 교체 + dead resize-init 블록 제거 + `_do_search` docstring (pack_ids 한계) + `populated_deps`/`populated_client` fixture 6 파일 → `tests/conftest.py` 통합
 - M4 Qt UI 7 파일은 module-level `pytest.skip("M5 Phase 5 가 폐기 예정")` 적용 (Phase 5 가 실 삭제).
 
 ### 8.2 다음 세션 진입 시 첫 작업
@@ -191,27 +194,23 @@ python -m gah --version
    ```powershell
    git status
    ```
-   → `On branch feat/m5-web-gui` + 25+ commits ahead of main + clean.
+   → `On branch feat/m5-web-gui` + 43+ commits ahead of main + clean.
 
 2. **회귀 검증**:
    ```powershell
    pytest -q
    ```
-   → `506 passed, 7 skipped, 4 deselected`.
+   → `692 passed, 7 skipped, 4 deselected`.
 
-3. **선택 — 시각 검증**: `python -m gah --tray` 후 브라우저에서 라이브러리 페이지 동작 확인 (검색, 정렬, 카드 클릭 모달, 사운드 ▶, 다크 모드).
+3. **선택 — 시각 검증**: `python -m gah --tray` 후 브라우저에서 사이드 패널 ⚙ + B/C/D 탭 + 리사이즈 + 다축 필터 + 저장된 검색 + 다크 모드 동작 확인. 수동 검증 항목 상세 = [`HANDOFF.md`](./HANDOFF.md) §9.5.
 
-4. **Phase 3 시작** — plan §4.3 의 18 task 진행. sub-phase 권장 분할:
-   - **Phase 3A**: Task 3.1-3.3 (⚙ 토글 검증 + 리사이즈 핸들 + 탭 헤더, ~3 commit)
-   - **Phase 3B**: Task 3.4-3.9 (B 탭 — 매칭 모드 + 라벨 검색 + 종류 탭 + axis 칩 + 다축 필터 + `/api/search` 통합, ~6 commit)
-   - **Phase 3C**: Task 3.10-3.13 (C 탭 — 표시 옵션 + 카드 메타 토글, ~4 commit)
-   - **Phase 3D**: Task 3.14-3.17 (D 탭 — 프리셋 + 슬라이더 + 저장된 검색 + 통일성 요약, ~6 commit)
+4. **Phase 4 시작** — plan §4.4 의 task 진행. 핵심: `POST /internal/user-pick` (long-poll) + `/sse/notifications` 실 구현 + MCP server 측 `request_user_pick` 도구 (17번째) + httpx 클라이언트 + 자동 `record_asset_use(source="claude_pick")` + Claude 요청 카드 + `tray_bridge` (QObject 시그널 디스패치).
 
-5. **Phase 3 시작 전 cleanup (옵션)**:
-   - `populated_deps` / `populated_client` fixture 통합 (3 파일 중복) → `tests/conftest.py` 로 이동
-   - 자산 상세 모달의 [채택]/[거부] 버튼이 호출하는 `POST /api/record-use` + `POST /api/feedback` endpoint stub — Phase 3 D 탭 또는 Phase 4 시점에 처리
-   - `pack_ids` 가 `SearchBody` 에 받지만 `SearchRequest` 미전달 — Phase 3B Task 3.8 (다축 필터) 작업 시 SearchRequest 확장
-   - `Store.get_pack_by_id` 헬퍼 부재 — Phase 5 (Pack 페이지) 시점에 추가
+5. **Phase 4 시작 전 follow-up (옵션)**:
+   - `htmx.trigger` 호출 방식 통일 (`document.querySelector` vs CSS selector 문자열)
+   - `_card_list.html` 에 `cardMeta` `x-show` 바인딩 추가 (현재 와이드 카드만 지원)
+   - 자산 상세 모달 [채택]/[거부] 버튼이 호출하는 `POST /api/record-use` + `POST /api/feedback` endpoint — Phase 4 의 자동 `record_asset_use` 통합과 함께 처리
+   - 모달 ESC 키 dismiss + 카드 keyboard accessibility — Phase 6 마감 흡수
 
 상세 진행 상태 + 알려진 한계는 [`HANDOFF.md`](./HANDOFF.md) §5 + §9.
 
