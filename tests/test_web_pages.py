@@ -183,3 +183,33 @@ def test_side_panel_width_binding(client):
     """사이드 패널이 Alpine store 의 sidePanelWidth 를 :style 로 바인딩한다."""
     r = client.get("/library")
     assert "sidePanelWidth" in r.text
+
+
+# ── Task 3.2: 사이드 패널 리사이즈 핸들 ─────────────────────────────────
+
+
+def test_side_panel_has_resize_handle(client):
+    """사이드 패널 안에 class="resize-handle" 요소가 존재한다."""
+    r = client.get("/library")
+    assert r.status_code == 200
+    assert 'class="resize-handle"' in r.text
+
+
+def test_resize_handle_function_defined(client):
+    """resizeHandle() Alpine 컴포넌트 함수가 페이지에 정의되어 있다."""
+    r = client.get("/library")
+    assert "resizeHandle()" in r.text or "resizeHandle" in r.text
+
+
+def test_resize_handle_drag_logic(client):
+    """resizeHandle 내부에 startDrag / onDrag / stopDrag 로직이 존재한다."""
+    r = client.get("/library")
+    assert "startDrag" in r.text
+    assert "onDrag" in r.text
+    assert "stopDrag" in r.text
+
+
+def test_resize_handle_has_mousedown(client):
+    """resize-handle 요소가 @mousedown 이벤트를 처리한다."""
+    r = client.get("/library")
+    assert "mousedown" in r.text

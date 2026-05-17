@@ -46,6 +46,12 @@
            x-transition:leave-start="translate-x-0"
            x-transition:leave-end="translate-x-full"
            :style="{ width: $store.advanced.sidePanelWidth + 'px' }">
+      {# 리사이즈 핸들 — 왼쪽 가장자리 드래그로 폭 240~640px 조절 #}
+      <div class="resize-handle"
+           x-data="resizeHandle()"
+           @mousedown.prevent="startDrag($event)"
+           @mousemove.window="onDrag($event)"
+           @mouseup.window="stopDrag"></div>
       <div class="side-panel-placeholder">
         <p>{{ _("고급 필터·표시·조정") }}</p>
         <p class="hint">{{ _("Phase 3 에서 B/C/D 탭이 채워집니다.") }}</p>
@@ -56,4 +62,29 @@
   {# 자산 상세 모달 — Task 2.10 #}
   <div id="asset-detail-modal" class="modal-container"></div>
 </div>
+
+{# 라이브러리 페이지 한정 Alpine 컴포넌트 #}
+<script>
+  function resizeHandle() {
+    return {
+      dragging: false,
+      startX: 0,
+      startW: 0,
+      startDrag(e) {
+        this.dragging = true;
+        this.startX = e.clientX;
+        this.startW = Alpine.store('advanced').sidePanelWidth;
+      },
+      onDrag(e) {
+        if (this.dragging) {
+          Alpine.store('advanced').sidePanelWidth = Math.max(
+            240,
+            Math.min(640, this.startW + (this.startX - e.clientX))
+          );
+        }
+      },
+      stopDrag() { this.dragging = false; },
+    };
+  }
+</script>
 {% endblock %}
