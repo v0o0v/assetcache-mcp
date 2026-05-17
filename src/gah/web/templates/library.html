@@ -39,7 +39,12 @@
     {# 우측 사이드 패널 (Phase 3 가 B/C/D 탭 채움) #}
     <aside class="side-panel"
            x-show="$store.advanced.open"
-           x-transition.duration.200ms
+           x-transition:enter="side-panel-enter"
+           x-transition:enter-start="translate-x-full"
+           x-transition:enter-end="translate-x-0"
+           x-transition:leave="side-panel-enter"
+           x-transition:leave-start="translate-x-0"
+           x-transition:leave-end="translate-x-full"
            :style="{ width: $store.advanced.sidePanelWidth + 'px' }">
       <div class="side-panel-placeholder">
         <p>{{ _("고급 필터·표시·조정") }}</p>

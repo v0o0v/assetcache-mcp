@@ -150,3 +150,36 @@ def test_audio_player_fragment_route_exists(client):
     """/ui/audio-player/{id} 라우트가 등록되어 있다."""
     r = client.get("/ui/audio-player/99999")
     assert r.status_code == 404  # 라우트 있음, asset 없음
+
+
+# ── Task 3.1: 사이드 패널 슬라이드 in transition ────────────────────────
+
+
+def test_side_panel_element_exists(client):
+    """<aside class="side-panel"> 가 library 페이지에 존재한다."""
+    r = client.get("/library")
+    assert r.status_code == 200
+    assert 'class="side-panel"' in r.text
+
+
+def test_side_panel_has_x_show(client):
+    """사이드 패널이 x-show="$store.advanced.open" 속성을 가진다."""
+    r = client.get("/library")
+    assert '$store.advanced.open' in r.text
+
+
+def test_side_panel_has_slide_transition(client):
+    """사이드 패널에 translateX 기반 슬라이드 transition 관련 속성이 있다."""
+    r = client.get("/library")
+    # x-transition:enter 계열 속성 또는 translate-x-full 유틸 클래스 존재
+    assert (
+        "translate-x-full" in r.text
+        or "x-transition:enter" in r.text
+        or "translateX" in r.text
+    )
+
+
+def test_side_panel_width_binding(client):
+    """사이드 패널이 Alpine store 의 sidePanelWidth 를 :style 로 바인딩한다."""
+    r = client.get("/library")
+    assert "sidePanelWidth" in r.text

@@ -97,6 +97,11 @@ html, body {
 }
 .side-panel-placeholder .hint { font-size: 0.85em; opacity: 0.7; }
 
+/* === 사이드 패널 슬라이드 transition 유틸 === */
+.side-panel-enter { transition: transform 200ms ease, opacity 200ms ease; }
+.translate-x-full { transform: translateX(100%); opacity: 0; }
+.translate-x-0 { transform: translateX(0); opacity: 1; }
+
 /* === 결과 영역 (카드들) === */
 .results-meta {
   margin-bottom: 12px;
