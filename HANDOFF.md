@@ -1,44 +1,44 @@
 # HANDOFF — Cowork → Claude Code (또는 다음 세션)
 
-**마지막 인계 시각**: 2026-05-17 (M4 + M5 spec 머지 후)
-**마지막 완료 마일스톤**: M4 (검색 UX 풍부화) — ✅ **머지됨** ([PR #5](https://github.com/v0o0v/game-asset-helper/pull/5), main 위 fast-forward)
-**다음 작업**: **사용자 spec 검토 → writing-plans 로 `milestones/M5_plan.md` 작성**
-**M5 spec**: [docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md](docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md) — 웹 GUI 전환 + 라이브러리 리디자인 + Claude pick 인터랙션 (~5.5주)
-**마일스톤 재정렬**: 신규 M5 (웹 GUI) / 기존 M5 시트분석 → M6 / 기존 M6 Unity → M7 / 기존 M7 패키징 → M8
+**마지막 인계 시각**: 2026-05-17 (M5 Phase 0~2 완료 시점)
+**마지막 완료 마일스톤**: M4 (검색 UX 풍부화) — ✅ 머지됨 ([PR #5](https://github.com/v0o0v/game-asset-helper/pull/5))
+**진행 중 마일스톤**: **M5 — 웹 GUI 전환 + 라이브러리 리디자인 + Claude pick** (~5.5주, 약 38% 진행)
+**현재 브랜치**: `feat/m5-web-gui` (main 위 **25 commit**, 미머지)
+**다음 작업**: **Phase 3 (우측 사이드 패널 B/C/D 탭) — [`milestones/M5_plan.md`](milestones/M5_plan.md) §4.3 의 18 task, ~1.5주**
 
-이 문서는 작업이 중단될 때 다음 세션이 "현재 어디까지 와 있는가"를 한 번에 파악하도록 작성된 스냅샷이다. 마일스톤이 하나 끝날 때마다 이 문서를 갱신한다.
+이 문서는 작업이 중단될 때 다음 세션이 "현재 어디까지 와 있는가" 를 한 번에 파악하도록 작성된 스냅샷이다. 마일스톤 또는 phase 가 하나 끝날 때마다 이 문서를 갱신한다.
 
 ## 1. 한 줄 요약
 
-설계(`DESIGN.md`) 위에 M0(뼈대) → M1(워처 + 팩 매니저 + SQLite 4테이블 + GUI 팩/라이브러리 탭) → M2(분석 파이프라인 + CLIP 라벨러 + 24축 316 시드 + 라벨 관리 다이얼로그 + 분석 큐/ETA 상태바) → M2.1(분석 큐 동시성 1 → 3 + Ollama semaphore + CLIP lock + SQLite write_lock + GUI 250ms 디바운스) → M3(HybridSearcher 가중합 0.40·sem + 0.15·kw + 0.20·label + 0.20·cons + 0.05·rec + MCP stdio 12 도구 + ConsistencyScorer + UsageTracker + GUI 검색 박스 + `docs/MCP_USAGE_GUIDE.md` 본격화 + 회귀 가드 2건) → **M4**(label_query 파서 AND/OR/NOT + axis:label + bare 자동매칭, HybridSearcher 6 채널 재배분 0.35/0.10/0.20/0.20/0.05/**0.10 feedback**, diversity none/mmr/round_robin, saved_searches 4 신규 MCP 도구 (12 → 16), feedback_records signed weight 페널티 학습 asset/pack-level, suggest_packs samples 풍부화 thumbnail+blurb, GUI 풍부 UX LabelChipPanel/SearchSidePanel/FilterBar) 까지 자동 452 테스트 + 2 mcp_integration 통과. 이후 사용자 GUI 검증 보고로 4 페인 (정보 과부하 / 좌우 스크롤 / 섹션 불명 / 가중치 불가해) 도출 + 브레인스토밍 10 결정 → **M5 spec (웹 GUI 전환 + 라이브러리 리디자인 + Claude pick) 작성 완료**. 다음 세션 = 사용자 spec 검토 → 승인 시 writing-plans 스킬로 `milestones/M5_plan.md` 작성 → red/green TDD.
+M4 가 main 으로 머지된 후 M5 spec ([`docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md`](docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md)) + plan ([`milestones/M5_plan.md`](milestones/M5_plan.md), 2097 줄 6 phase 75 task) + todo 작성 → `feat/m5-web-gui` 브랜치 분기 후 `superpowers:subagent-driven-development` 스킬로 **Phase 0 (의존성/Config/vendoring) + Phase 1 (FastAPI 스캐폴딩 + WebServer + 트레이 통합 + SSE bus) + Phase 2 (라이브러리 페이지: 검색 + 결과 + 카드 + 상세 모달 + 사운드 + 페이지네이션) 완료**. 누적 25 commit, **506 passed + 7 skipped + 4 deselected**. Qt UI 위젯 7 파일 + 테스트 4 파일은 Phase 5 폐기 예정이라 임시 module-level skip 적용. 다음 세션 = Phase 3 (B/C/D 사이드 패널) → Phase 4 (`request_user_pick` + SSE push) → Phase 5 (Qt 폐기 + Pack/라벨 관리 웹 이식) → Phase 6 (마감 + verification).
 
-## 2. 검증된 사실 (M4 시점, follow-up 후)
+## 2. 검증된 사실 (M5 Phase 0~2 시점)
 
-자동 — `pytest -q` 결과 **452/452 통과** (35s, Windows 10 / Python 3.12, `clip_integration` 2 + `mcp_integration` 2 = 4 옵트인 deselected). M3 의 333 + M4 의 100 신규 + M4 follow-up 의 19 신규 (회귀 갱신 3건 동일 카운트 유지).
+자동 — `pytest -q` 결과 **506 passed + 7 skipped + 4 deselected** (Phase 0 시작 시 460 baseline 대비 +46 신규 + Phase 5 폐기 예정 7 파일 ~50 케이스 skip → 순 합계 506).
 
-`pytest -m mcp_integration -v` — 실제 `python -m gah --mcp` subprocess + JSON-RPC `initialize`/`tools/list` 핸드셰이크 **2/2 통과** — **16 도구** 모두 정상 응답 (M3 12 + M4 saved_searches 4).
+| 영역 | 새 케이스 | 비고 |
+|---|---:|---|
+| M0~M4 베이스라인 | 452 | M4 PR #5 머지 시점 |
+| Phase 0 — Config M5 + UsageSource | 8 | `test_config_m5.py` |
+| Phase 1A — web/url + pending + deps | 15 | `test_web_url.py` + `test_web_pending.py` |
+| Phase 1B — FastAPI app + WebServer | 14 | `test_web_app.py` + `test_web_server.py` |
+| Phase 1C — tray + run_tray + health.actual_port | 13 | `test_tray_m5.py` + `test_app_m5.py` + `test_health_actual_port.py` |
+| Phase 2A — 검색 백엔드 + 카드 partial | 14 | `test_web_routers_library_search.py` + `test_web_routers_thumbnail.py` |
+| Phase 2B — 라이브러리 페이지 베이스 | 10 | `test_web_pages.py` |
+| Phase 2C — 결과 툴바 + 페이지네이션 + 디폴트 | 13 | toolbar/pagination/default 보강 |
+| Phase 2D — 상세 모달 + 사운드 + 통합 | 19 | `test_web_asset_detail.py` + `test_web_audio.py` + integration |
+| Phase 2 fix — pagination toolbar 중복 | 2 | toolbar/cards-only 분리 |
+| **합계** | **+ 108 신규** | Phase 5 폐기 예정 7 파일 ~50 케이스 skip |
 
-수동 — M4 의 GUI 풍부 UX 시각 검증 (좌측 칩 패널 + 우측 슬라이더/저장 패널 + label_query 입력 + 저장된 검색 4 기능 라운드트립) 은 [`milestones/M4_verification.md`](./milestones/M4_verification.md) §4. 이 검증 중 4 페인 (정보 과부하 / 좌우 스크롤 가림 / 섹션 불명 / 가중치 불가해) 도출 → M5 spec 작성.
+`pytest -m mcp_integration -v` — 2/2 (16 도구, Phase 4 가 17 도구로 갱신 예정).
 
+수동 — Phase 2 끝 시점부터 사용자가 시각 검증 가능:
+
+```powershell
+python -m gah --tray
 ```
-M0 회귀:        18 passed
-M1 회귀:        49 passed
-M2 회귀+신규:  134 passed
-M1 추가 회귀:    3 passed
-M2.1 신규:      16 passed
-M2.1 회귀 보존:  +1 passed
-M3 신규:       112 passed
-M4 신규:       100 passed  (label_query 16 + store_m4 12 + search_diversity 9 +
-                            feedback_penalty 10 + suggest_packs_samples 6 +
-                            library_search_ui_rich 14 + mcp_tools_m4 14 +
-                            search_m4 8 + config_m4 6 + thumbnails 5)
-M4 follow-up:   19 passed  (LibraryView QSplitter 통합 3 + 저장된 검색 4 기능
-                            12 + LabelChipPanel 종류별 탭 4 + 회귀 갱신)
-─────────────────────────────────────────────
-합계 452 passed (active) + 4 deselected (clip_integration 2 + mcp_integration 2)
-```
 
-M4 수동 검증 단계는 [`milestones/M4_verification.md`](./milestones/M4_verification.md) §4. M2.1/M3 의 수동 검증 단계도 그대로 유효. **M5 가 이 Qt UI 위젯들을 모두 폐기하고 웹 UI 로 대체할 예정** — verification 의 수동 단계도 함께 폐기.
+→ 트레이 아이콘 + 브라우저 자동 열림 (http://127.0.0.1:9874/library). 검색 / 정렬 / 그리드↔리스트 / 카드 크기 S/M/L / 카드 클릭 모달 / 사운드 ▶ 재생 / 다크 모드 (OS prefers-color-scheme) 시각 확인 가능. Phase 3 이전엔 ⚙ 고급 클릭 시 사이드 패널이 placeholder ("Phase 3 에서 채워집니다") 만 표시.
 
 ## 3. 환경 (재현용)
 
@@ -50,59 +50,33 @@ M4 수동 검증 단계는 [`milestones/M4_verification.md`](./milestones/M4_ver
 | 작업 폴더 | `D:\ClaudeCowork\game-asset-helper\game-asset-helper\` |
 | 런타임 데이터 | `C:\Users\v0o0v\AppData\Roaming\GameAssetHelper\` |
 | 라이브러리 루트 | `%APPDATA%\GameAssetHelper\library\` |
-| 메타 DB | `%APPDATA%\GameAssetHelper\metadata.db` (WAL 모드, 14 객체) |
-| CLIP 캐시 | `%APPDATA%\GameAssetHelper\cache\clip\` (첫 분석 시 ~600 MB 다운로드) |
-| 스펙트로그램 캐시 | `%APPDATA%\GameAssetHelper\cache\spectrograms\` (사운드 2차 폴백) |
+| 메타 DB | `%APPDATA%\GameAssetHelper\metadata.db` (WAL, 21+5=26 객체) |
+| CLIP 캐시 | `%APPDATA%\GameAssetHelper\cache\clip\` |
+| 스펙트로그램 캐시 | `%APPDATA%\GameAssetHelper\cache\spectrograms\` |
+| **신규 M5: web.port 파일** | `%APPDATA%\GameAssetHelper\web.port` (MCP server ↔ FastAPI 포트 공유) |
 
-**금기**: Microsoft Store Python(`%APPDATA%` 가상화), Cowork 작업 폴더 내부 venv(권한 충돌).
+**금기**: Microsoft Store Python, Cowork 작업 폴더 내부 venv.
 
-M2 에서 새로 추가된 의존성 (`pyproject.toml`):
+M5 신규 의존성 (`pyproject.toml`):
 
-- `Pillow>=10`, `numpy>=1.26`, `librosa>=0.10`, `soundfile>=0.12`
-- `httpx>=0.27`, `pydantic>=2.6`
-- `open_clip_torch>=2.24`, `torch>=2.2` (단일 wheel — GPU/CPU 통합, 런타임 자동 감지)
-- `matplotlib>=3.8` (사운드 2차 폴백의 스펙트로그램 PNG 렌더)
-- dev: `pytest-asyncio>=0.23`, `respx>=0.20`
+- `fastapi>=0.110`, `uvicorn[standard]>=0.27` (transitive `websockets`, `httptools`, `watchfiles`)
+- `jinja2>=3.1`, `python-multipart>=0.0.9`, `sse-starlette>=2`
 
-M3 에서 새로 추가된 의존성:
+vendoring (`src/gah/web/static/vendor/`):
 
-- `mcp>=1.27,<2` (Anthropic 공식 Python SDK — FastMCP 데코레이터 + stdio transport).
+- `htmx.min.js` 1.9.12
+- `htmx-sse.min.js` 1.9.12
+- `alpine.min.js` 3.13.10
 
-**M4 는 의존성 변화 없음** — Pillow (M2) 가 lazy thumbnail 캐시에, PySide6 (M0) 이 풍부 UX 위젯에, mcp SDK (M3) 가 saved_searches 4 신규 도구에 그대로 재사용.
-
-기존 venv 를 그대로 쓰는 경우 다음 한 줄로 추가 설치:
+기존 venv 그대로 사용 시:
 
 ```powershell
 pip install -e D:\ClaudeCowork\game-asset-helper\game-asset-helper[dev]
 ```
 
-(편집 가능 설치라 `pyproject.toml` 의 새 의존성이 자동 따라온다. torch wheel ≈ 800 MB + librosa numba 약 200 MB.)
+→ `pyproject.toml` 의 신규 5 의존성 + transitives 자동 설치.
 
 ## 4. 새 세션에서 바로 이어가는 방법
-
-이미 venv 가 설치된 PC 라면:
-
-```powershell
-& "$env:USERPROFILE\.venvs\gah\Scripts\Activate.ps1"
-```
-
-```powershell
-cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
-```
-
-```powershell
-pytest -q
-```
-
-→ `452 passed, 4 deselected` 확인 (현재 브랜치 `feat/m4-search-ux` 기준). 그러면 M0~M4 기준점이 유지되고 있다는 뜻.
-
-venv 가 없는 새 PC 라면 [`CLAUDE.md §6`](./CLAUDE.md) 의 셋업 절차 그대로.
-
-## 5. 다음 세션 진입 절차 (M5 spec 검토 → plan 작성)
-
-**현재 상태**: M4 + M5 spec 이 main 으로 머지됨 ([PR #5](https://github.com/v0o0v/game-asset-helper/pull/5)). 새 세션의 첫 작업:
-
-### 5.1 환경 복원
 
 ```powershell
 & "$env:USERPROFILE\.venvs\gah\Scripts\Activate.ps1"
@@ -116,41 +90,72 @@ cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
 git status
 ```
 
-→ `On branch main` + `Your branch is up to date with 'origin/main'` + clean 확인.
+→ `On branch feat/m5-web-gui` + 25 (또는 그 이상 — 본 인계 커밋 포함) commits ahead of main + clean.
 
 ```powershell
 git log --oneline -10
 ```
 
-→ 최상단 머지 commit + 8 작업 커밋:
-```
-64ad166 Merge pull request #5 from v0o0v/feat/m4-search-ux
-8075de8 docs: 세션 인계 — M5 신규 마일스톤 + 로드맵 재정렬 반영
-a3b9782 docs(m5): spec — 웹 GUI 전환 + 라이브러리 리디자인 + Claude pick 인터랙션
-e691273 feat(m4): 저장된 검색 4 기능 + LabelChipPanel 종류별 탭
-209455d fix(m4): LibraryView 3-panel QSplitter 통합 누락 fix + app.py wiring
-b165088 docs(m4): verification + HANDOFF/CLAUDE/README — M4 완료 인계
-157889e feat(m4): 검색 UX 풍부화 — 6채널 + 다양성 + 페널티 학습 + 16 MCP + GUI 풍부
-b2879e1 test(m4): red phase — 100 신규 케이스 + 회귀 갱신 2건
-d19346c docs(m4): plan + todo — 검색 UX 풍부화 (1.5주 분량)
-```
+→ 최상단 본 인계 커밋 + 그 아래 Phase 2 fix + Phase 2D 의 통합 / 사운드 / 모달 / 디폴트 / 페이지네이션 / toolbar / 베이스 / Phase 2A 의 thumbnail/search-results/search 등.
 
 ```powershell
 pytest -q
 ```
 
-→ `452 passed, 4 deselected`.
+→ `506 passed, 7 skipped, 4 deselected` (또는 본 인계 커밋이 추가한 doc-only 케이스로 ±2). m4 GUI 7 파일은 Phase 5 폐기 예정이라 module-level skip.
 
-### 5.2 다음 작업 (우선순위 순)
+선택 — 사용자 직접 시각 검증:
 
-1. **새 브랜치 생성** — `git checkout -b feat/m5-web-gui` (또는 적당한 이름).
-2. **M5 spec 검토** — [`docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md`](docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md) 읽고 수정사항 있으면 사용자에게 확인.
-3. **사용자 승인 시 writing-plans 스킬 호출** — `milestones/M5_plan.md` 를 M3/M4 plan 템플릿으로 작성. spec §10 의 5.5주 일정 + §13 의 5 열린 질문을 plan 단계 §3.x 에서 확정.
-4. **M5 plan/todo 작성 → red phase 테스트 → green phase 구현 → verification** (M3/M4 cycle 동일).
+```powershell
+python -m gah --tray
+```
 
-### 5.3 새 세션이 자동 로드하는 메모리
+→ 브라우저로 라이브러리 페이지 진입. 검색 + 결과 + 카드 + 모달 + 사운드 시각 확인.
 
-다음 11 메모리가 자동 컨텍스트:
+## 5. 다음 세션 진입 절차 (Phase 3 시작)
+
+### 5.1 환경 복원 + 회귀 검증
+
+§4 의 4 명령 (Activate.ps1 / cd / git status / pytest -q) 실행. 506 passed 확인.
+
+### 5.2 Phase 3 작업 진입
+
+[`milestones/M5_plan.md`](milestones/M5_plan.md) §4.3 = **Phase 3 (우측 사이드 패널 B/C/D 탭, ~1.5주, 18 task)**. 핵심:
+
+- **Task 3.1**: ⚙ 토글 + 슬라이드 인 transition (사실 Phase 2B 의 `library.html` 에 이미 `x-show` + `x-transition` 적용 — 검증 + 보강만)
+- **Task 3.2**: 사이드 패널 리사이즈 핸들 (마우스 드래그)
+- **Task 3.3**: B/C/D 탭 헤더 + 컨테이너
+- **Task 3.4-3.9**: B 탭 (매칭 모드 / 라벨 검색 / 종류 탭 / axis 칩 FlowLayout / 다축 필터 / `/api/search` 의 selectedLabels + matchMode 통합)
+- **Task 3.10-3.13**: C 탭 (표시 옵션 양방향 바인딩 + 카드 메타 토글)
+- **Task 3.14-3.17**: D 탭 (프리셋 3개 + 슬라이더 펼침 + 저장된 검색 + 통일성/페널티 요약 + 반응형)
+- **Task 3.18**: 수동 시각 검증
+
+권장 sub-phase 분할 (Phase 2 패턴):
+
+- **Phase 3A**: Task 3.1-3.3 + 패널 컨테이너 + 탭 헤더 (스캐폴딩, ~3 commit)
+- **Phase 3B**: Task 3.4-3.9 + B 탭 (칩 패널 + 다축 필터, ~6 commit)
+- **Phase 3C**: Task 3.10-3.13 + C 탭 (표시 옵션, ~4 commit)
+- **Phase 3D**: Task 3.14-3.17 + D 탭 + 반응형 (~6 commit)
+
+각 sub-phase 마다 implementer (sonnet) + spec/quality reviewer (sonnet or haiku) 패턴.
+
+### 5.3 Phase 3 시작 전 빠른 cleanup (옵션 — 코드 리뷰 잔여)
+
+Phase 2 review 에서 합의된 follow-up:
+
+1. **`populated_deps` / `populated_client` fixture 통합** — 현재 `tests/test_web_routers_library_search.py`, `test_web_asset_detail.py`, `test_web_audio.py` 3 파일에 동일 fixture 중복. `tests/conftest.py` 로 이동 + 3 파일 정리. ~30 분.
+
+2. **자산 상세 모달 [채택]/[거부] 버튼 endpoint stub** — 현재 `POST /api/record-use` 와 `POST /api/feedback` 호출이 404 silent. Phase 3 의 feedback 라우터 채울 때 같이 처리. 또는 Phase 4 의 자동 record_asset_use 와 통합. **결정**: Phase 3 D 탭 (feedback 라우터 채움) 시점에 처리.
+
+3. **`pack_ids` 필터** — `SearchBody` 가 받지만 `SearchRequest` 에 미전달 (M4 SearchRequest 가 `pack_ids` 필드 없음). Phase 3 B 탭 다축 필터 시점에 `SearchRequest` 확장 또는 store-level filtering 추가 필요. **Phase 3B 의 Task 3.8 (다축 필터 드롭다운) 작업 안에서 처리**.
+
+4. **`Store.get_pack_by_id` 헬퍼** — `asset_detail.html` 의 pack 이름 조회를 위해 라우터에서 raw SQL 사용 중. Phase 5 (Pack 페이지) 시점에 Store 메서드 추가 권장.
+
+5. **`_card_wide.html` div 의 keyboard accessibility** — `hx-trigger="click"` 만 — `role="button"` + `tabindex="0"` 부재. Phase 6 마감 단계 흡수.
+
+### 5.4 새 세션이 자동 로드하는 메모리
+
+다음 메모리가 자동 컨텍스트 로드:
 
 - 마일스톤 수동 검증 항목 표시 방식 (feedback)
 - PR/커밋 한글 (feedback)
@@ -162,78 +167,101 @@ pytest -q
 - 검색 UX 전용 마일스톤 M4 신설 (project)
 - GAH 배포 전략 — torch CUDA/CPU 통합 빌드 (project)
 - M2.1 분석 큐 병렬화 패치 (project)
-- **M5 신규 — 웹 GUI 전환 결정 (project, 2026-05-17)**
+- M5 신규 — 웹 GUI 전환 결정 (project)
+- **M5 Phase 0~2 진행 상태 (신규)** (project)
+- **M5 subagent-driven-development 워크플로 (신규)** (project)
 
-### 5.4 M5 spec 핵심 (요약)
+### 5.5 M5 진행 현황 (한눈에)
 
-10 결정사항:
-1. 페인 = 정보 과부하 / 좌우 스크롤 / 섹션 불명 / 가중치 불가해
-2. 레이아웃 = 옵션 C (상단 자연어 검색 + ⚙ 고급 + 우측 슬라이드 B/C/D)
-3. B 탭 = 평탄 + 칩 검색 + FlowLayout wrap (좌우 스크롤 금지)
-4. C 탭 = 결과 표시 옵션 (그리드/리스트 토글 + 카드 크기 + 정렬 + 메타)
-5. 결과 카드 = 와이드 (썸네일 60×60 좌 + 텍스트 우, 사운드 인라인 ▶)
-6. D 탭 = 프리셋 우선 (슬라이더 접힘) + 저장된 검색 + 통일성/페널티 요약
-7. 호스팅 = FastAPI + 시스템 브라우저 (로컬 웹서버 9874, localhost 바인딩)
-8. Claude pick = 동기 long-poll (5분 timeout, `request_user_pick` 신규 MCP 도구)
-9. 프런트엔드 = HTMX + Alpine.js (빌드 X, ~30KB)
-10. M4 그대로 머지 → M5 가 Qt 위젯 4개 + 테스트 폐기 + 웹 신규
+| Phase | 상태 | 핵심 산출물 | commit |
+|---|---|---|---:|
+| plan/todo | ✅ | spec → plan 2097 줄 + todo | 1 |
+| Phase 0 (의존성/Config/vendoring) | ✅ | FastAPI 5 의존성 + Config 7 필드 + UsageSource enum + HTMX/Alpine 정적 자원 | 3 |
+| Phase 1A (web/url + pending + deps) | ✅ | `web.port` R/W, PendingPickQueue (asyncio.Future + lock + TTL), WebDeps | 4 (race fix 1 포함) |
+| Phase 1B (FastAPI factory + WebServer) | ✅ | `build_app` lifespan, uvicorn 별 스레드, 포트 폴백 9874→9883 | 2 |
+| Phase 1C (tray + run_tray + health) | ✅ | 트레이 메뉴 → 브라우저, MainWindow 의존성 0, SSE bus, m4 GUI 7 파일 skip | 3 |
+| Phase 2A (검색 백엔드 + 카드) | ✅ | `/api/search`, `/ui/search-results`, `/api/thumbnail`, 와이드/리스트 카드 partial | 4 (bug fix 1 포함) |
+| Phase 2B (페이지 베이스 + 검색 바) | ✅ | base/library/nav, CSS 변수 light/dark, 검색 바 300ms 디바운스, ⚙ 토글 | 1 |
+| Phase 2C (결과 툴바 + 페이지네이션 + 디폴트) | ✅ | view/size/sort 툴바, 더 보기 버튼, 빈 검색 → 라이브러리 추가일↓ 폴백 | 3 |
+| Phase 2D (모달 + 사운드 + 통합) | ✅ | `/ui/asset-detail`, `/api/audio`, `/ui/audio-player`, 모달 CSS | 3 |
+| Phase 2 fix (toolbar 중복) | ✅ | `_results_grid.html` ↔ `_results_cards_only.html` 분리 + library.html dead x-data 정리 | 1 |
+| **Phase 3** (B/C/D 사이드 패널) | **다음** | 우측 사이드 패널 + 칩 패널 + 슬라이더 + 저장된 검색 | 0 |
+| Phase 4 (`request_user_pick` + SSE) | 대기 | MCP 17번째 도구, SSE push, Claude 요청 카드 | 0 |
+| Phase 5 (Qt 폐기 + Pack/라벨 이식) | 대기 | 7 파일 삭제 + Pack/labels admin 웹 페이지 | 0 |
+| Phase 6 (마감 + verification) | 대기 | 다크모드 토글 / 에러 페이지 / WEB_UI_GUIDE / verification | 0 |
+| Final review | 대기 | 전체 변경 review | 0 |
 
-신규 의존성: `fastapi` `uvicorn[standard]` `jinja2` `python-multipart` `websockets`.
+## 6. 마일스톤 재정렬 (변경 없음)
 
-폐기 대상 (M5): `library_view.py` + `label_chip_panel.py` + `search_side_panel.py` + `filter_bar.py` + `test_library_search_ui*.py` 2개. 추가 검토 (`main_window.py` / `pack_view.py` — M5 plan §3.x).
+| 신규 # | 이름 | 일정 | 상태 |
+|---:|---|---:|---|
+| M0~M3 | (변경 없음) | — | ✅ 완료 (main) |
+| M4 | 검색 UX 풍부화 (Qt 위젯) | 1.5주 | ✅ 완료 (main, M5 가 Qt 위젯 폐기 예정) |
+| **M5** | **웹 GUI 전환 + 라이브러리 리디자인 + Claude pick** | **5.5주** | **🔄 진행 중 (~38%)** |
+| M6 | 시트 분석 + 애니메이션 | 1주 | 대기 |
+| M7 | Unity Asset Store 임포트 | 1주 | 대기 |
+| M8 | 패키징 + i18n | 1주 | 대기 |
 
-보존: 모든 백엔드 (store / search / consistency / usage / label_query / labels / thumbnails / suggest_packs / analysis 파이프라인 / mcp 16 도구).
+## 7. M5 spec §13 의 5 열린 질문 — 결정 적용 결과
 
-### 5.5 마일스톤 재정렬
+| # | spec 질문 | plan §3 결정 | Phase 0~2 적용 결과 |
+|---|---|---|---|
+| Q1 | FastAPI 같은 프로세스 vs subprocess | 같은 프로세스 + 별 스레드 | ✅ `WebServer` 가 `threading.Thread` 로 uvicorn 별 스레드 실행. Qt main thread 와 충돌 X. |
+| Q2 | WebSocket vs SSE | SSE (sse-starlette) | ✅ `web/sse_bus.py` thread-safe broadcast 구현. SSE 라우터는 Phase 4 가 채움 (Phase 1B 스텁만 등록). |
+| Q3 | Qt 폐기 시점 | M5 안 (Phase 5) | 🔄 진행 중 — Phase 1C 가 m4 7 파일 모듈 skip + Phase 5 가 삭제. |
+| Q4 | 자동 `record_asset_use` | 자동 호출 (source='claude_pick') | 🔄 Phase 4 가 구현 — `UsageSource.CLAUDE_PICK` enum 은 Phase 0 에서 정의 완료. |
+| Q5 | i18n 백엔드 | v1 placeholder `_t()`, 본격은 M8 | ✅ `web/i18n.py` 의 `_t()` passthrough + Jinja2 `_` 글로벌 등록. 모든 사용자 노출 문자열은 `{{ _("...") }}` 로 감싸 둠. |
 
-| 신규 # | 이름 | 일정 | 기존 # |
-|---:|---|---:|---:|
-| M0~M3 | (변경 없음) | — | — |
-| M4 | 검색 UX 풍부화 (Qt 위젯) | (완료, 머지 후 폐기 예정) | M4 |
-| **M5** | **웹 GUI 전환 + 라이브러리 리디자인 + Claude pick 인터랙션** | **~5.5주** | **신규** |
-| M6 | 시트 분석 + 애니메이션 | 1주 | 기존 M5 |
-| M7 | Unity Asset Store 임포트 | 1주 | 기존 M6 |
-| M8 | 패키징 + i18n | 1주 | 기존 M7 |
+신규 결정 적용 결과:
 
-## 6. M4 에서 의도적으로 남겨둔 자리 (M5 에서 처리 / 폐기)
+- **MCP↔FastAPI HTTP loopback** — `/internal/user-pick` long-poll (Phase 4 가 구현). `web.port` 파일 R/W (Phase 1A) 가 인프라.
+- **포트 폴백** — `web_port` 부터 `web_port_max_attempts` (10) 회 시도. ✅ `WebServer._find_available_port` 구현 완료.
+- **PendingPick TTL/한도** — TTL = `claude_pick_timeout_seconds + 60s`, max_pending = 20. ✅ `PendingPickQueue.cleanup_expired` (Phase 1A) + lifespan 의 cleanup 잡 (Phase 1B). API 라우터는 Phase 4 가 등록.
 
-대부분 항목이 M5 의 웹 UI 가 처음부터 다시 디자인하므로 자동 흡수.
+## 8. M5 Phase 0~2 의 의도적으로 미룬 항목
 
-- **그리드 ↔ 리스트 뷰 토글 / hover 미리보기 / 사운드 인라인 재생 / 결과 비교 보기 / 키보드 단축키** — **M5 스펙에 모두 포함**.
-- **`cleanup_feedback_records` 잡** — 그대로 M6+ (백엔드 운영).
-- **`label_query` 한국어 키워드** (`그리고`/`또는`/`제외`) — 그대로 M6+ (파서 확장).
-- **`label_query` 혼합 AND/OR (OR-of-AND DNF)** — 그대로 M6+ (파서 확장).
-- **`preview_blurb` 의 Gemma description 통합** — 그대로 M6+ (`assets.description` 컬럼 + 분석 파이프라인 확장 필요).
-- **MMR 의 vector cosine similarity** — 그대로 M6+ (검색 알고리즘 튜닝).
-- **pack-level penalty 임계 GUI 노출** — **M5 스펙에 포함** (D 탭 슬라이더 추가).
+Phase 3~6 가 채움:
 
-M3 에서 미뤘던 자리 중 M4 가 채운 것 (참고):
+- **B/C/D 사이드 패널 UI** — Phase 3
+- **SSE 라우터 실 구현 (`/sse/notifications`)** — Phase 4 (현재 빈 stub 라우터만)
+- **Claude `request_user_pick` MCP 도구 + `/internal/user-pick` 라우터** — Phase 4 (PendingPickQueue 인프라는 Phase 1A 완료)
+- **자동 `record_asset_use(source='claude_pick')`** — Phase 4 (UsageSource enum 은 Phase 0 완료)
+- **Pack 페이지 (`/packs`) + 라벨 관리 페이지 (`/labels/admin`)** — Phase 5 (현재 빈 stub 라우터만 + nav 의 링크는 404)
+- **Qt UI 파일 7개 + 테스트 4 파일 실 삭제** — Phase 5 (현재 module-level skip)
+- **다크모드 사용자 토글** — Phase 6 (현재 OS prefers-color-scheme 자동만)
+- **반응형 모바일 최적화** — Phase 6 (현재 ≤768px 사이드 자동 닫힘만)
+- **`WEB_UI_GUIDE.md` 작성** — Phase 6
+- **`M5_verification.md`** — Phase 6 끝
 
-- `suggest_packs.samples` 풍부화 → 채움 (sprite thumbnail_path + top-2 라벨 blurb).
-- `find_asset` 자연어 라벨 부울 파서 → 채움 (label_query 필드).
-- 결과 다양성 부스터 (`cross_pack_filter`) → 채움 (`diversity` 필드, none/mmr/round_robin).
-- `report_feedback` 페널티 학습 → 채움 (signed weight + asset/pack-level).
+## 9. 알려진 한계 / 주의사항 (Phase 3 흡수 가능)
 
-여전히 M3 에서 미룬 것:
+§5.3 의 5 follow-up 사항 (fixture 중복 / adopt 버튼 404 / pack_ids 미전달 / Store 헬퍼 부재 / keyboard accessibility) + Phase 5 폐기 예정 7 파일 skip 마크 유지.
 
-- 암묵 top1 추정 (`implicit_top1_enabled`) — Config 기본 OFF. M4 도 그대로.
-- `request_rescan` 의 워커 없음 케이스 — `--mcp` 단독 실행 시 `mark_pending` 만 + warnings. M4 도 그대로.
+또한:
 
-## 7. 문서 맵
+- **`SearchRequest.offset` 미지원** — M4 가 만든 SearchRequest 에 offset 필드 없음. `_do_search` 가 `count = body.count + body.offset` 으로 fetch 후 Python 슬라이싱. 큰 offset 에선 비효율 — M6 또는 후속 phase 에서 SearchRequest 확장 권장.
+- **`store.list_assets(limit=10_000)`** — 디폴트 상태 폴백에서 사용. 매우 큰 라이브러리 (1만+) 에선 비효율 — M6 또는 후속 phase 에서 `count_assets` 기반 동적 limit 으로 개선.
+- **m4 7 파일 skip** — Phase 5 가 파일 자체 삭제 시 skip 마크도 같이 사라짐. 이때 `pytest -q` 통과 카운트가 변동 (skip → 0, total 도 감소).
+- **autoplay** — `_audio_player.html` 의 `<audio autoplay>` 는 사용자 클릭 후라 브라우저 정책 통과.
+
+## 10. 문서 맵
 
 - [`README.md`](./README.md) — 사용자용 시작 안내
-- [`CLAUDE.md`](./CLAUDE.md) — Claude(코드 에이전트)용 작업 가이드
-- [`HANDOFF.md`](./HANDOFF.md) — 이 파일, 마일스톤 경계의 인계 스냅샷
+- [`CLAUDE.md`](./CLAUDE.md) — Claude 작업 가이드 (§2 진행 현황 표 + §8 다음 작업)
+- [`HANDOFF.md`](./HANDOFF.md) — 이 파일, 마일스톤/phase 경계 인계
 - [`DESIGN.md`](./DESIGN.md) — 전체 아키텍처·스키마·MCP 명세
-- [`milestones/`](./milestones/) — 마일스톤별 plan/todo/verification
-- [`docs/MCP_USAGE_GUIDE.md`](./docs/MCP_USAGE_GUIDE.md) — Claude Code 가 MCP 도구를 어떻게 활용하는지 가이드 (M3 가 본격화)
+- [`milestones/M5_plan.md`](./milestones/M5_plan.md) — M5 의 6 phase 75 task plan
+- [`milestones/M5_todo.md`](./milestones/M5_todo.md) — TDD 체크리스트
+- [`milestones/`](./milestones/) — 이전 마일스톤들의 plan/todo/verification
+- [`docs/MCP_USAGE_GUIDE.md`](./docs/MCP_USAGE_GUIDE.md) — Phase 4 가 17번째 도구로 갱신 예정
+- [`docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md`](./docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md) — M5 spec 원본
 
-## 8. 갱신 규칙
+## 11. 갱신 규칙
 
 이 문서는 다음 시점에 반드시 업데이트한다.
 
-1. 마일스톤이 완료될 때 (§2 검증 결과, §1 한 줄 요약, "다음 작업").
+1. Phase 또는 마일스톤이 완료될 때 (§1 한 줄 요약, §2 검증 결과, §5 다음 작업).
 2. 환경 결정이 바뀔 때 (§3).
-3. 새 금기·주의사항이 발견될 때 (§3 또는 별도 섹션).
+3. 새 금기·주의사항이 발견될 때 (§9).
 
 내용을 누적하기보다 **현재 시점의 진실만** 적는다. 과거 이력은 git log 에 맡긴다.
