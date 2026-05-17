@@ -27,7 +27,7 @@
     </div>
     <div class="card-labels" x-show="$store.search.cardMeta.labels">
       {% if row.matched_labels %}
-        {{ (row.matched_labels[:3] | map(attribute='label') | list) | join(" &middot; ") }}
+        {{ (row.matched_labels[:3] | map(attribute='label') | list) | join(" · ") }}
       {% endif %}
     </div>
     <div class="card-meta" x-show="$store.search.cardMeta.pack">
