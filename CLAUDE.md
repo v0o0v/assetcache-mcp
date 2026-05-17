@@ -137,7 +137,7 @@ cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
 pytest -q
 ```
 
-`pytest -q`가 **452 passed** (+ 4 deselected) 로 떨어지면 준비 완료 (M0~M3 합 333 + M4 100 + M4 follow-up 19). `pytest -m mcp_integration` 으로 옵트인 2 케이스 (실 `python -m gah --mcp` subprocess + JSON-RPC, **16 도구** 응답) 추가 검증 가능. M4 시점 검증 결과는 [`milestones/M4_verification.md`](./milestones/M4_verification.md). **현재 브랜치 `feat/m4-search-ux` (머지 대기)**.
+`pytest -q`가 **452 passed** (+ 4 deselected) 로 떨어지면 준비 완료 (M0~M3 합 333 + M4 100 + M4 follow-up 19). `pytest -m mcp_integration` 으로 옵트인 2 케이스 (실 `python -m gah --mcp` subprocess + JSON-RPC, **16 도구** 응답) 추가 검증 가능. M4 시점 검증 결과는 [`milestones/M4_verification.md`](./milestones/M4_verification.md). **M4 + M5 spec 은 [PR #5](https://github.com/v0o0v/game-asset-helper/pull/5) 로 main 머지됨** — 새 작업은 main 에서 새 브랜치로.
 
 ## 7. 자주 쓰는 명령
 
@@ -171,15 +171,15 @@ python -m gah --version
 
 ### 8.1 현재 상태
 
-- M4 가 `feat/m4-search-ux` 브랜치에 7 커밋으로 완료 + M5 spec 1 커밋 (`a3b9782`). 머지 대기.
-- M5 spec 작성됨: [`docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md`](./docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md) — 10 결정사항 + 13 섹션.
+- M4 + M5 spec 이 main 으로 머지됨 ([PR #5](https://github.com/v0o0v/game-asset-helper/pull/5), 머지 commit `64ad166`).
+- M5 spec: [`docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md`](./docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md) — 10 결정사항 + 13 섹션.
 - M4 의 백엔드 (search 6채널 / saved_searches / feedback_records / mcp 16 도구) 는 100% 보존, **Qt UI 위젯 4개 + 테스트 2 파일은 M5 가 폐기 후 웹 신규 구현**.
 
 ### 8.2 다음 세션 진입 시 첫 작업
 
-1. **M5 spec 사용자 검토** — 위 경로 spec 읽고 수정사항 확인.
-2. **사용자 승인 시 `superpowers:writing-plans` 스킬 호출** — `milestones/M5_plan.md` 작성 (M3/M4 plan 템플릿). spec §10 의 5.5주 일정 + §13 의 5 열린 질문 (FastAPI 같은 프로세스 vs subprocess, WebSocket vs SSE, Pack 탭 폐기 시점, record_asset_use 자동 호출, i18n 백엔드) 을 plan §3.x 에서 확정.
-3. **M4 머지 결정** — 사용자가 `feat/m4-search-ux` → main 머지 시점 결정 (M5 작업 전 / 중 / 후).
+1. **새 브랜치 생성** — `git checkout -b feat/m5-web-gui` (main 에서).
+2. **M5 spec 사용자 검토** — 위 경로 spec 읽고 수정사항 확인.
+3. **사용자 승인 시 `superpowers:writing-plans` 스킬 호출** — `milestones/M5_plan.md` 작성 (M3/M4 plan 템플릿). spec §10 의 5.5주 일정 + §13 의 5 열린 질문 (FastAPI 같은 프로세스 vs subprocess, WebSocket vs SSE, Pack 탭 폐기 시점, record_asset_use 자동 호출, i18n 백엔드) 을 plan §3.x 에서 확정.
 4. **M5_todo.md → red phase → green phase → M5_verification.md** (M3/M4 cycle 동일).
 
 ### 8.3 핵심 결정사항 (spec §2 그대로)
