@@ -233,13 +233,25 @@ html, body {
 @media (max-width: 768px) {
   .library-body { flex-direction: column; padding: 12px; }
   .side-panel {
-    position: fixed; top: 0; right: 0; height: 100%; width: 100% !important;
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    height: 100%; width: 100% !important;
     border-radius: 0;
     z-index: 50;
+    box-shadow: -4px 0 16px rgba(0,0,0,0.2);
+    transform: translateX(100%);
+    transition: transform 200ms ease;
+  }
+  /* Alpine x-show 가 display:none → display:block 토글을 하므로
+     display:block 일 때 슬라이드 인. x-show 제거 전 transition 적용.  */
+  .side-panel:not([style*="display: none"]):not([style*="display:none"]) {
+    transform: translateX(0);
   }
   .results-cards.view-mode-grid .grid-container {
     grid-template-columns: 1fr;
   }
+  /* 모바일에서 리사이즈 핸들 숨김 */
+  .resize-handle { display: none; }
 }
 
 /* === 결과 영역 툴바 === */

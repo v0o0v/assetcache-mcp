@@ -271,10 +271,11 @@ def test_library_page_has_c_view_mode_toggle(client):
     assert "카드 크기" in r.text
 
 
-def test_library_page_has_d_placeholder(client):
-    """D 탭 placeholder 내용이 렌더된다."""
+def test_library_page_has_d_tab_sections(client):
+    """D 탭 실 구현 (저장된 검색 + 통일성/페널티) 섹션이 렌더된다."""
     r = client.get("/library")
-    assert "Phase 3D" in r.text
+    assert "저장된 검색" in r.text
+    assert "통일성 / 페널티" in r.text
 
 
 def test_side_tab_content_has_x_show(client):
