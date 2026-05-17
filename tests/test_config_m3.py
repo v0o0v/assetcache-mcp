@@ -6,14 +6,19 @@ import pytest
 
 
 def test_new_fields_have_documented_defaults():
+    """M4 가 가중치 기본값을 재배분 (5채널 → 6채널) — 본 케이스도 6채널로 갱신.
+
+    semantic 0.40 → 0.35, keyword 0.15 → 0.10, feedback 0.10 신규 (합 1.00 유지).
+    """
     from gah.config import Config
 
     c = Config()
-    assert c.weight_semantic == 0.40
-    assert c.weight_keyword == 0.15
-    assert c.weight_label_match == 0.20
-    assert c.weight_consistency == 0.20
-    assert c.weight_recency == 0.05
+    assert c.weight_semantic == pytest.approx(0.35)
+    assert c.weight_keyword == pytest.approx(0.10)
+    assert c.weight_label_match == pytest.approx(0.20)
+    assert c.weight_consistency == pytest.approx(0.20)
+    assert c.weight_recency == pytest.approx(0.05)
+    assert c.weight_feedback == pytest.approx(0.10)   # M4 신규
     assert c.consistency_locked_max_packs == 2
     assert c.consistency_locked_min_uses == 5
     assert c.palette_delta_e_threshold == pytest.approx(30.0)
@@ -23,12 +28,13 @@ def test_new_fields_have_documented_defaults():
 
 
 def test_weight_sum_equals_one_within_tolerance():
+    """M4 6채널 합 = 1.0 (M3 5채널 단언을 갱신)."""
     from gah.config import Config
 
     c = Config()
     total = (
         c.weight_semantic + c.weight_keyword + c.weight_label_match
-        + c.weight_consistency + c.weight_recency
+        + c.weight_consistency + c.weight_recency + c.weight_feedback
     )
     assert total == pytest.approx(1.0, abs=1e-6)
 

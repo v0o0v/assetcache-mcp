@@ -93,7 +93,8 @@ def test_stdio_subprocess_initialize_handshake(tmp_path):
         proc.wait(timeout=5)
 
 
-def test_stdio_subprocess_tools_list_returns_12(tmp_path):
+def test_stdio_subprocess_tools_list_returns_16(tmp_path):
+    """M3 의 12 → M4 의 16 (saved_searches 4 신규 도구 추가)."""
     proc = _spawn(tmp_path)
     try:
         # initialize
@@ -111,11 +112,16 @@ def test_stdio_subprocess_tools_list_returns_12(tmp_path):
         tools = resp["result"]["tools"]
         names = {t["name"] for t in tools}
         expected = {
+            # M3 12 도구
             "find_asset", "get_asset", "list_assets", "list_packs", "suggest_packs",
             "record_asset_use", "set_project_pin", "request_rescan", "report_feedback",
             "list_label_axes", "list_labels", "describe_label",
+            # M4 4 신규 도구
+            "save_search", "list_saved_searches", "delete_saved_search",
+            "run_saved_search",
         }
         assert expected <= names
+        assert len(names) == 16
     finally:
         proc.terminate()
         proc.wait(timeout=5)
