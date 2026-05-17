@@ -53,9 +53,19 @@ def test_library_page_has_advanced_toggle(client):
     assert "고급" in r.text  # Korean label
 
 
-def test_search_bar_has_300ms_debounce(client):
+def test_search_bar_triggers_only_on_submit_and_load(client):
+    """검색 바는 엔터/검색 버튼 (submit) + 페이지 로드만 trigger — 자동 디바운스 없음."""
     r = client.get("/library")
-    assert "delay:300ms" in r.text
+    assert 'hx-trigger="submit, load"' in r.text
+    # 사용자 의도: 자동 입력 디바운스 비활성 (검색 버튼 / 엔터로만 실행)
+    assert "delay:300ms" not in r.text
+
+
+def test_search_bar_has_explicit_submit_button(client):
+    """엔터 외에도 명시적 🔍 검색 버튼이 form 안에 있어야 한다."""
+    r = client.get("/library")
+    assert 'type="submit"' in r.text
+    assert 'class="search-submit"' in r.text
 
 
 def test_search_bar_targets_results(client):

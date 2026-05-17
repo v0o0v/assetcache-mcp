@@ -57,7 +57,8 @@ html, body {
   color: var(--fg);
   font-size: 1em;
 }
-.search-bar .advanced-toggle {
+.search-bar .advanced-toggle,
+.search-bar .search-submit {
   padding: 10px 16px;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -65,6 +66,11 @@ html, body {
   color: var(--fg);
   cursor: pointer;
   white-space: nowrap;
+}
+.search-bar .search-submit {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
 }
 .search-bar .advanced-toggle.active {
   background: var(--accent);

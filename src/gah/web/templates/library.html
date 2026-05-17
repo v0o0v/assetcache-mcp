@@ -3,16 +3,16 @@
 
 {% block content %}
 <div class="library-page" x-data="{}">
-  {# 상단 검색 바 — HTMX hx-post + 300ms 디바운스 #}
+  {# 상단 검색 바 — 엔터 또는 검색 버튼 클릭으로만 검색 (자동 디바운스 없음) #}
   <form class="search-bar"
         hx-post="/ui/search-results"
         hx-target="#results"
         hx-swap="innerHTML"
-        hx-trigger="input changed delay:300ms, submit, change, load"
+        hx-trigger="submit, load"
         x-data="{}"
         @submit.prevent>
     <input type="search" name="query"
-           placeholder="{{ _('자연어 검색…  (예: 어두운 BGM 짧은 거)') }}"
+           placeholder="{{ _('자연어 검색…  (엔터 또는 🔍 버튼)') }}"
            x-model="$store.search.query"
            autocomplete="off" />
     <input type="hidden" name="count" value="20" />
@@ -22,6 +22,11 @@
     <input type="hidden" name="match_mode" :value="$store.search.matchMode" />
     <input type="hidden" name="labels" :value="JSON.stringify($store.b.selectedLabels)" />
     <input type="hidden" name="pack_ids" :value="JSON.stringify($store.b.selectedPackIds)" />
+    <button type="submit"
+            class="search-submit"
+            aria-label="{{ _('검색') }}">
+      🔍 <span class="label">{{ _("검색") }}</span>
+    </button>
     <button type="button"
             class="advanced-toggle"
             :class="{ active: $store.advanced.open }"
