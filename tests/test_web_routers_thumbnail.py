@@ -72,6 +72,48 @@ def test_thumbnail_sprite_asset_returns_png(client, deps_fixture, tmp_path):
     assert r.content[:4] == b"\x89PNG"
 
 
+def test_thumbnail_etag_contains_asset_id(client, deps_fixture):
+    """ETag 헤더가 '{asset_id}:{mtime_ns}' 형식이어야 충돌 방지 보장."""
+    from PIL import Image
+    import time, json
+
+    p = deps_fixture.paths.library_dir / "etag_pack" / "shield.png"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    Image.new("RGBA", (32, 32), (0, 255, 0, 255)).save(p)
+
+    now = int(time.time())
+    store = deps_fixture.store
+    with store.write_lock:
+        store.conn.execute(
+            "INSERT INTO packs (name, display_name, vendor, enabled, added_at)"
+            " VALUES (?,?,?,1,?)",
+            ("etag_pack", "ETag Pack", "test", now),
+        )
+        pack_id = store.conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+        store.conn.execute(
+            "INSERT INTO assets (pack_id, path, kind, file_hash, file_size,"
+            "  added_at, analysis_state)"
+            " VALUES (?,?,?,?,?,?,?)",
+            (pack_id, str(p), "sprite", "etag999", 512, now, "ok"),
+        )
+        asset_id = store.conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+        store.conn.execute(
+            "INSERT INTO sprite_meta (asset_id, width, height, has_alpha,"
+            "  is_pixel_art, dominant_colors)"
+            " VALUES (?,?,?,?,?,?)",
+            (asset_id, 32, 32, 1, 0, json.dumps([])),
+        )
+        store.conn.commit()
+
+    r = client.get(f"/api/thumbnail/{asset_id}")
+    assert r.status_code == 200
+    etag = r.headers.get("etag", "")
+    # ETag 형식: "{asset_id}:{mtime_ns}"
+    assert etag.startswith(f'"{asset_id}:'), (
+        f"ETag 이 asset_id prefix 를 포함해야 함: {etag!r}"
+    )
+
+
 def test_thumbnail_sound_returns_404(client, deps_fixture):
     """sound 자산 → 썸네일 없음 → 404."""
     import time

@@ -103,8 +103,15 @@ def _apply_sort(rows: list[dict[str, Any]], sort: str) -> list[dict[str, Any]]:
 
 
 def _do_search(deps: Any, body: SearchBody) -> dict[str, Any]:
-    """HybridSearcher 호출 핵심 로직 — /api/search 와 /ui/search-results 가 공유."""
+    """HybridSearcher 호출 핵심 로직 — /api/search 와 /ui/search-results 가 공유.
+
+    SearchRequest 에 offset 필드가 없으므로 fetch_count = count + offset 으로
+    더 많이 받아온 뒤 Python 에서 슬라이싱한다.
+    """
     from ...core.search import SearchRequest
+
+    # offset 만큼 앞 결과를 버릴 수 있도록 충분히 가져온다.
+    fetch_count = body.count + body.offset
 
     sr = SearchRequest(
         query=body.query,
@@ -113,28 +120,28 @@ def _do_search(deps: Any, body: SearchBody) -> dict[str, Any]:
         kind=body.kind,
         diversity=body.diversity,
         diversity_lambda=body.diversity_lambda,
-        count=body.count,
+        count=fetch_count,
         # labels_all/any/none — match_mode 에 따라 분배 (Phase 3 활용)
         # body.labels 는 label id 리스트이나 SearchRequest 는 LabelFilter 리스트.
         # v1 에서는 label_query 로 처리하고 labels 는 패스.
     )
     response = deps.search.hybrid(sr)
 
-    rows = [_row_to_dict(r) for r in response.results]
-    # offset 클라이언트 슬라이싱 (SearchRequest 에 offset 없음)
-    rows = rows[body.offset:body.offset + body.count]
-    rows = _apply_sort(rows, body.sort)
+    all_rows = [_row_to_dict(r) for r in response.results]
+    # fetch_count 개 중 offset 이후만 count 개 취함
+    sliced = all_rows[body.offset: body.offset + body.count]
+    sliced = _apply_sort(sliced, body.sort)
 
-    total = len(response.results)
+    total = len(all_rows)
     next_offset: int | None = (
         body.offset + body.count
-        if (body.offset + body.count) < total
+        if len(all_rows) > body.offset + body.count
         else None
     )
     return {
         "query_id": response.query_id,
         "total": total,
-        "rows": rows,
+        "rows": sliced,
         "next_offset": next_offset,
     }
 
@@ -227,7 +234,8 @@ def api_thumbnail(asset_id: int, request: Request) -> Response:
     if thumb is None or not thumb.exists():
         raise HTTPException(status_code=404, detail="thumbnail generation failed")
 
-    etag = f'"{thumb.stat().st_mtime_ns}"'
+    # asset_id 를 prefix 로 포함해 동일 mtime 의 다른 에셋 간 충돌 방지
+    etag = f'"{asset_id}:{thumb.stat().st_mtime_ns}"'
     if request.headers.get("if-none-match") == etag:
         return Response(status_code=304)
 

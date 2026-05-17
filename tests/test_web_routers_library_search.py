@@ -74,3 +74,21 @@ def test_ui_search_results_form_data(client, deps_fixture):
     """form-data (HTMX hx-post + hx-include) 도 받아들임."""
     r = client.post("/ui/search-results", data={"query": "test", "count": "5"})
     assert r.status_code == 200
+
+
+def test_api_search_offset_returns_different_rows(client, deps_fixture):
+    """offset=5 + count=5 → 6번째부터 10번째 row (정상 라이브러리 가정).
+    빈 라이브러리에선 rows=[] 이더라도 200 응답이 와야 한다."""
+    r1 = client.post("/api/search", json={"query": "", "count": 10, "offset": 0})
+    r2 = client.post("/api/search", json={"query": "", "count": 5, "offset": 5})
+    assert r1.status_code == 200
+    assert r2.status_code == 200
+    # 빈 라이브러리도 rows 는 list 형태여야 함
+    assert isinstance(r1.json()["rows"], list)
+    assert isinstance(r2.json()["rows"], list)
+    # offset=5 에서 r1 의 앞 5 개와 겹치지 않아야 한다 (결과가 충분한 경우)
+    ids1 = [row["asset_id"] for row in r1.json()["rows"]]
+    ids2 = [row["asset_id"] for row in r2.json()["rows"]]
+    if ids1 and ids2:
+        # r2 는 r1[5:10] 과 동일해야 함
+        assert ids2 == ids1[5:10]
