@@ -648,7 +648,7 @@ def tool_request_user_pick(
     try:
         with _httpx.Client(timeout=req.timeout_seconds + 10) as c:
             r = c.post(url, json=req.model_dump(exclude_none=False))
-    except _httpx.ConnectError:
+    except _httpx.TransportError:
         raise McpToolError("503_no_ui_available", "GAH 웹 UI 연결 실패.")
 
     if r.status_code == 200:
@@ -656,7 +656,7 @@ def tool_request_user_pick(
         _auto_record_asset_use(deps, req, result)
         return result
     if r.status_code == 408:
-        raise McpToolError("408_timeout", "사용자가 5분 안에 응답하지 않았습니다.")
+        raise McpToolError("408_timeout", f"사용자가 {req.timeout_seconds}초 안에 응답하지 않았습니다.")
     if r.status_code == 499:
         raise McpToolError("499_user_cancelled", "사용자가 거부했습니다.")
     if r.status_code == 503:

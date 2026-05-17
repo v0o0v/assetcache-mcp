@@ -6,8 +6,6 @@ respx 로 httpx 호출을 모킹하므로 실제 서버가 필요 없다.
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import httpx
 import pytest
 import respx
