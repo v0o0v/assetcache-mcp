@@ -23,10 +23,11 @@
 | M2 — 분석 파이프라인 + CLIP | ✅ 완료 | Pillow·numpy 기술 특성·librosa+soundfile·Ollama 클라이언트·`nomic-embed-text`·CLIP zero-shot·24축 ≈ 316 라벨 시드+`LabelRegistry`+라벨 관리 다이얼로그·분석 큐+ETA 상태바 |
 | M2.1 — 분석 큐 병렬화 패치 | ✅ 완료 | 동시성 1→3, Ollama semaphore(parallel=2), CLIP threading.Lock, SQLite write_lock+busy_timeout, GUI 250ms 디바운스 |
 | M3 — 검색 백엔드 + 통일성 + MCP | ✅ 완료 | HybridSearcher 가중합 0.40/0.15/0.20/0.20/0.05, ConsistencyScorer §4.6 표, UsageTracker, MCP stdio 12 도구 (mcp 1.27), GUI 검색 박스, `docs/MCP_USAGE_GUIDE.md` 본격화 |
-| M4 — 검색 UX 풍부화 (1.5주) | 다음 | 자연어 라벨 부울 파서·다축 필터 칩·가중치 슬라이더·저장된 검색·suggest_packs samples 풍부화 |
-| M5 — 시트 분석 + 애니메이션 (1주) | 대기 | 격자 분할·`suggest_animation_frames` |
-| M6 — Unity Asset Store 임포트 (1주) | 대기 | `.unitypackage` 파서·캐시 스캐너 |
-| M7 — GUI 마감 + 패키징 (1주) | 대기 | 상세/설정/프로젝트 탭·Qt i18n·PyInstaller |
+| M4 — 검색 UX 풍부화 | ✅ 완료 (머지 대기) | label_query 파서 AND/OR/NOT + axis:label + bare 자동매칭, HybridSearcher 6채널 재배분 0.35/0.10/0.20/0.20/0.05/**0.10 feedback**, diversity none/mmr/round_robin, saved_searches 4 신규 MCP 도구 (12→16), feedback_records signed weight 페널티 학습 asset/pack-level, suggest_packs samples 풍부화 thumbnail+blurb, GUI 풍부 UX (LabelChipPanel/SearchSidePanel/FilterBar). 사용자 GUI 검증 결과 4 페인 도출 → M5 spec 작성 (Qt UI 위젯들은 M5 가 폐기 예정) |
+| **M5 — 웹 GUI 전환 + 라이브러리 리디자인 + Claude pick 인터랙션** (~5.5주) | **다음** (spec 작성됨, plan 대기) | FastAPI + HTMX + Alpine 로컬 웹서버, 옵션 C 레이아웃 (상단 검색 + ⚙ 고급 + 우측 슬라이드 B/C/D), 와이드 카드 그리드, `request_user_pick` 신규 MCP 도구 (동기 long-poll 5분), Qt 위젯 4개 폐기. spec: [`docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md`](./docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md) |
+| M6 — 시트 분석 + 애니메이션 (1주) | 대기 | 격자 분할·Aseprite/TexturePacker JSON·`suggest_animation_frames` |
+| M7 — Unity Asset Store 임포트 (1주) | 대기 | `.unitypackage` 파서·캐시 스캐너 |
+| M8 — 패키징 + i18n (1주) | 대기 | PyInstaller/Tauri 빌드, gettext / Jinja i18n |
 
 각 마일스톤의 상세 계획·체크리스트·검증 결과는 `milestones/M{N}_plan.md`, `M{N}_todo.md`, `M{N}_verification.md`.
 
@@ -136,7 +137,7 @@ cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
 pytest -q
 ```
 
-`pytest -q`가 333 passed (+ 4 deselected) 로 떨어지면 준비 완료 (M0~M2.1 합 221 + M3 110). `pytest -m mcp_integration` 으로 옵트인 2 케이스 (실 `python -m gah --mcp` subprocess + JSON-RPC) 추가 검증 가능. M3 시점 검증 결과는 [`milestones/M3_verification.md`](./milestones/M3_verification.md).
+`pytest -q`가 **452 passed** (+ 4 deselected) 로 떨어지면 준비 완료 (M0~M3 합 333 + M4 100 + M4 follow-up 19). `pytest -m mcp_integration` 으로 옵트인 2 케이스 (실 `python -m gah --mcp` subprocess + JSON-RPC, **16 도구** 응답) 추가 검증 가능. M4 시점 검증 결과는 [`milestones/M4_verification.md`](./milestones/M4_verification.md). **현재 브랜치 `feat/m4-search-ux` (머지 대기)**.
 
 ## 7. 자주 쓰는 명령
 
@@ -164,26 +165,51 @@ python -m gah --tray
 python -m gah --version
 ```
 
-## 8. 다음 작업 (M4)
+## 8. 다음 작업 (M5)
 
-M4 — **검색 UX 풍부화** (예상 1.5주 분량, 메모리 `project_search_ux_milestone.md`).
+**M5 — 웹 GUI 전환 + 라이브러리 리디자인 + Claude pick 인터랙션** (~5.5주, **신규 마일스톤**).
 
-핵심 산출물 (자세한 건 M3 사이클을 본떠 `milestones/M4_plan.md`부터 작성):
+### 8.1 현재 상태
 
-- `src/gah/core/label_query.py` — 자연어 라벨 부울 파서 (`"pixel art AND dark"` → `LabelFilter[]` 변환). M3 의 `SearchRequest.labels_*` 구조화 입력 위에 얹힌다.
-- GUI 라이브러리 탭 풍부 UX — 사이드 패널 라벨 칩 다중 선택, 5 채널 가중치 슬라이더, 결과 행에 `matched_labels` 칩 + 점수 시각화, "저장된 검색" 사이드바.
-- `suggest_packs` 응답의 `samples` 필드 풍부화 — 썸네일 경로 + `preview_blurb` + 사운드 미리듣기 메타.
-- 결과 다양성 부스터 — `find_asset` 에 `cross_pack_filter` 옵션 (MMR / round-robin / softmax 중 결정).
-- `report_feedback` 페널티 학습 — `search_queries` + `asset_usage` 의 negative 신호를 다음 검색 가중치에 반영.
+- M4 가 `feat/m4-search-ux` 브랜치에 7 커밋으로 완료 + M5 spec 1 커밋 (`a3b9782`). 머지 대기.
+- M5 spec 작성됨: [`docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md`](./docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md) — 10 결정사항 + 13 섹션.
+- M4 의 백엔드 (search 6채널 / saved_searches / feedback_records / mcp 16 도구) 는 100% 보존, **Qt UI 위젯 4개 + 테스트 2 파일은 M5 가 폐기 후 웹 신규 구현**.
 
-**M4 시작 방법**
+### 8.2 다음 세션 진입 시 첫 작업
 
-1. `milestones/M4_plan.md` 작성 (M3 plan 을 템플릿 삼아)
-2. `milestones/M4_todo.md` 작성
-3. `tests/test_label_query.py`, `tests/test_library_search_ui_rich.py`, `tests/test_search_diversity.py`, `tests/test_feedback_penalty.py` 등 실패 테스트부터 작성
-4. 구현 → 통과 → `milestones/M4_verification.md`
+1. **M5 spec 사용자 검토** — 위 경로 spec 읽고 수정사항 확인.
+2. **사용자 승인 시 `superpowers:writing-plans` 스킬 호출** — `milestones/M5_plan.md` 작성 (M3/M4 plan 템플릿). spec §10 의 5.5주 일정 + §13 의 5 열린 질문 (FastAPI 같은 프로세스 vs subprocess, WebSocket vs SSE, Pack 탭 폐기 시점, record_asset_use 자동 호출, i18n 백엔드) 을 plan §3.x 에서 확정.
+3. **M4 머지 결정** — 사용자가 `feat/m4-search-ux` → main 머지 시점 결정 (M5 작업 전 / 중 / 후).
+4. **M5_todo.md → red phase → green phase → M5_verification.md** (M3/M4 cycle 동일).
 
-참고할 DESIGN 섹션: §4.8 (GUI 탭 구성), §6.5 (suggest_packs samples), §11 (마일스톤 로드맵). M3 의 `SearchRequest` 구조화 입력 + `HybridSearcher.hybrid()` 가 그대로 백엔드 — M4 는 그 위 UI/UX + 자연어 파서 + 다양성/페널티 알고리즘만 추가.
+### 8.3 핵심 결정사항 (spec §2 그대로)
+
+| # | 결정 |
+|---|---|
+| Q2 | 레이아웃 = 옵션 C (상단 자연어 검색 + ⚙ 고급 + 우측 슬라이드 B/C/D) |
+| Q3 | B 탭 = 평탄 + 칩 검색 + FlowLayout wrap (좌우 스크롤 금지) |
+| Q4 | C 탭 = 결과 표시 옵션 (그리드/리스트 토글 + 카드 크기 + 정렬 + 메타) |
+| Q5 | 결과 카드 = 와이드 (썸네일 60×60 좌 + 텍스트 우, 사운드 인라인 ▶) |
+| Q6 | D 탭 = 프리셋 우선 (슬라이더 접힘) + 저장된 검색 + 통일성/페널티 요약 |
+| Q7 | 호스팅 = FastAPI + 시스템 브라우저 (로컬 9874, localhost 바인딩, 인증 X) |
+| Q8 | Claude pick = 동기 long-poll (5분 timeout, `request_user_pick` 신규 MCP) |
+| Q9 | 프런트엔드 = HTMX + Alpine.js (빌드 X, ~30KB) |
+| Q10 | M4 그대로 머지 → M5 가 Qt 위젯 + 테스트 폐기 + 웹 신규 |
+
+### 8.4 신규 의존성
+
+`fastapi>=0.110`, `uvicorn[standard]>=0.27`, `jinja2>=3.1`, `python-multipart>=0.0.9`, `websockets>=12`. 정적 JS (HTMX + Alpine) 는 vendoring.
+
+### 8.5 마일스톤 재정렬 (자동 적용)
+
+| 신규 # | 이름 | 일정 | 기존 # |
+|---:|---|---:|---:|
+| M5 | 웹 GUI 전환 + 리디자인 + Claude pick | 5.5주 | **신규** |
+| M6 | 시트 분석 + 애니메이션 | 1주 | 기존 M5 |
+| M7 | Unity Asset Store 임포트 | 1주 | 기존 M6 |
+| M8 | 패키징 + i18n | 1주 | 기존 M7 |
+
+참고 DESIGN: §3 (아키텍처), §4.5 (MCP), §4.8 (트레이 GUI), §11 (로드맵 — M5 plan 작성 시 갱신).
 
 ## 9. 알려진 이슈·주의사항
 
