@@ -361,3 +361,29 @@ def test_page_packs_includes_toggle_button(populated_client):
     assert r.status_code == 200
     # hx-patch 가 toggle 버튼에 달려 있어야 함
     assert "hx-patch" in r.text
+
+
+# ── Task 5.6 partial: /labels/admin 페이지 라우트 ────────────────────────
+
+
+def test_page_labels_admin_returns_200(populated_client):
+    """GET /labels/admin → 200 HTML."""
+    r = populated_client.get("/labels/admin")
+    assert r.status_code == 200
+    assert "text/html" in r.headers["content-type"]
+
+
+def test_page_labels_admin_renders_axes(populated_client):
+    """GET /labels/admin HTML 에 주요 axis 이름이 포함된다."""
+    r = populated_client.get("/labels/admin")
+    assert r.status_code == 200
+    assert "category" in r.text
+    assert "style" in r.text
+
+
+def test_page_labels_admin_has_correct_nav_active(populated_client):
+    """라벨 관리 페이지에서 nav 의 '라벨 관리' 링크가 active 클래스를 갖는다."""
+    r = populated_client.get("/labels/admin")
+    assert r.status_code == 200
+    assert "active" in r.text
+    assert "라벨 관리" in r.text

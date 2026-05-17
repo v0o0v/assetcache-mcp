@@ -6,6 +6,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from gah.core.labels import SEED_LABELS
 from .packs import _list_packs_dicts
 
 
@@ -46,4 +47,25 @@ def page_packs(request: Request) -> HTMLResponse:
     )
 
 
-# /labels/admin 은 Phase 5B 가 채움
+@router.get("/labels/admin", response_class=HTMLResponse)
+def page_labels_admin(request: Request) -> HTMLResponse:
+    """라벨 관리 페이지 — 24 axis 탭 + CRUD UI."""
+    templates = request.app.state.templates
+    deps = request.app.state.deps
+    axes = sorted(SEED_LABELS.keys())
+    labels_by_axis = {
+        axis: deps.registry.list_labels(
+            axis=axis, enabled_only=False, with_description=True
+        )
+        for axis in axes
+    }
+    return templates.TemplateResponse(
+        request=request,
+        name="labels_admin.html",
+        context={
+            "page": "labels",
+            "axes": axes,
+            "labels_by_axis": labels_by_axis,
+            "signature": deps.registry.label_catalog_signature(),
+        },
+    )
