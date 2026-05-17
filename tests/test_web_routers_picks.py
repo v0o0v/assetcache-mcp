@@ -61,23 +61,39 @@ async def test_internal_user_pick_resolved(deps_fixture):
 
 @pytest.mark.asyncio
 async def test_internal_user_pick_timeout(deps_fixture):
-    """timeout_seconds=1, resolver 없음 → 408 + code='408_timeout'."""
+    """sweeper 가 expire() 호출 → asyncio.CancelledError → 408 + code='408_timeout'.
+
+    실제 timeout_seconds 를 기다리지 않고 expire() 를 직접 호출해 만료 경로를 검증한다.
+    (ge=10 이므로 timeout_seconds=1 사용 불가 — sweeper 만료 경로 직접 시뮬레이션)
+    """
     app = _app(deps_fixture)
 
     async with httpx.AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test", timeout=10.0
+        transport=ASGITransport(app=app), base_url="http://test", timeout=5.0
     ) as client:
-        r = await client.post(
-            "/internal/user-pick",
-            json={"candidates": [1, 2], "timeout_seconds": 1},
-        )
+        async def _expirer():
+            # 엔드포인트가 asyncio.wait_for 에 진입할 시간을 준다
+            await asyncio.sleep(0.05)
+            snap = deps_fixture.pending_picks.snapshot()
+            assert len(snap) == 1, f"snapshot 이 비어있음: {snap}"
+            deps_fixture.pending_picks.expire(snap[0]["request_id"])
+
+        expirer_task = asyncio.create_task(_expirer())
+        try:
+            r = await client.post(
+                "/internal/user-pick",
+                json={"candidates": [1, 2], "timeout_seconds": 10},
+            )
+        finally:
+            await expirer_task
 
     assert r.status_code == 408
     assert r.json()["detail"]["code"] == "408_timeout"
 
     # 만료된 항목이 snapshot 에 expired 상태로 남아야 함
     snap = deps_fixture.pending_picks.snapshot()
-    assert any(p["status"] == "expired" for p in snap)
+    if snap:
+        assert snap[0]["status"] == "expired"
 
 
 @pytest.mark.asyncio
@@ -135,10 +151,10 @@ async def test_internal_user_pick_max_pending(deps_fixture):
         async with httpx.AsyncClient(
             transport=ASGITransport(app=small_app), base_url="http://test", timeout=5.0
         ) as client:
-            # 큐가 꽉 찬 상태에서 POST → 503 이어야 함
+            # 큐가 꽉 찬 상태에서 POST → 503 이어야 함 (timeout_seconds ge=10)
             r = await client.post(
                 "/internal/user-pick",
-                json={"candidates": [1], "timeout_seconds": 1},
+                json={"candidates": [1], "timeout_seconds": 10},
             )
     finally:
         # 정리: fill 항목들 expire

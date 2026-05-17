@@ -28,7 +28,7 @@ class InternalPickRequest(BaseModel):
     candidates: list[int] = Field(min_length=1, max_length=10)
     reason: str | None = None
     project_id: str | None = None
-    timeout_seconds: int = Field(default=300, ge=1, le=1800)
+    timeout_seconds: int = Field(default=300, ge=10, le=1800)
 
 
 class UserPickBody(BaseModel):
