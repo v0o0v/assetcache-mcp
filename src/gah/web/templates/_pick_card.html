@@ -15,7 +15,7 @@
     <button class="cancel-pick"
             hx-post="/api/user-pick/{{ rid }}/cancel"
             hx-target="closest .pick-card-group"
-            hx-swap="outerHTML"
+            hx-swap="delete"
             onclick="event.stopPropagation()">✕ {{ _('거부') }}</button>
   </div>
 
@@ -52,13 +52,16 @@
           </div>
         </div>
 
-        {# [채택] 버튼 — hx-post 로 resolve #}
+        {# [채택] 버튼 — hx-post 로 resolve.
+           hx-swap="delete" 가 응답 body 무시 + 카드 그룹 자동 삭제 (응답이
+           JSON {"ok": true} 인데 outerHTML 로 swap 하면 페이지에 raw text
+           노출되던 버그 fix). #}
         <button class="adopt-pick"
                 hx-post="/api/user-pick/{{ rid }}"
                 hx-vals='{"picked_asset_id": {{ asset.asset_id }}}'
                 hx-ext="json-enc"
                 hx-target="closest .pick-card-group"
-                hx-swap="outerHTML"
+                hx-swap="delete"
                 onclick="event.stopPropagation()">{{ _('채택') }}</button>
       </div>
     {% endfor %}
