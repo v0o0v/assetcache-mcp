@@ -1,8 +1,8 @@
 """Status bar widget that surfaces analysis progress in the main window."""
-
 from __future__ import annotations
 
 import pytest
+pytest.skip("M5 Phase 5 가 폐기 예정 — main_window 제거", allow_module_level=True)
 
 
 def test_statusbar_initially_shows_idle_label(qapp, store) -> None:

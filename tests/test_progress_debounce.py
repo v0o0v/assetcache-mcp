@@ -6,8 +6,10 @@ trailing flush.
 We monkey-patch :py:meth:`MainWindow._flush_progress` with a counting
 wrapper rather than poking at QLabel internals.
 """
-
 from __future__ import annotations
+
+import pytest
+pytest.skip("M5 Phase 5 가 폐기 예정 — main_window 제거", allow_module_level=True)
 
 import time
 

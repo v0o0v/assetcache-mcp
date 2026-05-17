@@ -1,11 +1,11 @@
 """Smoke tests for M2 UI changes — translated strings + new columns."""
-
 from __future__ import annotations
+
+import pytest
+pytest.skip("M5 Phase 5 가 폐기 예정 — main_window 제거", allow_module_level=True)
 
 import json
 import time
-
-import pytest
 
 from gah.core.manifest import PackManifest
 

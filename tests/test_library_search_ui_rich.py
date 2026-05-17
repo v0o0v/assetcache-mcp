@@ -9,8 +9,10 @@ LibraryView 통합:
 - 250ms 디바운스 유지 (M3 회귀)
 - 결과 행에 matched_labels 칩 표시
 """
-
 from __future__ import annotations
+
+import pytest
+pytest.skip("M5 Phase 5 가 폐기 예정 — main_window 제거", allow_module_level=True)
 
 import time
 

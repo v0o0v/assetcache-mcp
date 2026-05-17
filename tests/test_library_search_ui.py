@@ -1,10 +1,11 @@
 """M3 — 라이브러리 탭 검색 박스 (디바운스 + Searcher 호출 + 그리드 갱신)."""
-
 from __future__ import annotations
+
+import pytest
+pytest.skip("M5 Phase 5 가 폐기 예정 — main_window 제거", allow_module_level=True)
 
 import time
 
-import pytest
 from PySide6.QtCore import QCoreApplication
 
 

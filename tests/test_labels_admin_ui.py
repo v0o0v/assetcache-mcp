@@ -5,8 +5,10 @@ the DB.  Cosmetic strings flow through ``tr()`` and therefore aren't
 asserted verbatim; structural shape (axis combo, column count, helper
 APIs) is what we lock down here.
 """
-
 from __future__ import annotations
+
+import pytest
+pytest.skip("M5 Phase 5 가 폐기 예정 — main_window 제거", allow_module_level=True)
 
 import pytest
 

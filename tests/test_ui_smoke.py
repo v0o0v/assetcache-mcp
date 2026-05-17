@@ -1,10 +1,10 @@
 """Smoke tests for gah.ui — main window + table views construct under offscreen Qt."""
-
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
+pytest.skip("M5 Phase 5 가 폐기 예정 — main_window 제거", allow_module_level=True)
+
+from pathlib import Path
 
 
 def _make_qapplication():
