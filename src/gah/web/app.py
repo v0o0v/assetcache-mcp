@@ -1,8 +1,8 @@
 """M5 — FastAPI 앱 팩토리.
 
 `build_app(deps)` 가 FastAPI 인스턴스를 반환. lifespan 에서 PendingPickQueue
-의 cleanup_expired 백그라운드 잡 실행. 라우터 9개 등록 (Phase 1B 시점에
-health 만 실 구현, 나머지는 빈 stub).
+의 cleanup_expired 백그라운드 잡 실행. 라우터 10개 등록 (Phase 2B 에서
+pages.router 추가 — /, /library HTML 페이지).
 """
 from __future__ import annotations
 
@@ -26,6 +26,7 @@ from .routers import (
     labels_admin,
     library,
     packs,
+    pages,
     picks,
     saved_searches,
     sse,
@@ -73,7 +74,7 @@ async def _cleanup_loop(deps: WebDeps) -> None:
 
 
 def build_app(deps: WebDeps) -> FastAPI:
-    """라우터 9개 + 정적 자원 + 템플릿이 wire-up 된 FastAPI 인스턴스 반환."""
+    """라우터 10개 + 정적 자원 + 템플릿이 wire-up 된 FastAPI 인스턴스 반환."""
     static_dir = _static_dir()
     templates_dir = _templates_dir()
     templates_dir.mkdir(parents=True, exist_ok=True)  # Phase 1B 시점엔 비어 있어도 OK
@@ -89,7 +90,7 @@ def build_app(deps: WebDeps) -> FastAPI:
     setup_jinja_i18n(templates.env)
     app.state.templates = templates
 
-    # 9 라우터 등록 (library 는 /api + /ui 두 라우터)
+    # 10 라우터 등록 (library 는 /api + /ui 두 라우터, pages 는 HTML 페이지)
     app.include_router(health.router)
     app.include_router(library.router)
     app.include_router(library.router_ui)
@@ -100,5 +101,6 @@ def build_app(deps: WebDeps) -> FastAPI:
     app.include_router(labels_admin.router)
     app.include_router(picks.router)
     app.include_router(sse.router)
+    app.include_router(pages.router)  # HTML 페이지 라우트 (/, /library)
 
     return app

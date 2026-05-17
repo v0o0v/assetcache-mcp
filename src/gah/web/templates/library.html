@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ _("라이브러리") }} · {{ _("Game Asset Helper") }}{% endblock %}
+
+{% block content %}
+<div class="library-page" x-data="{}">
+  {# 상단 검색 바 — HTMX hx-post + 300ms 디바운스 #}
+  <form class="search-bar"
+        hx-post="/ui/search-results"
+        hx-target="#results"
+        hx-swap="innerHTML"
+        hx-trigger="keyup changed delay:300ms from:input[name=query], submit, change from:select[name=sort], load"
+        hx-include="this"
+        x-data="{ open: $store.advanced.open }"
+        @submit.prevent>
+    <input type="search" name="query"
+           placeholder="{{ _('자연어 검색…  (예: 어두운 BGM 짧은 거)') }}"
+           x-model="$store.search.query"
+           autocomplete="off" />
+    <input type="hidden" name="count" value="20" />
+    <input type="hidden" name="offset" value="0" />
+    <input type="hidden" name="sort" :value="$store.search.sort" />
+    <button type="button"
+            class="advanced-toggle"
+            :class="{ active: $store.advanced.open }"
+            @click="$store.advanced.open = !$store.advanced.open"
+            aria-label="{{ _('고급') }}">
+      ⚙ <span class="label">{{ _("고급") }}</span>
+    </button>
+  </form>
+
+  <div class="library-body">
+    {# 결과 영역 #}
+    <section class="results-section">
+      <div id="results" class="results">
+        {# hx-trigger="load" 가 페이지 로드 시 즉시 호출되어 디폴트 결과를 채움 #}
+      </div>
+    </section>
+
+    {# 우측 사이드 패널 (Phase 3 가 B/C/D 탭 채움) #}
+    <aside class="side-panel"
+           x-show="$store.advanced.open"
+           x-transition.duration.200ms
+           :style="{ width: $store.advanced.sidePanelWidth + 'px' }">
+      <div class="side-panel-placeholder">
+        <p>{{ _("고급 필터·표시·조정") }}</p>
+        <p class="hint">{{ _("Phase 3 에서 B/C/D 탭이 채워집니다.") }}</p>
+      </div>
+    </aside>
+  </div>
+
+  {# 자산 상세 모달 — Task 2.10 #}
+  <div id="asset-detail-modal" class="modal-container"></div>
+</div>
+{% endblock %}

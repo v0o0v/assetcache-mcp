@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ _("Game Asset Helper") }}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/themes.css">
+  <link rel="stylesheet" href="/static/css/main.css">
+  <script src="/static/vendor/htmx.min.js" defer></script>
+  <script src="/static/vendor/htmx-sse.min.js" defer></script>
+  <script src="/static/vendor/alpine.min.js" defer></script>
+  <script>
+    // M5 — Alpine 글로벌 stores 초기화 (모든 페이지 공통).
+    document.addEventListener("alpine:init", () => {
+      Alpine.store("search", {
+        query: "",
+        viewMode: "grid",        // "grid" | "list"
+        cardSize: "m",           // "s" | "m" | "l"
+        sort: "added_desc",      // 정렬 옵션
+        cardMeta: {
+          labels: true,
+          pack: true,
+          score: false,
+          size: false,
+        },
+        matchMode: "all",        // B 탭 매칭 모드
+      });
+      Alpine.store("advanced", {
+        open: false,             // ⚙ 토글
+        activeTab: "b",          // "b" | "c" | "d"
+        sidePanelWidth: 320,     // px
+      });
+      Alpine.store("b", {
+        labelFilter: "",
+        kindTab: "sprite",
+        selectedLabels: [],
+        labelsByKind: { sprite: [], sheet: [], sound: [] },
+      });
+      Alpine.store("d", {
+        activePreset: "balanced",
+        presetDesc: "",
+      });
+      Alpine.store("weights", {
+        semantic: 35, keyword: 10, label: 20,
+        consistency: 20, recency: 5, feedback: 10,
+      });
+      Alpine.store("pickQueue", { items: [] });
+      Alpine.store("notifications", { pickCount: 0 });
+    });
+  </script>
+</head>
+<body>
+  {% include "_nav.html" %}
+  <main class="app-main">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="app-footer">
+    <small>{{ _("Game Asset Helper") }} · M5 web GUI</small>
+  </footer>
+</body>
+</html>
