@@ -7,53 +7,7 @@ from gah.web.app import build_app
 
 
 # ── 공통 fixtures ──────────────────────────────────────────────────────
-
-@pytest.fixture
-def populated_deps(tmp_path, populated_store, fake_embedder):
-    """에셋 + 라벨 + bootstrap 이 있는 WebDeps."""
-    from gah.config import AppPaths, Config
-    from gah.core.labels import LabelRegistry
-    from gah.core.consistency import ConsistencyScorer
-    from gah.core.usage_tracker import UsageTracker
-    from gah.core.search import HybridSearcher
-    from gah.web.deps import WebDeps
-    from gah.web.pending import PendingPickQueue
-
-    store, _ids = populated_store
-    cfg = Config()
-    paths = AppPaths(
-        data_dir=tmp_path,
-        library_dir=tmp_path / "library",
-        cache_dir=tmp_path / "cache",
-        db_path=tmp_path / "metadata.db",
-        config_path=tmp_path / "config.toml",
-        log_path=tmp_path / "logs" / "gah.log",
-        lock_path=tmp_path / "gah.lock",
-    )
-    paths.ensure_dirs()
-    registry = LabelRegistry(store)
-    registry.bootstrap()
-    consistency = ConsistencyScorer(store, cfg)
-    usage = UsageTracker(store, cfg)
-    searcher = HybridSearcher(store, fake_embedder, consistency, registry, cfg)
-    pending = PendingPickQueue(max_pending=cfg.claude_pick_max_pending)
-    return WebDeps(
-        store=store,
-        search=searcher,
-        usage=usage,
-        registry=registry,
-        queue=None,
-        config=cfg,
-        paths=paths,
-        pending_picks=pending,
-    )
-
-
-@pytest.fixture
-def populated_client(populated_deps):
-    with TestClient(build_app(populated_deps)) as c:
-        yield c
-
+# populated_deps / populated_client → conftest.py 공통 fixture 사용
 
 @pytest.fixture
 def client(deps_fixture):
