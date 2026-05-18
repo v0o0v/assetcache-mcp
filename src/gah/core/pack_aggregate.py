@@ -27,11 +27,15 @@ def compute_aggregate(store: "Store", pack_id: int) -> dict:
         return {"asset_count": 0}
 
     placeholders = ",".join("?" * len(asset_ids))
-    label_rows = store.conn.execute(
-        f"SELECT axis, label, source FROM asset_labels"
-        f" WHERE asset_id IN ({placeholders})",
-        asset_ids,
-    ).fetchall()
+    # write_lock 안에서 read — 다른 워커 thread 의 write 와 동시 실행 시 sqlite3
+    # InterfaceError 가 간헐 발생하던 issue 방어 (check_same_thread=False 만으로는
+    # 동시성 보장 안 됨).
+    with store.write_lock:
+        label_rows = store.conn.execute(
+            f"SELECT axis, label, source FROM asset_labels"
+            f" WHERE asset_id IN ({placeholders})",
+            asset_ids,
+        ).fetchall()
 
     style_counter: Counter = Counter()
     category_counter: Counter = Counter()
