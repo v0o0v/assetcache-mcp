@@ -149,43 +149,6 @@ async def list_projects(request: Request):
     return {"items": items}
 
 
-# ── POST /api/assets/{asset_id}/adopt ────────────────────────────────────────
-
-
-@router.post("/assets/{asset_id}/adopt")
-async def post_adopt(asset_id: int, request: Request):
-    """활성 프로젝트에 자산 채택 기록.
-
-    활성 프로젝트 없으면 400.
-    source="user_web" 으로 기록.
-    """
-    deps = request.app.state.deps
-    pid = deps.config.active_project_id
-    if pid is None:
-        raise HTTPException(400, "no_active_project")
-
-    asset = deps.store.get_asset_by_id(asset_id)
-    if asset is None:
-        raise HTTPException(404, "asset not found")
-
-    body_dict: dict = {}
-    try:
-        body_dict = await request.json()
-    except Exception:
-        pass
-
-    deps.store.record_asset_use(
-        project_id=pid,
-        asset_id=asset_id,
-        pack_id=asset.pack_id,
-        source="user_web",
-        context=body_dict.get("context"),
-        used_at=int(time.time()),
-    )
-    log.info("adopt: asset=%s project=%s source=user_web", asset_id, pid)
-    return {"ok": True}
-
-
 # ── GET /api/active-project/stream ───────────────────────────────────────────
 
 
