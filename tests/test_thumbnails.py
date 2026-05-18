@@ -1,6 +1,6 @@
-"""M4 — `core/thumbnails.py` lazy 256×256 PNG 캐시.
+"""M4/M6 — `core/thumbnails.py` lazy 256×256 PNG 캐시.
 
-sprite 자산만 처리, sound/spritesheet → None.
+sprite + spritesheet 자산 처리 (M6 부터), sound → None.
 캐시 hit 시 즉시 반환 (재생성 없음).
 첫 호출 시 캐시 디렉터리 자동 생성.
 잘못된 path → None + log.exception (silent fail 없음).
@@ -66,6 +66,25 @@ def test_sound_kind_returns_none(tmp_path: Path) -> None:
         cache_dir=tmp_path / "cache", asset_id=99,
     )
     assert out is None
+
+
+def test_spritesheet_kind_generates_thumbnail(tmp_path: Path) -> None:
+    """M6 — spritesheet 자산도 sprite 와 동일하게 256×256 썸네일 생성."""
+    from gah.core.thumbnails import ensure_thumbnail
+    from PIL import Image
+
+    # 가로로 긴 시트 (8 프레임 × 32px = 256×32) 모사
+    asset_path = tmp_path / "src" / "sheet.png"
+    asset_path.parent.mkdir(parents=True, exist_ok=True)
+    Image.new("RGBA", (256, 32), color=(150, 100, 200, 255)).save(asset_path, "PNG")
+
+    out = ensure_thumbnail(asset_path, kind="spritesheet",
+                           cache_dir=tmp_path / "cache",
+                           asset_id=7, max_size=256)
+    assert out is not None
+    assert out.exists()
+    with Image.open(out) as img:
+        assert max(img.size) <= 256
 
 
 def test_cache_directory_auto_created(tmp_path: Path) -> None:

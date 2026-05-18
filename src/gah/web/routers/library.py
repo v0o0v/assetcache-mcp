@@ -593,7 +593,7 @@ def api_weights(body: WeightsBody, request: Request) -> dict[str, float]:
 
 @router.get("/thumbnail/{asset_id}")
 def api_thumbnail(asset_id: int, request: Request) -> Response:
-    """sprite 자산의 lazy 256×256 PNG. sound/spritesheet → 404.
+    """sprite + spritesheet 자산의 lazy 256×256 PNG. sound → 404.
 
     ETag 기반 조건부 요청 지원 (304 Not Modified).
     캐시 디렉터리: AppPaths.cache_dir / thumbnails/.
@@ -604,8 +604,8 @@ def api_thumbnail(asset_id: int, request: Request) -> Response:
     asset = deps.store.get_asset_by_id(asset_id)
     if asset is None:
         raise HTTPException(status_code=404, detail="asset not found")
-    if asset.kind != "sprite":
-        raise HTTPException(status_code=404, detail="thumbnail only for sprite kind")
+    if asset.kind not in ("sprite", "spritesheet"):
+        raise HTTPException(status_code=404, detail="thumbnail only for image kinds")
 
     asset_path = resolve_asset_path(deps, asset.path)
     cache_dir = deps.paths.cache_dir / "thumbnails"

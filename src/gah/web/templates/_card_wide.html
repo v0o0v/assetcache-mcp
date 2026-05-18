@@ -1,5 +1,5 @@
-{# M5 — 와이드 카드 partial (썸네일 60×60 좌 + 텍스트 우).
-   sprite/sound 종류별 분기. Alpine x-show 로 카드 메타 토글. #}
+{# M5/M6 — 와이드 카드 partial (썸네일 60×60 좌 + 텍스트 우).
+   sprite/spritesheet/sound 종류별 분기. Alpine x-show 로 카드 메타 토글. #}
 <div class="card-wide kind-{{ row.kind }}"
      data-asset-id="{{ row.asset_id }}"
      hx-get="/ui/asset-detail/{{ row.asset_id }}"
@@ -8,7 +8,7 @@
      role="button"
      tabindex="0">
   <div class="card-thumb">
-    {% if row.kind == "sprite" %}
+    {% if row.kind in ("sprite", "spritesheet") %}
       <img src="/api/thumbnail/{{ row.asset_id }}"
            loading="lazy" alt="{{ row.name }}"
            width="60" height="60" />

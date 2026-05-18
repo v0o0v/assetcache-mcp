@@ -1,4 +1,4 @@
-{# M5 — 리스트 뷰 카드 (풀폭, 더 많은 메타). #}
+{# M5/M6 — 리스트 뷰 카드 (풀폭, 더 많은 메타). #}
 <div class="card-list kind-{{ row.kind }}"
      data-asset-id="{{ row.asset_id }}"
      hx-get="/ui/asset-detail/{{ row.asset_id }}"
@@ -7,7 +7,7 @@
      role="button"
      tabindex="0">
   <div class="card-list-thumb">
-    {% if row.kind == "sprite" %}
+    {% if row.kind in ("sprite", "spritesheet") %}
       <img src="/api/thumbnail/{{ row.asset_id }}"
            loading="lazy" alt="{{ row.name }}" width="40" height="40" />
     {% elif row.kind == "sound" %}
