@@ -14,6 +14,7 @@
     <a href="/unity-asset-store"{% if page == "unity_asset_store" %} class="active"{% endif %}>{{ _("Unity Asset Store") }}</a>
   </div>
   <div class="nav-notifications">
+    {% include "_header_project_dropdown.html" %}
     <span class="notif-badge" x-show="$store.notifications.pickCount > 0">
       🤖 {{ _("Claude 요청") }} (<span x-text="$store.notifications.pickCount"></span>)
     </span>
