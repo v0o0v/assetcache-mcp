@@ -68,3 +68,17 @@ def test_settings_get_includes_current_locale(client, web_deps):
     assert "ui_language" in body
     # 라디오 ko 가 선택됨
     assert 'value="ko"' in body
+
+
+def test_settings_post_autostart_failure_returns_500(client, web_deps, monkeypatch):
+    """권한 거부 (GPO) 또는 OSError 시 500 + ok=False 응답."""
+    from gah.platform import autostart as autostart_mod
+
+    def _boom(enabled, exe_path=None):
+        raise OSError("Permission denied")
+
+    monkeypatch.setattr(autostart_mod, "set_autostart", _boom)
+    r = client.post("/api/settings", json={"autostart": True})
+    assert r.status_code == 500
+    assert r.json()["ok"] is False
+    assert "Permission denied" in r.json()["error"]
