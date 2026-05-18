@@ -49,8 +49,8 @@ def test_library_page_initializes_alpine_stores(client):
 
 def test_library_page_has_advanced_toggle(client):
     r = client.get("/library")
-    # ⚙ Advanced 버튼 존재 (Task 6 이후 영어 msgid)
-    assert "Advanced" in r.text
+    # ⚙ 고급 버튼 존재 (ko 카탈로그 → "고급")
+    assert "고급" in r.text
 
 
 def test_search_bar_triggers_only_on_submit_and_load(client):
@@ -257,11 +257,11 @@ def test_library_page_has_side_tabs(client):
 
 
 def test_library_page_has_tab_labels(client):
-    """탭 헤더에 B Filters, C Display, D Adjust 레이블이 존재한다 (Task 6 이후 영어 msgid)."""
+    """탭 헤더에 B 필터, C 표시, D 조정 레이블이 존재한다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
-    assert "B Filters" in r.text
-    assert "C Display" in r.text
-    assert "D Adjust" in r.text
+    assert "B 필터" in r.text
+    assert "C 표시" in r.text
+    assert "D 조정" in r.text
 
 
 def test_library_page_has_b_match_mode(client):
@@ -274,18 +274,18 @@ def test_library_page_has_b_match_mode(client):
 
 
 def test_library_page_has_c_view_mode_toggle(client):
-    """C 탭 실 구현 — opt-group + $store.search.viewMode + Card size 가 렌더된다 (Task 6 이후 영어 msgid)."""
+    """C 탭 실 구현 — opt-group + $store.search.viewMode + 카드 크기 가 렌더된다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
     assert "opt-group" in r.text
     assert "$store.search.viewMode" in r.text
-    assert "Card size" in r.text
+    assert "카드 크기" in r.text
 
 
 def test_library_page_has_d_tab_sections(client):
-    """D 탭 실 구현 (Saved searches + Consistency/penalty) 섹션이 렌더된다 (Task 6 이후 영어 msgid)."""
+    """D 탭 실 구현 (저장된 검색 + 일관성/페널티) 섹션이 렌더된다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
-    assert "Saved searches" in r.text
-    assert "Consistency / penalty" in r.text
+    assert "저장된 검색" in r.text
+    assert "일관성 / 페널티" in r.text
 
 
 def test_side_tab_content_has_x_show(client):
@@ -403,8 +403,8 @@ def test_page_labels_admin_renders_axes(populated_client):
 
 
 def test_page_labels_admin_has_correct_nav_active(populated_client):
-    """라벨 관리 페이지에서 nav 의 'Label management' 링크가 active 클래스를 갖는다 (Task 6 이후 영어 msgid)."""
+    """라벨 관리 페이지에서 nav 의 '라벨 관리' 링크가 active 클래스를 갖는다 (ko 카탈로그 → 한국어)."""
     r = populated_client.get("/labels/admin")
     assert r.status_code == 200
     assert "active" in r.text
-    assert "Label management" in r.text
+    assert "라벨 관리" in r.text

@@ -1,0 +1,715 @@
+# English translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-05-19 02:34+0900\n"
+"PO-Revision-Date: 2026-05-19 02:42+0900\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: src/gah/web/templates/_header_project_dropdown.html:8
+msgid "Current project"
+msgstr "Current project"
+
+#: src/gah/web/templates/_header_project_dropdown.html:11
+msgid "Select project"
+msgstr "Select project"
+
+#: src/gah/web/templates/_header_project_dropdown.html:25
+msgid "No projects"
+msgstr "No projects"
+
+#: src/gah/web/templates/_header_project_dropdown.html:28
+msgid "+ New project"
+msgstr "+ New project"
+
+#: src/gah/web/templates/_header_project_dropdown.html:29
+msgid "Deselect"
+msgstr "Deselect"
+
+#: src/gah/web/templates/_label_row.html:35
+#: src/gah/web/templates/_pack_card.html:17
+msgid "Active"
+msgstr "Active"
+
+#: src/gah/web/templates/_label_row.html:35
+#: src/gah/web/templates/_pack_card.html:17
+msgid "Inactive"
+msgstr "Inactive"
+
+#: src/gah/web/templates/_label_row.html:41
+msgid "Are you sure you want to delete this?"
+msgstr "Are you sure you want to delete this?"
+
+#: src/gah/web/templates/_label_row.html:44
+#: src/gah/web/templates/_side_panel_d.html:96
+msgid "Delete"
+msgstr "Delete"
+
+#: src/gah/web/templates/_labels_admin_grid.html:38
+msgid "Label token (lowercase + digits + _)"
+msgstr "Label token (lowercase + digits + _)"
+
+#: src/gah/web/templates/_labels_admin_grid.html:44
+msgid "Description (optional)"
+msgstr "Description (optional)"
+
+#: src/gah/web/templates/_labels_admin_grid.html:46
+msgid "Add"
+msgstr "Add"
+
+#: src/gah/web/templates/_labels_admin_grid.html:54
+#: src/gah/web/templates/_side_panel_c.html:58
+#: src/gah/web/templates/asset_detail.html:45
+msgid "Label"
+msgstr "Label"
+
+#: src/gah/web/templates/_labels_admin_grid.html:55
+msgid "Description"
+msgstr "Description"
+
+#: src/gah/web/templates/_labels_admin_grid.html:56
+msgid "Source"
+msgstr "Source"
+
+#: src/gah/web/templates/_labels_admin_grid.html:57
+#: src/gah/web/templates/_side_panel_b.html:125
+msgid "Status"
+msgstr "Status"
+
+#: src/gah/web/templates/_labels_admin_grid.html:58
+#: src/gah/web/templates/unity_asset_store.html:39
+msgid "Actions"
+msgstr "Actions"
+
+#: src/gah/web/templates/_labels_admin_grid.html:76
+msgid "Export (JSON)"
+msgstr "Export (JSON)"
+
+#: src/gah/web/templates/_labels_admin_grid.html:85
+msgid "Import (JSON)"
+msgstr "Import (JSON)"
+
+#: src/gah/web/templates/_modal_new_project.html:4
+msgid "New project"
+msgstr "New project"
+
+#: src/gah/web/templates/_modal_new_project.html:6
+msgid "Project folder path"
+msgstr "Project folder path"
+
+#: src/gah/web/templates/_modal_new_project.html:10
+msgid "Display name (optional)"
+msgstr "Display name (optional)"
+
+#: src/gah/web/templates/_modal_new_project.html:14
+msgid "Cancel"
+msgstr "Cancel"
+
+#: src/gah/web/templates/_modal_new_project.html:15
+msgid "Create"
+msgstr "Create"
+
+#: src/gah/web/templates/_modal_usage.html:7
+#: src/gah/web/templates/asset_detail.html:7
+#: src/gah/web/templates/library.html:68
+msgid "Close"
+msgstr "Close"
+
+#: src/gah/web/templates/_modal_usage.html:9
+msgid "Consistency / penalty details"
+msgstr "Consistency / penalty details"
+
+#: src/gah/web/templates/_modal_usage.html:11
+msgid "Last"
+msgstr "Last"
+
+#: src/gah/web/templates/_modal_usage.html:11
+msgid "day usage summary"
+msgstr "day usage summary"
+
+#: src/gah/web/templates/_modal_usage.html:15
+#: src/gah/web/templates/_side_panel_d.html:121
+msgid "Top adopted packs"
+msgstr "Top adopted packs"
+
+#: src/gah/web/templates/_modal_usage.html:20
+msgid "times"
+msgstr "times"
+
+#: src/gah/web/templates/_modal_usage.html:25
+msgid "No packs adopted yet."
+msgstr "No packs adopted yet."
+
+#: src/gah/web/templates/_modal_usage.html:29
+#: src/gah/web/templates/_side_panel_d.html:123
+msgid "Rejections"
+msgstr "Rejections"
+
+#: src/gah/web/templates/_nav.html:6 src/gah/web/templates/base.html:6
+#: src/gah/web/templates/base.html:63 src/gah/web/templates/error.html:2
+#: src/gah/web/templates/labels_admin.html:6
+#: src/gah/web/templates/library.html:2 src/gah/web/templates/packs.html:6
+#: src/gah/web/templates/project_detail.html:7
+#: src/gah/web/templates/projects_list.html:4
+msgid "Game Asset Helper"
+msgstr "Game Asset Helper"
+
+#: src/gah/web/templates/_nav.html:9 src/gah/web/templates/library.html:2
+msgid "Library"
+msgstr "Library"
+
+#: src/gah/web/templates/_nav.html:10
+#: src/gah/web/templates/_preference_panel.html:19
+#: src/gah/web/templates/_side_panel_b.html:74
+#: src/gah/web/templates/_side_panel_c.html:62
+#: src/gah/web/templates/project_detail.html:38
+msgid "Packs"
+msgstr "Packs"
+
+#: src/gah/web/templates/_nav.html:11 src/gah/web/templates/labels_admin.html:6
+#: src/gah/web/templates/labels_admin.html:11
+msgid "Label management"
+msgstr "Label management"
+
+#: src/gah/web/templates/_nav.html:13
+#: src/gah/web/templates/projects_list.html:4
+#: src/gah/web/templates/projects_list.html:9
+msgid "Projects"
+msgstr "Projects"
+
+#: src/gah/web/templates/_nav.html:14
+#: src/gah/web/templates/unity_asset_store.html:7
+msgid "Unity Asset Store"
+msgstr "Unity Asset Store"
+
+#: src/gah/web/templates/_nav.html:19 src/gah/web/templates/_pick_card.html:13
+msgid "Claude request"
+msgstr "Claude request"
+
+#: src/gah/web/templates/_pack_card.html:21
+msgid "Unknown"
+msgstr "Unknown"
+
+#: src/gah/web/templates/_pack_card.html:28
+#: src/gah/web/templates/_side_panel_d.html:122
+msgid "items"
+msgstr "items"
+
+#: src/gah/web/templates/_packs_grid.html:11
+msgid "No packs registered."
+msgstr "No packs registered."
+
+#: src/gah/web/templates/_pick_card.html:14
+msgid "Pick from candidates"
+msgstr "Pick from candidates"
+
+#: src/gah/web/templates/_pick_card.html:19
+#: src/gah/web/templates/asset_detail.html:66
+msgid "Reject"
+msgstr "Reject"
+
+#: src/gah/web/templates/_pick_card.html:65
+#: src/gah/web/templates/asset_detail.html:60
+msgid "Adopt"
+msgstr "Adopt"
+
+#: src/gah/web/templates/_preference_panel.html:3
+msgid "Asset preferences"
+msgstr "Asset preferences"
+
+#: src/gah/web/templates/_preference_panel.html:6
+msgid "Highest preference first"
+msgstr "Highest preference first"
+
+#: src/gah/web/templates/_preference_panel.html:7
+msgid "Lowest preference first"
+msgstr "Lowest preference first"
+
+#: src/gah/web/templates/_preference_panel.html:8
+msgid "Most adopted first"
+msgstr "Most adopted first"
+
+#: src/gah/web/templates/_preference_panel.html:9
+msgid "Most recent activity first"
+msgstr "Most recent activity first"
+
+#: src/gah/web/templates/_preference_panel.html:12
+msgid "Search assets"
+msgstr "Search assets"
+
+#: src/gah/web/templates/_preference_panel.html:18
+#: src/gah/web/templates/project_detail.html:37
+msgid "Asset"
+msgstr "Asset"
+
+#: src/gah/web/templates/_preference_panel.html:20
+msgid "Preference"
+msgstr "Preference"
+
+#: src/gah/web/templates/_preference_panel.html:21
+msgid "feedback"
+msgstr "feedback"
+
+#: src/gah/web/templates/_preference_panel.html:22
+msgid "Uses"
+msgstr "Uses"
+
+#: src/gah/web/templates/_preference_panel.html:23
+#: src/gah/web/templates/projects_list.html:20
+msgid "Last activity"
+msgstr "Last activity"
+
+#: src/gah/web/templates/_preference_panel.html:51
+msgid "No preference data available."
+msgstr "No preference data available."
+
+#: src/gah/web/templates/_preference_panel.html:54
+msgid "◀"
+msgstr "◀"
+
+#: src/gah/web/templates/_preference_panel.html:56
+msgid "▶"
+msgstr "▶"
+
+#: src/gah/web/templates/_results_cards_only.html:31
+msgid "Load more"
+msgstr "Load more"
+
+#: src/gah/web/templates/_results_grid.html:13
+#: src/gah/web/templates/_results_grid.html:14
+#: src/gah/web/templates/_side_panel_c.html:10
+msgid "Grid"
+msgstr "Grid"
+
+#: src/gah/web/templates/_results_grid.html:20
+#: src/gah/web/templates/_results_grid.html:21
+#: src/gah/web/templates/_side_panel_c.html:15
+msgid "List"
+msgstr "List"
+
+#: src/gah/web/templates/_results_grid.html:38
+#: src/gah/web/templates/_side_panel_c.html:38
+msgid "Sort"
+msgstr "Sort"
+
+#: src/gah/web/templates/_results_grid.html:42
+#: src/gah/web/templates/_side_panel_c.html:42
+msgid "Score↓"
+msgstr "Score↓"
+
+#: src/gah/web/templates/_results_grid.html:43
+#: src/gah/web/templates/_side_panel_c.html:43
+msgid "Added↓"
+msgstr "Added↓"
+
+#: src/gah/web/templates/_results_grid.html:44
+#: src/gah/web/templates/_side_panel_c.html:44
+msgid "Added↑"
+msgstr "Added↑"
+
+#: src/gah/web/templates/_results_grid.html:45
+#: src/gah/web/templates/_side_panel_c.html:45
+msgid "Name↑"
+msgstr "Name↑"
+
+#: src/gah/web/templates/_results_grid.html:46
+#: src/gah/web/templates/_side_panel_c.html:46
+msgid "Name↓"
+msgstr "Name↓"
+
+#: src/gah/web/templates/_results_grid.html:47
+#: src/gah/web/templates/_side_panel_c.html:47
+msgid "Size↓"
+msgstr "Size↓"
+
+#: src/gah/web/templates/_results_grid.html:48
+#: src/gah/web/templates/_side_panel_c.html:48
+msgid "Size↑"
+msgstr "Size↑"
+
+#: src/gah/web/templates/_results_grid.html:53
+msgid "Assets"
+msgstr "Assets"
+
+#: src/gah/web/templates/_search_error.html:4
+msgid "Search service unavailable"
+msgstr "Search service unavailable"
+
+#: src/gah/web/templates/_search_error.html:6
+msgid ""
+"The search service (Ollama) is not available. Please check that the "
+"Ollama server is running."
+msgstr "The search service (Ollama) is not available. Please check that the Ollama server is running."
+
+#: src/gah/web/templates/_search_error.html:9
+msgid ""
+"After starting Ollama, try searching again, or clear the search bar to "
+"browse the full library."
+msgstr "After starting Ollama, try searching again, or clear the search bar to browse the full library."
+
+#: src/gah/web/templates/_side_panel_b.html:7
+#: src/gah/web/templates/library.html:73
+msgid "B Filters"
+msgstr "B Filters"
+
+#: src/gah/web/templates/_side_panel_b.html:11
+msgid "Matching mode"
+msgstr "Matching mode"
+
+#: src/gah/web/templates/_side_panel_b.html:16
+msgid "AND"
+msgstr "AND"
+
+#: src/gah/web/templates/_side_panel_b.html:22
+msgid "OR"
+msgstr "OR"
+
+#: src/gah/web/templates/_side_panel_b.html:28
+msgid "NOT"
+msgstr "NOT"
+
+#: src/gah/web/templates/_side_panel_b.html:37
+msgid "🔍 Search labels…"
+msgstr "🔍 Search labels…"
+
+#: src/gah/web/templates/_side_panel_b.html:45
+msgid "Sprite"
+msgstr "Sprite"
+
+#: src/gah/web/templates/_side_panel_b.html:50
+msgid "Sheet"
+msgstr "Sheet"
+
+#: src/gah/web/templates/_side_panel_b.html:55
+msgid "Sound"
+msgstr "Sound"
+
+#: src/gah/web/templates/_side_panel_b.html:85
+msgid "No packs"
+msgstr "No packs"
+
+#: src/gah/web/templates/_side_panel_b.html:91
+msgid "Vendor"
+msgstr "Vendor"
+
+#: src/gah/web/templates/_side_panel_b.html:102
+msgid "No vendors"
+msgstr "No vendors"
+
+#: src/gah/web/templates/_side_panel_b.html:108
+msgid "License"
+msgstr "License"
+
+#: src/gah/web/templates/_side_panel_b.html:119
+msgid "No licenses"
+msgstr "No licenses"
+
+#: src/gah/web/templates/_side_panel_b.html:131
+msgid "All"
+msgstr "All"
+
+#: src/gah/web/templates/_side_panel_b.html:137
+msgid "Done"
+msgstr "Done"
+
+#: src/gah/web/templates/_side_panel_b.html:143
+msgid "Pending"
+msgstr "Pending"
+
+#: src/gah/web/templates/_side_panel_b.html:149
+msgid "Failed"
+msgstr "Failed"
+
+#: src/gah/web/templates/_side_panel_c.html:5
+msgid "Result display format"
+msgstr "Result display format"
+
+#: src/gah/web/templates/_side_panel_c.html:22
+msgid "Card size"
+msgstr "Card size"
+
+#: src/gah/web/templates/_side_panel_c.html:54
+msgid "Card display info"
+msgstr "Card display info"
+
+#: src/gah/web/templates/_side_panel_c.html:66
+msgid "Score"
+msgstr "Score"
+
+#: src/gah/web/templates/_side_panel_c.html:70
+#: src/gah/web/templates/unity_asset_store.html:35
+msgid "Size"
+msgstr "Size"
+
+#: src/gah/web/templates/_side_panel_d.html:6
+msgid "Weight presets"
+msgstr "Weight presets"
+
+#: src/gah/web/templates/_side_panel_d.html:12
+msgid "Balanced"
+msgstr "Balanced"
+
+#: src/gah/web/templates/_side_panel_d.html:18
+msgid "Consistency first"
+msgstr "Consistency first"
+
+#: src/gah/web/templates/_side_panel_d.html:24
+msgid "Novelty"
+msgstr "Novelty"
+
+#: src/gah/web/templates/_side_panel_d.html:32
+msgid "▶ Adjust sliders manually…"
+msgstr "▶ Adjust sliders manually…"
+
+#: src/gah/web/templates/_side_panel_d.html:36
+msgid "Semantic"
+msgstr "Semantic"
+
+#: src/gah/web/templates/_side_panel_d.html:44
+msgid "Keyword"
+msgstr "Keyword"
+
+#: src/gah/web/templates/_side_panel_d.html:52
+msgid "Label weight"
+msgstr "Label weight"
+
+#: src/gah/web/templates/_side_panel_d.html:60
+msgid "Consistency"
+msgstr "Consistency"
+
+#: src/gah/web/templates/_side_panel_d.html:68
+msgid "Recency"
+msgstr "Recency"
+
+#: src/gah/web/templates/_side_panel_d.html:76
+msgid "Feedback"
+msgstr "Feedback"
+
+#: src/gah/web/templates/_side_panel_d.html:88
+msgid "Saved searches"
+msgstr "Saved searches"
+
+#: src/gah/web/templates/_side_panel_d.html:100
+msgid "No saved searches yet."
+msgstr "No saved searches yet."
+
+#: src/gah/web/templates/_side_panel_d.html:107
+msgid "New search name…"
+msgstr "New search name…"
+
+#: src/gah/web/templates/_side_panel_d.html:112
+msgid "+ Save current search"
+msgstr "+ Save current search"
+
+#: src/gah/web/templates/_side_panel_d.html:119
+msgid "Consistency / penalty"
+msgstr "Consistency / penalty"
+
+#: src/gah/web/templates/_side_panel_d.html:130
+msgid "View details"
+msgstr "View details"
+
+#: src/gah/web/templates/_unity_package_row.html:23
+msgid "Import"
+msgstr "Import"
+
+#: src/gah/web/templates/_unity_package_row.html:26
+msgid "Skip"
+msgstr "Skip"
+
+#: src/gah/web/templates/_unity_package_row.html:29
+msgid "Restore"
+msgstr "Restore"
+
+#: src/gah/web/templates/asset_detail.html:30
+msgid "Pack"
+msgstr "Pack"
+
+#: src/gah/web/templates/asset_detail.html:33
+msgid "Resolution"
+msgstr "Resolution"
+
+#: src/gah/web/templates/asset_detail.html:36
+msgid "File size"
+msgstr "File size"
+
+#: src/gah/web/templates/asset_detail.html:39
+#: src/gah/web/templates/projects_list.html:18
+msgid "Path"
+msgstr "Path"
+
+#: src/gah/web/templates/error.html:7
+#: src/gah/web/templates/error_fragment.html:5
+msgid "Back to library"
+msgstr "Back to library"
+
+#: src/gah/web/templates/labels_admin.html:13
+msgid "You can add, edit, and disable label vocabulary per axis (24 axes)."
+msgstr "You can add, edit, and disable label vocabulary per axis (24 axes)."
+
+#: src/gah/web/templates/labels_admin.html:14
+msgid "Signature:"
+msgstr "Signature:"
+
+#: src/gah/web/templates/library.html:15
+msgid "Natural language search…  (Enter or 🔍 button)"
+msgstr "Natural language search…  (Enter or 🔍 button)"
+
+#: src/gah/web/templates/library.html:27 src/gah/web/templates/library.html:28
+msgid "Search"
+msgstr "Search"
+
+#: src/gah/web/templates/library.html:34 src/gah/web/templates/library.html:35
+msgid "Advanced"
+msgstr "Advanced"
+
+#: src/gah/web/templates/library.html:75
+msgid "C Display"
+msgstr "C Display"
+
+#: src/gah/web/templates/library.html:77
+msgid "D Adjust"
+msgstr "D Adjust"
+
+#: src/gah/web/templates/packs.html:6 src/gah/web/templates/packs.html:11
+msgid "Pack management"
+msgstr "Pack management"
+
+#: src/gah/web/templates/packs.html:12
+msgid ""
+"You can toggle active/inactive status for asset packs registered in the "
+"library."
+msgstr "You can toggle active/inactive status for asset packs registered in the library."
+
+#: src/gah/web/templates/project_detail.html:15
+msgid "Currently active"
+msgstr "Currently active"
+
+#: src/gah/web/templates/project_detail.html:18
+msgid "Back to list"
+msgstr "Back to list"
+
+#: src/gah/web/templates/project_detail.html:25
+msgid "Set as active project"
+msgstr "Set as active project"
+
+#: src/gah/web/templates/project_detail.html:32
+msgid "Asset usage history"
+msgstr "Asset usage history"
+
+#: src/gah/web/templates/project_detail.html:39
+msgid "source"
+msgstr "source"
+
+#: src/gah/web/templates/project_detail.html:40
+msgid "Used at"
+msgstr "Used at"
+
+#: src/gah/web/templates/project_detail.html:41
+msgid "context"
+msgstr "context"
+
+#: src/gah/web/templates/project_detail.html:57
+msgid "No assets adopted yet."
+msgstr "No assets adopted yet."
+
+#: src/gah/web/templates/project_detail.html:62
+msgid "Adopted pack distribution"
+msgstr "Adopted pack distribution"
+
+#: src/gah/web/templates/project_detail.html:79
+msgid "No pack distribution data."
+msgstr "No pack distribution data."
+
+#: src/gah/web/templates/projects_list.html:10
+msgid "➕ New project"
+msgstr "➕ New project"
+
+#: src/gah/web/templates/projects_list.html:17
+msgid "Display name"
+msgstr "Display name"
+
+#: src/gah/web/templates/projects_list.html:19
+msgid "First seen"
+msgstr "First seen"
+
+#: src/gah/web/templates/projects_list.html:21
+msgid "Adopted assets"
+msgstr "Adopted assets"
+
+#: src/gah/web/templates/projects_list.html:22
+msgid "Primary pack"
+msgstr "Primary pack"
+
+#: src/gah/web/templates/projects_list.html:23
+msgid "Pin/block"
+msgstr "Pin/block"
+
+#: src/gah/web/templates/projects_list.html:40
+msgid "Details"
+msgstr "Details"
+
+#: src/gah/web/templates/projects_list.html:46
+msgid ""
+"No projects registered. Create a new project or adopt assets from a Unity"
+" project to register one automatically."
+msgstr "No projects registered. Create a new project or adopt assets from a Unity project to register one automatically."
+
+#: src/gah/web/templates/unity_asset_store.html:10
+msgid "Cache path"
+msgstr "Cache path"
+
+#: src/gah/web/templates/unity_asset_store.html:13
+msgid ""
+"The cache path is empty. Please enter the Unity Asset Store cache path in"
+" settings."
+msgstr "The cache path is empty. Please enter the Unity Asset Store cache path in settings."
+
+#: src/gah/web/templates/unity_asset_store.html:16
+msgid "Scan cache"
+msgstr "Scan cache"
+
+#: src/gah/web/templates/unity_asset_store.html:17
+msgid "Scanning…"
+msgstr "Scanning…"
+
+#: src/gah/web/templates/unity_asset_store.html:32
+msgid "Publisher"
+msgstr "Publisher"
+
+#: src/gah/web/templates/unity_asset_store.html:33
+msgid "Category"
+msgstr "Category"
+
+#: src/gah/web/templates/unity_asset_store.html:34
+msgid "Asset name"
+msgstr "Asset name"
+
+#: src/gah/web/templates/unity_asset_store.html:36
+msgid "State"
+msgstr "State"
+
+#: src/gah/web/templates/unity_asset_store.html:37
+msgid "Preview"
+msgstr "Preview"
+
+#: src/gah/web/templates/unity_asset_store.html:38
+msgid "Added at"
+msgstr "Added at"
+
+#: src/gah/web/templates/unity_asset_store.html:49
+msgid "No scanned packages. Click 'Scan cache' to search for packages."
+msgstr "No scanned packages. Click 'Scan cache' to search for packages."
+

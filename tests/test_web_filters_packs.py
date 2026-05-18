@@ -140,9 +140,9 @@ def test_b_tab_has_filter_group_details(client):
 
 
 def test_b_tab_has_pack_filter_label(client):
-    """B 탭에 'Packs' 필터 레이블이 존재한다 (Task 6 이후 영어 msgid)."""
+    """B 탭에 '팩' 필터 레이블이 존재한다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
-    assert "Packs" in r.text
+    assert "팩" in r.text
 
 
 def test_b_tab_has_vendor_filter_label(client):
@@ -164,15 +164,15 @@ def test_b_tab_has_state_filter_label(client):
 
 
 def test_b_tab_state_filter_has_all_option(client):
-    """상태 필터에 'All' 옵션이 있다 (Task 6 이후 영어 msgid)."""
+    """상태 필터에 '전체' 옵션이 있다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
-    assert "All" in r.text
+    assert "전체" in r.text
 
 
 def test_b_tab_state_filter_has_ok_option(client):
-    """상태 필터에 'Done' 옵션이 있다 (Task 6 이후 영어 msgid)."""
+    """상태 필터에 '완료' 옵션이 있다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
-    assert "Done" in r.text
+    assert "완료" in r.text
 
 
 def test_b_tab_multi_filters_fetches_packs_api(client):

@@ -31,7 +31,7 @@ def test_ui_search_results_returns_error_fragment_when_ollama_down(
     )
     assert r.status_code == 200
     assert "text/html" in r.headers["content-type"]
-    assert "Search service unavailable" in r.text
+    assert "검색 서비스를 사용할 수 없습니다" in r.text
 
 
 # ── 케이스 2: /api/search — OllamaError → 503 + JSON ────────────────────────
