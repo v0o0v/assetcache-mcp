@@ -35,3 +35,6 @@ tests/fixtures/*.wav
 
 # Superpowers brainstorming visual companion (local mockups + server state)
 .superpowers/
+
+# M8 — PyInstaller 빌드 산출물 (build/, dist/ 는 이미 위에서 ignore)
+*.spec.bak

@@ -135,6 +135,58 @@ python -m gah --version
 - 최신 모델·API·버전은 추측 말고 1차 출처 확인 후 반영
 - 자세한 건 [`CLAUDE.md §4`](./CLAUDE.md)
 
+## 배포 — 단일 exe 빌드 (M8)
+
+일반 사용자에게 배포할 단일 `.exe` 를 만든다.
+
+```powershell
+# 1. dev 의존성 설치 (Babel, pyinstaller 포함)
+pip install -e .[dev]
+```
+
+```powershell
+# 2. 번역 카탈로그 컴파일 (.po → .mo)
+pybabel compile -d src/gah/web/locale
+```
+
+```powershell
+# 3. 트레이 아이콘 ICO 생성 (런타임 QPixmap → assets/tray.ico)
+python scripts/generate_tray_ico.py
+```
+
+```powershell
+# 4. exe 빌드 (10분 내외, dist/GameAssetHelper.exe ≈ 1.5~2 GB)
+pyinstaller gah.spec
+```
+
+빌드된 exe 는 단일 파일로 배포 가능. 첫 실행 시 CLIP 모델 가중치 (~600 MB) 가
+`%APPDATA%\GameAssetHelper\cache\clip\` 로 자동 다운로드된다.
+
+## 번역 추가 (M8)
+
+신규 언어 추가 시:
+
+```powershell
+# 1. 소스에서 msgid 추출
+pybabel extract -F babel.cfg -k _ -k _t -o src/gah/web/locale/messages.pot .
+```
+
+```powershell
+# 2. 새 언어 카탈로그 생성 (예: 일본어)
+pybabel init -i src/gah/web/locale/messages.pot -d src/gah/web/locale -l ja
+```
+
+3. `src/gah/web/locale/ja/LC_MESSAGES/messages.po` 의 msgstr 채우기
+
+```powershell
+# 4. 컴파일
+pybabel compile -d src/gah/web/locale
+```
+
+추가로 `src/gah/web/locale_middleware.py` 의 `SUPPORTED` 튜플과
+`src/gah/web/i18n.py` 의 `SUPPORTED_LOCALES` 에 새 언어 코드를 추가하고,
+`Config` 의 `_VALID_UI_LANGUAGES` 도 확장.
+
 ## 라이선스
 
 MIT (변경될 수 있음).
