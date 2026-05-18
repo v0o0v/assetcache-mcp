@@ -428,7 +428,7 @@ def ui_asset_detail(asset_id: int, request: Request) -> HTMLResponse:
     width: int | None = None
     height: int | None = None
     size_kb: int | None = asset.file_size // 1024 if asset.file_size else None
-    if asset.kind == "sprite":
+    if asset.kind in ("sprite", "spritesheet"):
         sm = deps.store.conn.execute(
             "SELECT width, height FROM sprite_meta WHERE asset_id = ?",
             (asset_id,),

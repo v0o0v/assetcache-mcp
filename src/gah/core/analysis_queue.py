@@ -244,9 +244,11 @@ class AnalysisQueue(QObject):
         try:
             self.store.mark_asset_analyzing(asset_id)
             inp = self._build_input(row)
-            # M6: sprite kind 는 SpritesheetAnalyzer 로 라우팅 (내부에서 폴백 처리)
+            # M6: 이미지 kind (sprite/spritesheet) 는 SpritesheetAnalyzer 로 라우팅.
+            # 한 번 promote 된 spritesheet 도 재분석 시 같은 analyzer 가 받아야 함
+            # — 안 그러면 SoundAnalyzer 가 PNG 를 받아 fail.
             analyzer = (
-                self.spritesheet if row.kind == "sprite"
+                self.spritesheet if row.kind in ("sprite", "spritesheet")
                 else self.sound
             )
             result = analyzer.analyze(inp)

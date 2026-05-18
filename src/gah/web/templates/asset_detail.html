@@ -12,7 +12,7 @@
     </header>
 
     <div class="modal-body">
-      {% if asset.kind == "sprite" %}
+      {% if asset.kind in ("sprite", "spritesheet") %}
         <div class="detail-thumb">
           <img src="/api/thumbnail/{{ asset.id }}"
                alt="{{ asset.path }}"

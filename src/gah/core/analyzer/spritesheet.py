@@ -121,13 +121,26 @@ class SpritesheetAnalyzer:
         )
 
         labels: list[LabelScore] = []
+        seen_labels: set[str] = set()
+        # Gemma 추론 (시트 전체 합성 본 후 추측) — 신뢰도 가변
         for label in hints:
-            if isinstance(label, str) and label:
+            if isinstance(label, str) and label and label not in seen_labels:
+                seen_labels.add(label)
                 labels.append(LabelScore(
                     axis="animation", label=label,
                     score=float(gemma_payload.get("confidence") or 0.5),
                     source="gemma", weight="primary",
                 ))
+        # JSON frameTags 명시 라벨 — Gemma 가 못 본 것도 모두 등록 (높은 신뢰도)
+        for tag in detection.tags:
+            if tag.name in seen_labels:
+                continue
+            seen_labels.add(tag.name)
+            labels.append(LabelScore(
+                axis="animation", label=tag.name,
+                score=1.0,  # JSON 명시 라벨 — Gemma 추측 대비 확실
+                source="gemma", weight="primary",
+            ))
 
         searchable = build_searchable(
             meta=sprite_meta, labels=labels, label_descriptions={},
