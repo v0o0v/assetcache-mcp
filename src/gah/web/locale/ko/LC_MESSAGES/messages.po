@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-19 02:34+0900\n"
+"POT-Creation-Date: 2026-05-19 03:02+0900\n"
 "PO-Revision-Date: 2026-05-19 02:42+0900\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ko\n"
@@ -163,6 +163,7 @@ msgstr "거부 횟수"
 #: src/gah/web/templates/library.html:2 src/gah/web/templates/packs.html:6
 #: src/gah/web/templates/project_detail.html:7
 #: src/gah/web/templates/projects_list.html:4
+#: src/gah/web/templates/settings.html:4
 msgid "Game Asset Helper"
 msgstr "Game Asset Helper"
 
@@ -194,7 +195,12 @@ msgstr "프로젝트"
 msgid "Unity Asset Store"
 msgstr "Unity Asset Store"
 
-#: src/gah/web/templates/_nav.html:19 src/gah/web/templates/_pick_card.html:13
+#: src/gah/web/templates/_nav.html:16 src/gah/web/templates/settings.html:4
+#: src/gah/web/templates/settings.html:8
+msgid "Settings"
+msgstr "설정"
+
+#: src/gah/web/templates/_nav.html:21 src/gah/web/templates/_pick_card.html:13
 msgid "Claude request"
 msgstr "Claude 요청"
 
@@ -666,6 +672,58 @@ msgid ""
 "No projects registered. Create a new project or adopt assets from a Unity"
 " project to register one automatically."
 msgstr "등록된 프로젝트가 없습니다. 새 프로젝트를 만들거나 Unity 프로젝트에서 자산을 채택하면 자동으로 등록됩니다."
+
+#: src/gah/web/templates/settings.html:12
+msgid "Language"
+msgstr "언어"
+
+#: src/gah/web/templates/settings.html:16
+msgid "Korean"
+msgstr "한국어"
+
+#: src/gah/web/templates/settings.html:21
+msgid "English"
+msgstr "영어"
+
+#: src/gah/web/templates/settings.html:26
+msgid "Auto-detect"
+msgstr "자동 감지"
+
+#: src/gah/web/templates/settings.html:31
+msgid "Theme"
+msgstr "테마"
+
+#: src/gah/web/templates/settings.html:35
+msgid "Auto (system)"
+msgstr "자동 (시스템)"
+
+#: src/gah/web/templates/settings.html:40
+msgid "Light"
+msgstr "라이트"
+
+#: src/gah/web/templates/settings.html:45
+msgid "Dark"
+msgstr "다크"
+
+#: src/gah/web/templates/settings.html:50
+msgid "Startup"
+msgstr "시작"
+
+#: src/gah/web/templates/settings.html:53
+msgid "Start with Windows"
+msgstr "Windows 시작 시 자동 실행"
+
+#: src/gah/web/templates/settings.html:55
+msgid "Only available on Windows"
+msgstr "Windows 에서만 사용 가능"
+
+#: src/gah/web/templates/settings.html:59
+msgid "Save"
+msgstr "저장"
+
+#: src/gah/web/templates/settings.html:60
+msgid "Saving..."
+msgstr "저장 중..."
 
 #: src/gah/web/templates/unity_asset_store.html:10
 msgid "Cache path"

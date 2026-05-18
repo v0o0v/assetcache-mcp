@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-19 02:34+0900\n"
+"POT-Creation-Date: 2026-05-19 03:02+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -162,6 +162,7 @@ msgstr ""
 #: src/gah/web/templates/library.html:2 src/gah/web/templates/packs.html:6
 #: src/gah/web/templates/project_detail.html:7
 #: src/gah/web/templates/projects_list.html:4
+#: src/gah/web/templates/settings.html:4
 msgid "Game Asset Helper"
 msgstr ""
 
@@ -193,7 +194,12 @@ msgstr ""
 msgid "Unity Asset Store"
 msgstr ""
 
-#: src/gah/web/templates/_nav.html:19 src/gah/web/templates/_pick_card.html:13
+#: src/gah/web/templates/_nav.html:16 src/gah/web/templates/settings.html:4
+#: src/gah/web/templates/settings.html:8
+msgid "Settings"
+msgstr ""
+
+#: src/gah/web/templates/_nav.html:21 src/gah/web/templates/_pick_card.html:13
 msgid "Claude request"
 msgstr ""
 
@@ -664,6 +670,58 @@ msgstr ""
 msgid ""
 "No projects registered. Create a new project or adopt assets from a Unity"
 " project to register one automatically."
+msgstr ""
+
+#: src/gah/web/templates/settings.html:12
+msgid "Language"
+msgstr ""
+
+#: src/gah/web/templates/settings.html:16
+msgid "Korean"
+msgstr ""
+
+#: src/gah/web/templates/settings.html:21
+msgid "English"
+msgstr ""
+
+#: src/gah/web/templates/settings.html:26
+msgid "Auto-detect"
+msgstr ""
+
+#: src/gah/web/templates/settings.html:31
+msgid "Theme"
+msgstr ""
+
+#: src/gah/web/templates/settings.html:35
+msgid "Auto (system)"
+msgstr ""
+
+#: src/gah/web/templates/settings.html:40
+msgid "Light"
+msgstr ""
+
+#: src/gah/web/templates/settings.html:45
+msgid "Dark"
+msgstr ""
+
+#: src/gah/web/templates/settings.html:50
+msgid "Startup"
+msgstr ""
+
+#: src/gah/web/templates/settings.html:53
+msgid "Start with Windows"
+msgstr ""
+
+#: src/gah/web/templates/settings.html:55
+msgid "Only available on Windows"
+msgstr ""
+
+#: src/gah/web/templates/settings.html:59
+msgid "Save"
+msgstr ""
+
+#: src/gah/web/templates/settings.html:60
+msgid "Saving..."
 msgstr ""
 
 #: src/gah/web/templates/unity_asset_store.html:10
