@@ -29,8 +29,8 @@
         <tr {% if r.id == active_project_id %}class="row-active" data-active="{{ r.id }}"{% endif %}>
           <td><strong>{{ r.display_name or r.external_id }}</strong></td>
           <td><code>{{ r.external_id }}</code></td>
-          <td>{{ r.first_seen }}</td>
-          <td>{{ r.last_seen }}</td>
+          <td>{{ r.first_seen | datetime }}</td>
+          <td>{{ r.last_seen | datetime }}</td>
           <td>{{ r.asset_count }}</td>
           <td>{{ r.top_pack_name or "—" }}</td>
           <td>
