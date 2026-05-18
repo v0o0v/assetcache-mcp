@@ -60,7 +60,7 @@ class SpritesheetAnalyzer:
                 composite = make_preview_composite(
                     src, list(detection.frames), max_size=_PREVIEW_MAX
                 )
-        except (OSError, ValueError):
+        except (OSError, ValueError):  # 파일 I/O / 이미지 포맷 오류 — SpriteAnalyzer 폴백
             log.exception("preview composite failed: %s", inp.abs_path)
             return self.sprite.analyze(inp)
 
@@ -108,12 +108,12 @@ class SpritesheetAnalyzer:
                 w, h = rgba.size
                 arr = np.asarray(rgba)
                 has_alpha = bool((arr[:, :, 3] < 255).any())
-        except (OSError, ValueError):
+        except (OSError, ValueError):  # numpy/Pillow 알파 측정 실패 — 합성 이미지 크기로 폴백
             w, h, has_alpha = composite.size[0], composite.size[1], True
 
         sprite_meta = SpriteMeta(
             width=w, height=h,
-            has_alpha=has_alpha, is_pixel_art=True,  # 시트는 보통 픽셀 아트 — 단순화
+            has_alpha=has_alpha, is_pixel_art=True,  # 시트는 보통 픽셀 아트 — v1 단순화 (개별 측정은 v2)
             dominant_colors=[],
             frame_w=frame_w, frame_h=frame_h, frame_count=len(detection.frames),
             animation_tags=animation_tags,

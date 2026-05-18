@@ -377,10 +377,10 @@ class Store:
 
     def _migrate_m6_animations_json(self) -> None:
         """M6 — sprite_meta.animations_json 컬럼 idempotent 추가."""
-        cur = self.conn.execute("PRAGMA table_info(sprite_meta)")
-        cols = {r[1] for r in cur.fetchall()}
-        if "animations_json" not in cols:
-            with self.write_lock:
+        with self.write_lock:
+            cur = self.conn.execute("PRAGMA table_info(sprite_meta)")
+            cols = {r[1] for r in cur.fetchall()}
+            if "animations_json" not in cols:
                 self.conn.execute(
                     "ALTER TABLE sprite_meta ADD COLUMN animations_json TEXT"
                 )
@@ -784,7 +784,7 @@ class Store:
 
     def get_sprite_meta(self, asset_id: int) -> "SpriteMeta | None":
         """asset_id 의 sprite_meta 행을 SpriteMeta 로 반환. 없으면 None."""
-        import json as _json
+        import json
 
         row = self.conn.execute(
             """
@@ -796,15 +796,30 @@ class Store:
         ).fetchone()
         if row is None:
             return None
+
+        # JSON 디코드 — 손상 데이터에 견고하게
+        try:
+            dominant_colors = json.loads(row[4]) if row[4] else []
+        except (json.JSONDecodeError, TypeError):
+            dominant_colors = []
+        try:
+            animation_tags = json.loads(row[8]) if row[8] else None
+        except (json.JSONDecodeError, TypeError):
+            animation_tags = None
+        try:
+            animations_json = json.loads(row[9]) if row[9] else None
+        except (json.JSONDecodeError, TypeError):
+            animations_json = None
+
         return SpriteMeta(
             width=int(row[0]), height=int(row[1]),
             has_alpha=bool(row[2]), is_pixel_art=bool(row[3]),
-            dominant_colors=_json.loads(row[4]) if row[4] else [],
+            dominant_colors=dominant_colors,
             frame_w=int(row[5]) if row[5] is not None else None,
             frame_h=int(row[6]) if row[6] is not None else None,
             frame_count=int(row[7]) if row[7] is not None else None,
-            animation_tags=_json.loads(row[8]) if row[8] else None,
-            animations_json=_json.loads(row[9]) if row[9] else None,
+            animation_tags=animation_tags,
+            animations_json=animations_json,
         )
 
     def update_asset_kind(self, asset_id: int, kind: str) -> None:

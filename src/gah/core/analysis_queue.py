@@ -294,7 +294,7 @@ class AnalysisQueue(QObject):
                 result.embedding_vector, result.embedding_dim,
             )
         self.store.update_fts(asset_id, result.searchable.for_fts)
-        # M6 — analyzer 가 sprite → spritesheet 로 promote 했으면 assets.kind UPDATE
+        # M6 — SpritesheetAnalyzer 만 sprite → spritesheet promote (다른 analyzer 는 영향 X)
         if result.kind == "spritesheet":
             self.store.update_asset_kind(asset_id, "spritesheet")
         self.store.mark_asset_state(
