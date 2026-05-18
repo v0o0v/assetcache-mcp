@@ -1264,7 +1264,7 @@ html, body {
   vertical-align: middle;
 }
 .unity-table th { font-weight: 600; background: var(--chip-bg); }
-.unity-table td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.unity-table td { white-space: normal; word-break: break-word; }
 
 /* M7 patch — Unity 표 컬럼 너비 + 정렬 헤더 */
 .unity-table .col-publisher  { width: 11%; }
@@ -1275,8 +1275,6 @@ html, body {
 .unity-table .col-preview    { width: 10%; }
 .unity-table .col-added      { width: 12%; }
 .unity-table .col-actions    { width: 20%; }
-.unity-table .col-asset-name td, .unity-table td:nth-child(3) { white-space: normal; word-break: break-word; }
-.unity-table .col-actions ~ td, .unity-table td.unity-actions { white-space: normal; }
 .unity-table .unity-actions button { margin: 2px 4px 2px 0; }
 .sort-link {
   display: inline-block; padding: 2px 4px;
