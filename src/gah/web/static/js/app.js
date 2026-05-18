@@ -38,11 +38,21 @@ window.onLabelsChanged = function (evt) {
  * pick-card 그룹 등 다른 요소에는 영향을 주지 않는다.
  */
 document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape") {
-    var modal = document.getElementById("asset-detail-modal");
-    if (modal && modal.innerHTML.trim() !== "") {
-      modal.innerHTML = "";
-    }
+  if (e.key !== "Escape") return;
+  // 1) 자산 상세 모달 우선 닫기
+  var modal = document.getElementById("asset-detail-modal");
+  if (modal && modal.innerHTML.trim() !== "") {
+    modal.innerHTML = "";
+    return;
+  }
+  // 2) 사이드 패널이 열려 있으면 닫기 (좁은 화면에서 fixed full-height
+  //    상태에서도 ESC 로 dead-end 회피 가능)
+  if (typeof Alpine !== "undefined" && Alpine.store) {
+    try {
+      if (Alpine.store("advanced").open) {
+        Alpine.store("advanced").open = false;
+      }
+    } catch (_e) { /* Alpine 미초기화 시 무시 */ }
   }
 });
 

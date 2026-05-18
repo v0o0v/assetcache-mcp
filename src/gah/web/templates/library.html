@@ -61,7 +61,7 @@
            @mousemove.window="onDrag($event)"
            @mouseup.window="stopDrag"></div>
 
-      {# B/C/D 탭 헤더 #}
+      {# B/C/D 탭 헤더 + ✕ 닫기 (좁은 화면 fixed full-height 상태에서도 필수) #}
       <nav class="side-tabs">
         <button @click="$store.advanced.activeTab='b'"
                 :class="{ active: $store.advanced.activeTab === 'b' }">{{ _("B 필터") }}</button>
@@ -69,6 +69,9 @@
                 :class="{ active: $store.advanced.activeTab === 'c' }">{{ _("C 표시") }}</button>
         <button @click="$store.advanced.activeTab='d'"
                 :class="{ active: $store.advanced.activeTab === 'd' }">{{ _("D 조정") }}</button>
+        <button class="side-panel-close"
+                @click="$store.advanced.open = false"
+                aria-label="{{ _('닫기') }}">✕</button>
       </nav>
 
       {# B/C/D 탭 컨테이너 — Jinja include 로 모두 렌더, Alpine x-show 로 가시성 제어 #}
