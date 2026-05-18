@@ -92,6 +92,19 @@ def build_app(deps: WebDeps) -> FastAPI:
     app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
     templates = Jinja2Templates(directory=str(templates_dir))
     setup_jinja_i18n(templates.env)
+
+    # M7 patch — Unity Asset Store 표의 byte size 를 인간 가독 단위로.
+    def _humansize(n: int | None) -> str:
+        if n is None:
+            return "—"
+        f = float(n)
+        for unit in ("B", "KB", "MB", "GB"):
+            if f < 1024 or unit == "GB":
+                return f"{f:.0f} {unit}" if unit == "B" else f"{f:.1f} {unit}"
+            f /= 1024
+        return f"{f:.1f} GB"
+
+    templates.env.filters["humansize"] = _humansize
     app.state.templates = templates
 
     # 10 라우터 등록 (library 는 /api + /ui 두 라우터, pages 는 HTML 페이지)

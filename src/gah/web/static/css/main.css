@@ -1255,9 +1255,29 @@ html, body {
 .unity-header h1 { margin: 0 0 8px 0; }
 .unity-cache-path code { background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
 .unity-empty { color: var(--text-muted); }
-.unity-table { width: 100%; border-collapse: collapse; }
+.unity-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .unity-table th, .unity-table td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; font-size: 0.9em; }
 .unity-table th { font-weight: 600; background: var(--chip-bg); }
+.unity-table td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* M7 patch — Unity 표 컬럼 너비 + 정렬 헤더 */
+.unity-table .col-publisher  { width: 12%; }
+.unity-table .col-category   { width: 14%; }
+.unity-table .col-asset-name { width: 22%; }
+.unity-table .col-size       { width: 8%;  text-align: right; }
+.unity-table .col-state      { width: 9%; }
+.unity-table .col-preview    { width: 11%; }
+.unity-table .col-actions    { width: 24%; }
+.unity-table .col-asset-name td, .unity-table td:nth-child(3) { white-space: normal; word-break: break-word; }
+.unity-table .col-actions ~ td, .unity-table td.unity-actions { white-space: normal; }
+.unity-table .unity-actions button { margin: 2px 4px 2px 0; }
+.sort-link {
+  display: inline-block; padding: 2px 4px;
+  color: inherit; text-decoration: none; border-radius: 3px;
+}
+.sort-link:hover { background: var(--bar-track, #ddd); }
+.sort-link.active { font-weight: 700; }
+.sort-arrow { color: var(--score-pos, #28a745); }
 .state-chip {
   display: inline-block;
   padding: 2px 8px; border-radius: 12px; font-size: 0.8em;

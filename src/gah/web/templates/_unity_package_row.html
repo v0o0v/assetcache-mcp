@@ -3,7 +3,7 @@
   <td>{{ item.publisher or "—" }}</td>
   <td>{{ item.category or "—" }}</td>
   <td><strong>{{ item.asset_name }}</strong></td>
-  <td>{{ item.package_size }}</td>
+  <td>{{ item.package_size | humansize }}</td>
   <td>
     <span class="state-chip state-{{ item.import_state }}">
       {{ item.import_state }}

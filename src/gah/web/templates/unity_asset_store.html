@@ -18,16 +18,24 @@
     </button>
   </header>
   {% if items %}
+  {% macro sort_th(field, label, cls="") %}
+    <th class="{{ cls }}">
+      <a href="?sort={{ field }}&order={% if sort_field == field and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+         class="sort-link{% if sort_field == field %} active{% endif %}">
+        {{ label }}{% if sort_field == field %}<span class="sort-arrow"> {{ '↑' if sort_order == 'asc' else '↓' }}</span>{% endif %}
+      </a>
+    </th>
+  {% endmacro %}
   <table class="unity-table">
     <thead>
       <tr>
-        <th>{{ _("Publisher") }}</th>
-        <th>{{ _("Category") }}</th>
-        <th>{{ _("Asset name") }}</th>
-        <th>{{ _("Size") }}</th>
-        <th>{{ _("State") }}</th>
-        <th>{{ _("Preview") }}</th>
-        <th>{{ _("Actions") }}</th>
+        {{ sort_th("publisher", _("Publisher"), "col-publisher") }}
+        {{ sort_th("category", _("Category"), "col-category") }}
+        {{ sort_th("asset_name", _("Asset name"), "col-asset-name") }}
+        {{ sort_th("package_size", _("Size"), "col-size") }}
+        {{ sort_th("import_state", _("State"), "col-state") }}
+        {{ sort_th("preview_asset_count", _("Preview"), "col-preview") }}
+        <th class="col-actions">{{ _("Actions") }}</th>
       </tr>
     </thead>
     <tbody id="unity-rows">

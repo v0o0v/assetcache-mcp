@@ -20,6 +20,12 @@ router = APIRouter()
 # ── GET /unity-asset-store ─────────────────────────────────────────────
 
 
+_SORT_FIELDS = {
+    "publisher", "category", "asset_name",
+    "package_size", "import_state", "preview_asset_count",
+}
+
+
 @router.get("/unity-asset-store", response_class=HTMLResponse)
 async def unity_page(request: Request) -> HTMLResponse:
     """Unity Asset Store 발견 패키지 표 페이지."""
@@ -27,7 +33,24 @@ async def unity_page(request: Request) -> HTMLResponse:
     templates = request.app.state.templates
 
     cache = detect_cache_path(deps.config)
-    items = deps.store.list_unity_imports() if cache else []
+    items = list(deps.store.list_unity_imports()) if cache else []
+
+    # 정렬 (M7 patch) — query param ?sort=...&order=asc|desc
+    sort_field = request.query_params.get("sort", "asset_name")
+    if sort_field not in _SORT_FIELDS:
+        sort_field = "asset_name"
+    sort_order = request.query_params.get("order", "asc")
+    if sort_order not in ("asc", "desc"):
+        sort_order = "asc"
+
+    def _key(it):
+        v = getattr(it, sort_field, None)
+        if isinstance(v, (int, float)):
+            return (0, v)
+        return (1 if v is None else 0, (v or "").lower() if isinstance(v, str) else "")
+
+    items.sort(key=_key, reverse=(sort_order == "desc"))
+
     focus = request.query_params.get("focus")
     return templates.TemplateResponse(
         request=request,
@@ -37,6 +60,8 @@ async def unity_page(request: Request) -> HTMLResponse:
             "cache_path": str(cache) if cache else None,
             "focus_id": int(focus) if focus and focus.isdigit() else None,
             "page": "unity_asset_store",
+            "sort_field": sort_field,
+            "sort_order": sort_order,
         },
     )
 
