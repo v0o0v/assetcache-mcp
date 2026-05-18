@@ -768,19 +768,26 @@ class Store:
         return [_asset_row(r) for r in rows]
 
     def count_assets_in_pack(self, pack_id: int) -> int:
-        return int(
-            self.conn.execute(
-                "SELECT COUNT(*) FROM assets WHERE pack_id = ?", (pack_id,)
-            ).fetchone()[0]
-        )
+        # M7 patch — read 도 write_lock 안에서 (M6 의 pack_aggregate fix 패턴).
+        # 분석 thread 가 DB 쓰는 중 다른 thread 의 connection.execute 가
+        # sqlite3.InterfaceError 발생하는 회귀 방어.
+        with self.write_lock:
+            return int(
+                self.conn.execute(
+                    "SELECT COUNT(*) FROM assets WHERE pack_id = ?", (pack_id,)
+                ).fetchone()[0]
+            )
 
     def get_asset_by_id(self, asset_id: int) -> Optional[AssetRow]:
-        row = self.conn.execute(
-            "SELECT id, pack_id, path, kind, file_hash, file_size, added_at,"
-            "       analyzed_at, analysis_state, analysis_error"
-            " FROM assets WHERE id = ?",
-            (asset_id,),
-        ).fetchone()
+        # M7 patch — read 도 write_lock 안에서 (분석 큐 동시 access 시
+        # sqlite3.InterfaceError 회피).
+        with self.write_lock:
+            row = self.conn.execute(
+                "SELECT id, pack_id, path, kind, file_hash, file_size, added_at,"
+                "       analyzed_at, analysis_state, analysis_error"
+                " FROM assets WHERE id = ?",
+                (asset_id,),
+            ).fetchone()
         return _asset_row(row) if row else None
 
     # -- M2: analysis state transitions -------------------------------
