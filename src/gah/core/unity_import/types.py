@@ -6,9 +6,9 @@ hash 가 보장되고 dict key 나 set 원소로 쓸 수 있다.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 
 @dataclass(frozen=True)
@@ -20,8 +20,8 @@ class UnityPackagePath:
     """
 
     abs_path: Path
-    publisher: Optional[str]
-    category: Optional[str]
+    publisher: str | None
+    category: str | None
     asset_name: str
     size: int          # 바이트
     mtime: int         # Unix timestamp
@@ -51,7 +51,7 @@ class UnityPackagePreview:
     asset_count: int
     image_count: int
     sound_count: int
-    sample_pathnames: tuple[str, ...] = field(default_factory=tuple)
+    sample_pathnames: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -67,18 +67,18 @@ class UnityScanResult:
     unchanged: int
     removed: int
     cache_path: Path
-    warnings: tuple[str, ...] = field(default_factory=tuple)
+    warnings: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
 class UnityImportResult:
     """패키지 한 개를 GAH 라이브러리로 임포트한 결과."""
 
-    pack_id: Optional[int]   # 성공 시 생성된 팩 ID, 실패 시 None
+    pack_id: int | None   # 성공 시 생성된 팩 ID, 실패 시 None
     pack_name: str
     asset_count: int
     state: Literal["imported", "failed"]
-    error: Optional[str] = None
+    error: str | None = None
 
 
 @dataclass(frozen=True)
@@ -101,16 +101,16 @@ class UnityImportRecord:
 
     id: int
     package_path: Path
-    publisher: Optional[str]
-    category: Optional[str]
+    publisher: str | None
+    category: str | None
     asset_name: str
     package_size: int
     package_mtime: int
-    preview_asset_count: Optional[int]
-    preview_image_count: Optional[int]
-    preview_sound_count: Optional[int]
-    preview_inspected_at: Optional[int]
-    pack_id: Optional[int]
+    preview_asset_count: int | None
+    preview_image_count: int | None
+    preview_sound_count: int | None
+    preview_inspected_at: int | None
+    pack_id: int | None
     import_state: Literal[
         "discovered",
         "previewed",
@@ -119,7 +119,7 @@ class UnityImportRecord:
         "failed",
         "skipped",
     ]
-    import_error: Optional[str]
-    imported_at: Optional[int]
+    import_error: str | None
+    imported_at: int | None
     first_seen_at: int
     last_scanned_at: int
