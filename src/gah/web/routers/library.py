@@ -82,6 +82,10 @@ def _row_to_dict(row: Any) -> dict[str, Any]:
     d.setdefault("width", meta.get("width"))
     d.setdefault("height", meta.get("height"))
     d.setdefault("size_kb", meta.get("size_kb"))
+    # M6 — spritesheet 의 frame 정보를 top-level 로 flatten
+    d.setdefault("frame_count", meta.get("frame_count"))
+    d.setdefault("frame_w", meta.get("frame_w"))
+    d.setdefault("frame_h", meta.get("frame_h"))
 
     # matched_labels 는 list[dict] 이지만 asdict 이후 그대로 유지됨
     return d
@@ -132,6 +136,11 @@ def _asset_row_to_dict(row: Any) -> dict[str, Any]:
         "size_kb": row.file_size // 1024 if row.file_size else None,
         "added_at": row.added_at,
         "kind": row.kind,
+        # M6 — frame_count 는 sprite_meta JOIN 없이 빠르게 처리하지 않으므로 None.
+        # 시트 카드는 검색 경로에서만 배지 노출.
+        "frame_count": None,
+        "frame_w": None,
+        "frame_h": None,
     }
     return d
 
