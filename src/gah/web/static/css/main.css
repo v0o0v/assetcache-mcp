@@ -1409,3 +1409,56 @@ html, body {
 }
 .adopt-btn:hover:not(:disabled) { background: var(--purple-strip, #7c3aed); color: white; border-color: transparent; }
 .adopt-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* M7 Phase 6 — 프로젝트 목록 + 상세 페이지 */
+.projects-page { padding: 24px; max-width: 1200px; margin: 0 auto; }
+.projects-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.projects-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+.projects-table th, .projects-table td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+.projects-table th { background: var(--chip-bg); font-weight: 600; }
+.projects-table tr.row-active { background: var(--chip-matched, #fef3c7); }
+.projects-empty { color: var(--text-muted); margin-top: 24px; }
+.link-detail { color: var(--accent); text-decoration: none; }
+.link-detail:hover { text-decoration: underline; }
+
+.project-detail { padding: 24px; max-width: 1200px; margin: 0 auto; }
+.project-header { margin-bottom: 24px; }
+.project-meta { color: var(--text-muted); margin: 4px 0; }
+.project-actions { display: flex; gap: 12px; align-items: center; margin-top: 8px; }
+.link-back { color: var(--accent); text-decoration: none; font-size: 0.9em; }
+.link-back:hover { text-decoration: underline; }
+.active-chip { background: var(--chip-imported-bg); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 0.82em; margin-left: 8px; vertical-align: middle; }
+
+.project-usage, .project-distribution { margin-bottom: 32px; }
+.usage-table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+.usage-table th, .usage-table td { border: 1px solid var(--border); padding: 6px 10px; }
+.usage-table th { background: var(--chip-bg); }
+.usage-empty, .distribution-empty { color: var(--text-muted); }
+
+.pack-distribution { list-style: none; padding: 0; margin: 0; }
+.pack-distribution li { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.pack-name { min-width: 140px; font-size: 0.9em; }
+.pack-bar-track { display: inline-block; width: 200px; height: 8px; background: var(--bar-track); border-radius: 4px; overflow: hidden; vertical-align: middle; }
+.pack-bar { height: 100%; background: var(--score-pos); }
+.pack-uses { font-size: 0.85em; color: var(--text-muted); }
+
+/* M7 Phase 6C — 자산별 선호도 패널 */
+.preference-panel { margin-top: 32px; }
+.preference-controls { margin-bottom: 12px; display: flex; gap: 8px; align-items: center; }
+.preference-controls select, .preference-controls input { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--card-bg); color: var(--fg); }
+.preference-table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+.preference-table th, .preference-table td { border: 1px solid var(--border); padding: 6px 10px; }
+.preference-table th { background: var(--chip-bg); }
+.preference-empty { color: var(--text-muted); }
+.score-bar { display: inline-block; width: 100px; height: 12px; background: var(--bar-track); position: relative; vertical-align: middle; border-radius: 2px; overflow: hidden; }
+.score-bar.pos .score-bar-fill { background: var(--score-pos); margin-left: auto; height: 100%; }
+.score-bar.neg .score-bar-fill { background: var(--score-neg); height: 100%; }
+.score-bar.zero .score-bar-fill { background: transparent; }
+.score-value { font-variant-numeric: tabular-nums; font-size: 0.85em; margin-left: 4px; }
+.fb-positive { color: var(--score-pos); }
+.fb-negative { color: var(--score-neg); }
+.fb-irrelevant { color: var(--text-muted); }
+.pager { margin-top: 12px; display: flex; align-items: center; gap: 8px; font-size: 0.9em; }
+
+.btn-primary { background: var(--accent); color: #fff; border: none; border-radius: 4px; padding: 6px 14px; cursor: pointer; font-size: 0.9em; }
+.btn-primary:hover { opacity: 0.85; }

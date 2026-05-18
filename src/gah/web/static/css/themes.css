@@ -26,6 +26,10 @@
   --focus-outline: #ffaa00;
   --code-bg: #f5f5f5;
   --text-muted: #888;
+  /* M7 Phase 6 — 선호도 점수 막대 */
+  --bar-track: #ddd;
+  --score-pos: #28a745;
+  --score-neg: #dc3545;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -55,5 +59,9 @@
     --focus-outline: #ffcc55;
     --code-bg: #2a2a2a;
     --text-muted: #aaa;
+    /* M7 Phase 6 — 선호도 점수 막대 dark */
+    --bar-track: #444;
+    --score-pos: #4caf50;
+    --score-neg: #f44336;
   }
 }
