@@ -15,7 +15,7 @@
     <thead>
       <tr>
         <th>{{ _("표시 이름") }}</th>
-        <th>{{ _("external_id") }}</th>
+        <th>{{ _("경로") }}</th>
         <th>{{ _("첫 발견") }}</th>
         <th>{{ _("마지막 활동") }}</th>
         <th>{{ _("채택 자산") }}</th>
@@ -43,7 +43,7 @@
     </tbody>
   </table>
   {% else %}
-  <p class="projects-empty">{{ _("등록된 프로젝트가 없습니다. 새 프로젝트를 만들거나 Unity 프로젝트를 열면 자동으로 등록됩니다.") }}</p>
+  <p class="projects-empty">{{ _("등록된 프로젝트가 없습니다. 새 프로젝트를 만들거나, Claude Code 가 작업 중인 Unity 프로젝트의 자산을 채택하면 자동으로 등록됩니다.") }}</p>
   {% endif %}
 
   {% include "_modal_new_project.html" %}
