@@ -85,10 +85,17 @@ class SpritesheetAnalyzer:
                 "fps_hint": tag.fps_hint,
                 "source": tag.source,
             }
-        hints = gemma_payload.get("animation_hint") or []
+        # Gemma 가 단일 라벨일 때 array 가 아닌 string "run" 으로 응답하는 경우가
+        # 있음 — for label in hints: 가 character iterate 해서 r/u/n 같이 풀리는
+        # 회귀를 방어. list / str / 그 외 (drop) 3 케이스 모두 list[str] 로 정규화.
+        raw_hints = gemma_payload.get("animation_hint")
+        if isinstance(raw_hints, str):
+            hints: list[str] = [raw_hints] if raw_hints else []
+        elif isinstance(raw_hints, list):
+            hints = [h for h in raw_hints if isinstance(h, str) and h]
+        else:
+            hints = []
         for label in hints:
-            if not isinstance(label, str) or not label:
-                continue
             if label in animations_json:
                 continue  # frameTags 가 이미 정의 — 우선
             animations_json[label] = {

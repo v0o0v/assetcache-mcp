@@ -258,3 +258,58 @@ def test_analyzer_input_propagated_to_sprite_fallback(tmp_path, sprite_mock, oll
     call_args = sprite_mock.analyze.call_args
     assert call_args[0][0].asset_id == 42
     assert call_args[0][0].abs_path == png
+
+
+def test_gemma_returns_string_not_array_normalized(tmp_path, sprite_mock, ollama_mock, registry_mock, embedder_mock):
+    """Gemma 가 'run' 문자열 한 개로 응답할 때 character iterate 회귀 방어.
+
+    이전 코드: hints="run" → for label in hints → 'r','u','n' 3개 라벨이
+    asset_labels + animations_json 에 잘못 들어가던 버그.
+    """
+    ollama_mock.chat.return_value = {
+        "description": "x", "subject": "x",
+        "category": "character", "style": "pixel_art",
+        "mood": [], "palette": [],
+        "animation_hint": "run",  # ← 단일 문자열 (배열 아님)
+        "confidence": 0.95,
+    }
+    png = tmp_path / "x.png"
+    _make_sheet_png(png, frame_count=4)
+    analyzer = SpritesheetAnalyzer(
+        sprite=sprite_mock, ollama=ollama_mock,
+        registry=registry_mock, embedder=embedder_mock, clip=None,
+    )
+    inp = AnalyzerInput(asset_id=99, pack_id=1, abs_path=png, rel_path="x.png")
+    result = analyzer.analyze(inp)
+    anim = result.sprite_meta.animations_json
+    # 'run' 한 개만 들어가야 함 — 'r'/'u'/'n' 으로 split 되면 안 됨
+    assert "run" in anim
+    assert "r" not in anim
+    assert "u" not in anim
+    assert "n" not in anim
+    label_names = {lbl.label for lbl in result.labels}
+    assert "run" in label_names
+    assert "r" not in label_names
+    assert "u" not in label_names
+    assert "n" not in label_names
+
+
+def test_gemma_returns_none_or_garbage_falls_back_to_empty(tmp_path, sprite_mock, ollama_mock, registry_mock, embedder_mock):
+    """Gemma 가 animation_hint 키를 누락하거나 비-list/비-str 값을 보낼 때 빈 리스트로 처리."""
+    ollama_mock.chat.return_value = {
+        "description": "x", "subject": "x",
+        "category": "character", "style": "pixel_art",
+        "mood": [], "palette": [],
+        "animation_hint": {"weird": "object"},  # dict — 무시
+        "confidence": 0.5,
+    }
+    png = tmp_path / "x.png"
+    _make_sheet_png(png, frame_count=4)
+    analyzer = SpritesheetAnalyzer(
+        sprite=sprite_mock, ollama=ollama_mock,
+        registry=registry_mock, embedder=embedder_mock, clip=None,
+    )
+    inp = AnalyzerInput(asset_id=100, pack_id=1, abs_path=png, rel_path="x.png")
+    result = analyzer.analyze(inp)
+    # animations_json 이 빈 dict (JSON frameTags 없는 grid_detect 케이스)
+    assert result.sprite_meta.animations_json == {}
