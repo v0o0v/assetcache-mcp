@@ -333,6 +333,31 @@ CREATE INDEX IF NOT EXISTS idx_feedback_project_pack_asset
 """
 
 
+_M7_UNITY_SCHEMA = """
+CREATE TABLE IF NOT EXISTS unity_imports (
+  id                       INTEGER PRIMARY KEY,
+  package_path             TEXT NOT NULL UNIQUE,
+  publisher                TEXT,
+  category                 TEXT,
+  asset_name               TEXT NOT NULL,
+  package_size             INTEGER NOT NULL,
+  package_mtime            INTEGER NOT NULL,
+  preview_asset_count      INTEGER,
+  preview_image_count      INTEGER,
+  preview_sound_count      INTEGER,
+  preview_inspected_at     INTEGER,
+  pack_id                  INTEGER REFERENCES packs(id) ON DELETE SET NULL,
+  import_state             TEXT NOT NULL,
+  import_error             TEXT,
+  imported_at              INTEGER,
+  first_seen_at            INTEGER NOT NULL,
+  last_scanned_at          INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_unity_imports_pack ON unity_imports(pack_id);
+CREATE INDEX IF NOT EXISTS idx_unity_imports_state ON unity_imports(import_state);
+"""
+
+
 # ── Store ────────────────────────────────────────────────────────────
 
 
@@ -368,12 +393,13 @@ class Store:
     # -- lifecycle ----------------------------------------------------
 
     def initialize(self) -> None:
-        """Create M1 + M2 + M3 + M4 tables.  Safe to call repeatedly."""
+        """Create M1 + M2 + M3 + M4 + M7 tables.  Safe to call repeatedly."""
         self.conn.executescript(_M1_SCHEMA)
         self.conn.executescript(_M2_SCHEMA)
         self.conn.executescript(_M3_SCHEMA)
         self.conn.executescript(_M4_SCHEMA)
         self._migrate_m6_animations_json()
+        self._migrate_unity_imports()
 
     def _migrate_m6_animations_json(self) -> None:
         """M6 — sprite_meta.animations_json 컬럼 idempotent 추가."""
@@ -384,6 +410,11 @@ class Store:
                 self.conn.execute(
                     "ALTER TABLE sprite_meta ADD COLUMN animations_json TEXT"
                 )
+
+    def _migrate_unity_imports(self) -> None:
+        """M7 — unity_imports 테이블 + 인덱스 idempotent 생성."""
+        with self.write_lock:
+            self.conn.executescript(_M7_UNITY_SCHEMA)
 
     def close(self) -> None:
         try:
@@ -1579,6 +1610,283 @@ class Store:
         ).fetchall()
         return {int(pid): int(c) for pid, c in rows}
 
+    # -- M7: unity_imports CRUD ------------------------------------------
+
+    def insert_unity_import(
+        self,
+        pkg: "UnityPackagePath",
+        *,
+        first_seen_at: int,
+        last_scanned_at: int,
+    ) -> int:
+        """신규 row INSERT (state='discovered' 자동). UNIQUE package_path 위반 시 raise."""
+        from .unity_import.types import UnityPackagePath as _UPP  # noqa: F401
+
+        with self.write_lock:
+            self.conn.execute(
+                """
+                INSERT INTO unity_imports (
+                  package_path, publisher, category, asset_name,
+                  package_size, package_mtime,
+                  import_state, first_seen_at, last_scanned_at
+                ) VALUES (?, ?, ?, ?, ?, ?, 'discovered', ?, ?)
+                """,
+                (
+                    str(pkg.abs_path),
+                    pkg.publisher,
+                    pkg.category,
+                    pkg.asset_name,
+                    pkg.size,
+                    pkg.mtime,
+                    first_seen_at,
+                    last_scanned_at,
+                ),
+            )
+            return int(self.conn.execute("SELECT last_insert_rowid()").fetchone()[0])
+
+    def upsert_unity_import(
+        self,
+        pkg: "UnityPackagePath",
+        *,
+        last_scanned_at: int,
+    ) -> int:
+        """package_path 기준 INSERT OR UPDATE. publisher/category/asset_name/size/mtime 갱신."""
+        with self.write_lock:
+            row = self.conn.execute(
+                "SELECT id FROM unity_imports WHERE package_path = ?",
+                (str(pkg.abs_path),),
+            ).fetchone()
+            if row is None:
+                self.conn.execute(
+                    """
+                    INSERT INTO unity_imports (
+                      package_path, publisher, category, asset_name,
+                      package_size, package_mtime,
+                      import_state, first_seen_at, last_scanned_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, 'discovered', ?, ?)
+                    """,
+                    (
+                        str(pkg.abs_path),
+                        pkg.publisher,
+                        pkg.category,
+                        pkg.asset_name,
+                        pkg.size,
+                        pkg.mtime,
+                        last_scanned_at,
+                        last_scanned_at,
+                    ),
+                )
+                return int(self.conn.execute("SELECT last_insert_rowid()").fetchone()[0])
+            uid = int(row[0])
+            self.conn.execute(
+                """
+                UPDATE unity_imports SET
+                  publisher = ?,
+                  category = ?,
+                  asset_name = ?,
+                  package_size = ?,
+                  package_mtime = ?,
+                  last_scanned_at = ?
+                WHERE id = ?
+                """,
+                (
+                    pkg.publisher,
+                    pkg.category,
+                    pkg.asset_name,
+                    pkg.size,
+                    pkg.mtime,
+                    last_scanned_at,
+                    uid,
+                ),
+            )
+            return uid
+
+    def update_unity_state(
+        self,
+        unity_import_id: int,
+        state: str,
+        *,
+        pack_id: "int | None" = None,
+        imported_at: "int | None" = None,
+        import_error: "str | None" = None,
+        new_mtime: "int | None" = None,
+        new_size: "int | None" = None,
+        last_scanned_at: "int | None" = None,
+        reset_preview: bool = False,
+    ) -> None:
+        """state + 부수 컬럼 갱신. reset_preview=True 면 preview_* 4 컬럼 NULL 화."""
+        parts: list[str] = ["import_state = ?"]
+        params: list = [state]
+        if pack_id is not None:
+            parts.append("pack_id = ?")
+            params.append(int(pack_id))
+        if imported_at is not None:
+            parts.append("imported_at = ?")
+            params.append(int(imported_at))
+        if import_error is not None:
+            parts.append("import_error = ?")
+            params.append(import_error)
+        if new_mtime is not None:
+            parts.append("package_mtime = ?")
+            params.append(int(new_mtime))
+        if new_size is not None:
+            parts.append("package_size = ?")
+            params.append(int(new_size))
+        if last_scanned_at is not None:
+            parts.append("last_scanned_at = ?")
+            params.append(int(last_scanned_at))
+        if reset_preview:
+            parts.extend([
+                "preview_asset_count = NULL",
+                "preview_image_count = NULL",
+                "preview_sound_count = NULL",
+                "preview_inspected_at = NULL",
+            ])
+        params.append(int(unity_import_id))
+        with self.write_lock:
+            self.conn.execute(
+                f"UPDATE unity_imports SET {', '.join(parts)} WHERE id = ?",
+                params,
+            )
+
+    def update_unity_preview(
+        self,
+        unity_import_id: int,
+        *,
+        asset_count: int,
+        image_count: int,
+        sound_count: int,
+    ) -> None:
+        """미리보기 카운트 + preview_inspected_at 갱신. state 변경 X."""
+        import time as _time
+
+        with self.write_lock:
+            self.conn.execute(
+                """
+                UPDATE unity_imports SET
+                  preview_asset_count = ?,
+                  preview_image_count = ?,
+                  preview_sound_count = ?,
+                  preview_inspected_at = ?
+                WHERE id = ?
+                """,
+                (
+                    int(asset_count),
+                    int(image_count),
+                    int(sound_count),
+                    int(_time.time()),
+                    int(unity_import_id),
+                ),
+            )
+
+    def touch_unity_import(
+        self, unity_import_id: int, *, last_scanned_at: int,
+    ) -> None:
+        """last_scanned_at 만 갱신 (unchanged 케이스용)."""
+        with self.write_lock:
+            self.conn.execute(
+                "UPDATE unity_imports SET last_scanned_at = ? WHERE id = ?",
+                (int(last_scanned_at), int(unity_import_id)),
+            )
+
+    def list_unity_imports(
+        self,
+        *,
+        state: "str | None" = None,
+        publisher_glob: "str | None" = None,
+        asset_name_glob: "str | None" = None,
+        offset: int = 0,
+        limit: "int | None" = None,
+    ) -> "list[UnityImportRecord]":
+        """필터 + 페이지네이션. glob 은 SQL LIKE (% / _) 변환."""
+        from .unity_import.types import UnityImportRecord as _UIR  # noqa: F401
+
+        sql = (
+            "SELECT id, package_path, publisher, category, asset_name,"
+            " package_size, package_mtime,"
+            " preview_asset_count, preview_image_count, preview_sound_count,"
+            " preview_inspected_at, pack_id, import_state, import_error,"
+            " imported_at, first_seen_at, last_scanned_at"
+            " FROM unity_imports"
+        )
+        params: list = []
+        where: list[str] = []
+        if state is not None:
+            where.append("import_state = ?")
+            params.append(state)
+        if publisher_glob is not None:
+            where.append("publisher LIKE ?")
+            params.append(publisher_glob.replace("*", "%").replace("?", "_"))
+        if asset_name_glob is not None:
+            where.append("asset_name LIKE ?")
+            params.append(asset_name_glob.replace("*", "%").replace("?", "_"))
+        if where:
+            sql += " WHERE " + " AND ".join(where)
+        sql += " ORDER BY id"
+        if limit is not None:
+            sql += " LIMIT ? OFFSET ?"
+            params.extend([int(limit), int(offset)])
+        elif offset:
+            sql += " LIMIT -1 OFFSET ?"
+            params.append(int(offset))
+        rows = self.conn.execute(sql, params).fetchall()
+        return [_unity_import_row(r) for r in rows]
+
+    def count_unity_imports(
+        self,
+        *,
+        state: "str | None" = None,
+        publisher_glob: "str | None" = None,
+        asset_name_glob: "str | None" = None,
+    ) -> int:
+        """페이지네이션용 total."""
+        sql = "SELECT COUNT(*) FROM unity_imports"
+        params: list = []
+        where: list[str] = []
+        if state is not None:
+            where.append("import_state = ?")
+            params.append(state)
+        if publisher_glob is not None:
+            where.append("publisher LIKE ?")
+            params.append(publisher_glob.replace("*", "%").replace("?", "_"))
+        if asset_name_glob is not None:
+            where.append("asset_name LIKE ?")
+            params.append(asset_name_glob.replace("*", "%").replace("?", "_"))
+        if where:
+            sql += " WHERE " + " AND ".join(where)
+        row = self.conn.execute(sql, params).fetchone()
+        return int(row[0]) if row else 0
+
+    def get_unity_import_by_id(
+        self, unity_import_id: int
+    ) -> "UnityImportRecord | None":
+        """단일 row by id. 없으면 None."""
+        row = self.conn.execute(
+            "SELECT id, package_path, publisher, category, asset_name,"
+            " package_size, package_mtime,"
+            " preview_asset_count, preview_image_count, preview_sound_count,"
+            " preview_inspected_at, pack_id, import_state, import_error,"
+            " imported_at, first_seen_at, last_scanned_at"
+            " FROM unity_imports WHERE id = ?",
+            (int(unity_import_id),),
+        ).fetchone()
+        return _unity_import_row(row) if row else None
+
+    def get_unity_import_by_path(
+        self, package_path: Path
+    ) -> "UnityImportRecord | None":
+        """단일 row by package_path. 없으면 None."""
+        row = self.conn.execute(
+            "SELECT id, package_path, publisher, category, asset_name,"
+            " package_size, package_mtime,"
+            " preview_asset_count, preview_image_count, preview_sound_count,"
+            " preview_inspected_at, pack_id, import_state, import_error,"
+            " imported_at, first_seen_at, last_scanned_at"
+            " FROM unity_imports WHERE package_path = ?",
+            (str(package_path),),
+        ).fetchone()
+        return _unity_import_row(row) if row else None
+
 
 # ── helpers ──────────────────────────────────────────────────────────
 
@@ -1662,4 +1970,49 @@ def _saved_search_row(r: tuple) -> SavedSearchRow:
         query_json=str(r[3]),
         created_at=int(r[4]),
         last_used_at=int(r[5]) if r[5] is not None else None,
+    )
+
+
+def _unity_import_row(r: tuple) -> "UnityImportRecord":
+    """sqlite3 row tuple → UnityImportRecord dataclass 변환.
+
+    컬럼 순서 (17개):
+      0  id
+      1  package_path
+      2  publisher
+      3  category
+      4  asset_name
+      5  package_size
+      6  package_mtime
+      7  preview_asset_count
+      8  preview_image_count
+      9  preview_sound_count
+      10 preview_inspected_at
+      11 pack_id
+      12 import_state
+      13 import_error
+      14 imported_at
+      15 first_seen_at
+      16 last_scanned_at
+    """
+    from .unity_import.types import UnityImportRecord
+
+    return UnityImportRecord(
+        id=int(r[0]),
+        package_path=Path(r[1]),
+        publisher=r[2],
+        category=r[3],
+        asset_name=r[4],
+        package_size=int(r[5]),
+        package_mtime=int(r[6]),
+        preview_asset_count=int(r[7]) if r[7] is not None else None,
+        preview_image_count=int(r[8]) if r[8] is not None else None,
+        preview_sound_count=int(r[9]) if r[9] is not None else None,
+        preview_inspected_at=int(r[10]) if r[10] is not None else None,
+        pack_id=int(r[11]) if r[11] is not None else None,
+        import_state=r[12],
+        import_error=r[13],
+        imported_at=int(r[14]) if r[14] is not None else None,
+        first_seen_at=int(r[15]),
+        last_scanned_at=int(r[16]),
     )
