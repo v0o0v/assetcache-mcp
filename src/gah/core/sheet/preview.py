@@ -25,6 +25,9 @@ def sample_indices(total: int, k: int = _PREVIEW_FRAME_COUNT) -> list[int]:
         return []
     if total <= k:
         return list(range(total))
+    if k == 1:
+        # Sentinel — 단일 샘플은 항상 첫 프레임 (formula 가 0 나눗셈)
+        return [0]
     return [round(i * (total - 1) / (k - 1)) for i in range(k)]
 
 

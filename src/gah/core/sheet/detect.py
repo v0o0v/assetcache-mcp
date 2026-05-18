@@ -54,6 +54,8 @@ def detect_sheet(image_path: Path) -> "SheetDetection | None":
     frames: list[FrameSpec] = []
     with _PILImage.open(image_path) as img:
         total_w, total_h = img.size
+    # grid_detect 가 rows ≥ 1, cols ≥ 1 보장 (단일 프레임은 None 반환).
+    # 방어적 if 는 lint 안심용. v1.
     stride_x = total_w // layout.cols if layout.cols > 0 else layout.frame_w
     stride_y = total_h // layout.rows if layout.rows > 0 else layout.frame_h
     idx = 0

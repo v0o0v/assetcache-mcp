@@ -21,7 +21,7 @@ _DEFAULT_FPS = 12
 _NATURAL_RE = re.compile(r"(\d+)|(\D+)")
 
 
-def _natural_key(s: str) -> list:
+def _natural_key(s: str) -> list[tuple]:
     """'hero 10' 이 'hero 2' 뒤로 가도록 숫자 부분을 int 로 비교."""
     out: list = []
     for m in _NATURAL_RE.finditer(s):
@@ -82,7 +82,7 @@ def parse(json_path: Path) -> "AsepriteAtlas | TexturePackerAtlas | None":
     return None
 
 
-def _parse_aseprite(frames_field, meta: dict) -> "AsepriteAtlas | None":
+def _parse_aseprite(frames_field: dict | list, meta: dict) -> "AsepriteAtlas | None":
     if isinstance(frames_field, dict):
         ordered_keys = sorted(frames_field.keys(), key=_natural_key)
         frame_items = [(k, frames_field[k]) for k in ordered_keys]
@@ -134,7 +134,7 @@ def _parse_aseprite(frames_field, meta: dict) -> "AsepriteAtlas | None":
     return AsepriteAtlas(frames=frames, tags=tags)
 
 
-def _parse_texture_packer(frames_field) -> "TexturePackerAtlas | None":
+def _parse_texture_packer(frames_field: dict | list) -> "TexturePackerAtlas | None":
     if isinstance(frames_field, dict):
         ordered_keys = sorted(frames_field.keys(), key=_natural_key)
         frame_items = [(k, frames_field[k]) for k in ordered_keys]

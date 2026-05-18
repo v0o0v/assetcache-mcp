@@ -14,7 +14,7 @@ from .types import GridLayout
 if TYPE_CHECKING:
     from PIL.Image import Image
 
-_MIN_DIM = 16  # 작은 이미지는 격자 추정 의미 없음
+_MIN_DIM = 16  # 16px 미만 이미지는 격자 추정 의미 없음 — 실용적 최소 스프라이트 크기
 
 
 def grid_detect(img: "Image") -> GridLayout | None:

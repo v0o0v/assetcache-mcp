@@ -48,3 +48,15 @@ def test_rgba_preserved():
     img, frames = _sheet_with_frames(8)
     composite = make_preview_composite(img, frames, max_size=512)
     assert composite.mode in ("RGBA", "RGB")
+
+
+def test_sample_indices_k_equals_1():
+    # k=1 은 첫 프레임만 — formula 의 0 나눗셈 회피
+    assert sample_indices(10, 1) == [0]
+    assert sample_indices(1, 1) == [0]
+    assert sample_indices(0, 1) == []
+
+
+def test_sample_indices_k_zero_or_negative():
+    assert sample_indices(10, 0) == []
+    assert sample_indices(10, -3) == []
