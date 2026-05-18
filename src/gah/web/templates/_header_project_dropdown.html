@@ -2,7 +2,7 @@
    nav 안 .nav-notifications 영역에 포함된다.
    Alpine x-data="headerProject()" — 초기화 시 /api/active-project + /api/projects 로드.
    SSE /api/active-project/stream 구독으로 다른 탭 변경도 동기화. #}
-<div class="header-project" x-data="headerProject()" x-init="init()">
+<div class="header-project" x-data="headerProject()">
   <button class="header-project-chip" @click="open = !open" type="button">
     <template x-if="active">
       <span>{{ _("현재 프로젝트") }}: <strong x-text="active.display_name || active.external_id"></strong></span>
@@ -41,7 +41,11 @@ function headerProject() {
     newDisplay: "",
     async init() {
       await this.refresh();
-      this.subscribe();
+      // SSE 다중 탭 동기화는 v2 로 보류 — HTTP/1.1 도메인당 connection
+      // 한계(6) 가 페이지 전환마다 새 EventSource 로 채워져 연쇄 지연
+      // 발생. setActive() / createNew() 의 명시 refresh() 만으로 단일 탭
+      // 사용에는 충분.
+      // this.subscribe();
     },
     async refresh() {
       try {

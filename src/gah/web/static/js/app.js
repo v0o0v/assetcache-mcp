@@ -139,4 +139,17 @@ window.onPickResolved = function (evt) {
   } else {
     _attach();
   }
+
+  // M7 patch: 페이지 unload 시 SSE 명시 close.
+  // MPA 라 페이지 전환마다 새 EventSource 가 만들어지는데, 브라우저의
+  // 자동 close 신호가 서버에 도달하는 timing 이 느려 HTTP/1.1 도메인당
+  // 6 connection 한계에 잔존 SSE 가 누적 → 다음 페이지의 fetch (썸네일,
+  // active-project, 등) 가 connection 못 받아 pending. pagehide 에서
+  // 직접 close() 하면 TCP RST 가 즉시 서버에 도달.
+  window.addEventListener("pagehide", function () {
+    if (window._gahSse) {
+      try { window._gahSse.close(); } catch (e) {}
+      window._gahSse = null;
+    }
+  });
 })();
