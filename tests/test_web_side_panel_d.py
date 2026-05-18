@@ -22,7 +22,7 @@ def test_d_tab_has_preset_section(client):
     """D 탭에 가중치 프리셋 섹션이 존재한다."""
     r = client.get("/library")
     assert r.status_code == 200
-    assert "프리셋" in r.text
+    assert "Weight presets" in r.text
 
 
 def test_d_tab_has_three_preset_buttons(client):
@@ -121,7 +121,7 @@ def test_d_tab_has_sliders_section(client):
     """D 탭에 슬라이더 직접 조정 섹션이 존재한다."""
     r = client.get("/library")
     assert r.status_code == 200
-    assert "슬라이더" in r.text
+    assert "Adjust sliders manually" in r.text
 
 
 def test_d_tab_sliders_are_in_details_element(client):
@@ -134,12 +134,12 @@ def test_d_tab_sliders_are_in_details_element(client):
 def test_d_tab_has_six_slider_labels(client):
     """D 탭 슬라이더에 6개 가중치 레이블 (semantic/keyword/label/consistency/recency/feedback) 이 있다."""
     r = client.get("/library")
-    assert "의미" in r.text
-    assert "키워드" in r.text
-    assert "라벨" in r.text
-    # "통일성" 은 프리셋 탭에도 있으므로 슬라이더 섹션 내 존재를 간접 확인
-    assert "신선도" in r.text or "recency" in r.text.lower()
-    assert "피드백" in r.text
+    assert "Semantic" in r.text
+    assert "Keyword" in r.text
+    assert "Label" in r.text
+    # Recency 는 슬라이더 레이블 + descs 문자열 양쪽에 존재
+    assert "recency" in r.text.lower()
+    assert "feedback" in r.text.lower()
 
 
 def test_d_tab_sliders_bind_weights_store(client):

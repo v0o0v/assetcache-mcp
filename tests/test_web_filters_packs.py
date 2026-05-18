@@ -140,9 +140,9 @@ def test_b_tab_has_filter_group_details(client):
 
 
 def test_b_tab_has_pack_filter_label(client):
-    """B 탭에 '팩' 필터 레이블이 존재한다."""
+    """B 탭에 'Packs' 필터 레이블이 존재한다 (Task 6 이후 영어 msgid)."""
     r = client.get("/library")
-    assert "팩" in r.text
+    assert "Packs" in r.text
 
 
 def test_b_tab_has_vendor_filter_label(client):

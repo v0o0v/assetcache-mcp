@@ -120,7 +120,7 @@
     <p class="usage-summary-line">
       {{ _("Top adopted packs") }}: <strong x-text="summary.top_packs.length"></strong>
       {{ _("items") }} &nbsp;·&nbsp;
-      {{ _("Reject") }}: <strong x-text="summary.rejected_count"></strong>
+      {{ _("Rejections") }}: <strong x-text="summary.rejected_count"></strong>
     </p>
     <button type="button"
             class="usage-detail-btn"
@@ -141,9 +141,9 @@
    */
   function applyPreset(name) {
     const descs = {
-      balanced: '의미·키워드·라벨·통일성·신선도·피드백을 균형있게 (디폴트).',
-      consistency: '이미 채택한 팩을 강하게 우선합니다 (consistency 0.40).',
-      novelty: '통일성을 낮추고 의미 위주로 다양한 후보를 탐색합니다 (consistency 0.05).',
+      balanced: 'Balances semantic, keyword, label, consistency, recency, and feedback (default).',
+      consistency: 'Strongly prioritizes packs already adopted in the project (consistency 0.40).',
+      novelty: 'Lowers consistency to explore diverse candidates by semantic score (consistency 0.05).',
     };
     fetch('/api/preset/' + name, { method: 'POST' })
       .then(function(r) { return r.json(); })
