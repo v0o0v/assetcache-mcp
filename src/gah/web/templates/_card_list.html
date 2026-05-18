@@ -29,5 +29,13 @@
       </span>
     </span>
     <span class="score" x-show="$store.search.cardMeta.score">{{ "%.2f"|format(row.score or 0) }}</span>
+    {% if row.kind == "sound" %}
+      <button class="play-btn"
+              hx-get="/ui/audio-player/{{ row.asset_id }}"
+              hx-target="next .audio-slot"
+              hx-swap="innerHTML"
+              onclick="event.stopPropagation()">&#9654; 재생</button>
+      <div class="audio-slot"></div>
+    {% endif %}
   </div>
 </div>
