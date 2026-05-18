@@ -1293,11 +1293,18 @@ mcp.find_asset(query, project_id, ...)
 - 비공식 publisher 패널 경로는 스켈레톤만(기본 비활성), 안정성 모니터링 후 별도 마일스톤에서 본 구현.
 - **신규 의존성 없음**. 1011 passed (baseline 887 + 신규 +124).
 
-### Milestone 8 — 패키징 + i18n + 풍부 UX 마감 (1~1.5주, 기존 M7)
-- 웹 UI i18n — Jinja2 + `babel` (또는 단순 JSON 변환기), `Config.ui_language` (`"ko"`/`"en"`/`"auto"`). M5 의 모든 사용자 노출 문자열을 `_()` 또는 `tr()` 로 감싸 둠.
-- Pack/프로젝트 탭 풍부 UX (메타 수정, manual_override, 프로젝트 pin/block, 사용 분포 차트).
-- 다크/라이트 모드 토글 UI (M5 는 prefers-color-scheme 자동만).
-- PyInstaller 단일 exe (CLIP 모델 가중치 ~600 MB~1.7 GB 포함 또는 첫 실행 시 다운로드), 자동 시작 토글, 트레이 알림.
+### Milestone 8 — 패키징 + i18n (1주) ✅ 완료 (2026-05-19)
+
+- Babel gettext (`ko`/`en`) — `_t()` + LocaleMiddleware 5단계 (URL > 쿠키 > Config > Accept-Language > ko), 159건 msgid 영어화, ko.po + en.po + .mo 컴파일.
+- `/settings` 페이지 — 언어 라디오 + 다크모드 토글, `POST /api/settings`.
+- 다크/라이트 모드 수동 토글 (Alpine + localStorage + `data-theme`) — M5 의 자동 모드에서 수동 추가.
+- Windows autostart — `winreg HKCU\...\Run` + 트레이 메뉴 체크박스 + `/api/autostart` endpoint.
+- PyInstaller `--onefile` 빌드 (`gah.spec`) — CLIP 가중치 포함, `dist/GameAssetHelper.exe`. exe 연기 시 첫 실행 자동 다운로드 폴백.
+- **신규 의존성**: `Babel>=2.14` (런타임), `pyinstaller>=6` (dev). **1046 passed** (baseline 1002 + M8 +44).
+
+**v2 로 미룬 항목**:
+- Pack/프로젝트 탭 풍부 UX (메타 수정, manual_override, 프로젝트 pin/block, 사용 분포 차트)
+- Playwright E2E, 모바일 최적화, 추가 언어 (ja/zh), MSI/NSIS 인스톨러, 코드 서명, 자동 업데이트, 트레이 알림, 자동 동기화 스케줄러
 
 총 v1 일정 ≈ 17.5주 (M2 CLIP +1주 + M4 검색 UX +1.5주 + M5 웹 GUI +5.5주). M5는 2026-05-18 완료. 각 마일스톤 끝에 Claude Code에서 직접 써보며 검증한다.
 

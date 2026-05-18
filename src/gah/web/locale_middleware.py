@@ -17,9 +17,9 @@ from contextvars import ContextVar
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
-current_locale: ContextVar[str] = ContextVar("gah_current_locale", default="ko")
+from .i18n import SUPPORTED_LOCALES as SUPPORTED
 
-SUPPORTED = ("ko", "en")
+current_locale: ContextVar[str] = ContextVar("gah_current_locale", default="ko")
 
 
 class LocaleMiddleware(BaseHTTPMiddleware):
