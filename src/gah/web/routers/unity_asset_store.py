@@ -101,33 +101,6 @@ async def api_scan(request: Request) -> dict[str, Any]:
     }
 
 
-# ── POST /api/unity-packages/{uid}/preview ────────────────────────────
-
-
-@router.post("/api/unity-packages/{uid}/preview")
-async def api_preview(uid: int, request: Request) -> dict[str, Any]:
-    """패키지 내용을 파싱해 preview_* 카운트를 갱신하고 state=previewed 로 전환."""
-    deps = request.app.state.deps
-    row = deps.store.get_unity_import_by_id(uid)
-    if row is None:
-        raise HTTPException(status_code=404, detail="not found")
-
-    try:
-        entries = parse_pathnames(row.package_path)
-    except Exception as e:
-        log.warning("preview parse 실패 uid=%d: %s", uid, e)
-        raise HTTPException(status_code=500, detail=f"parse error: {e}") from e
-
-    deps.store.update_unity_preview(
-        uid,
-        asset_count=len(entries),
-        image_count=sum(1 for e in entries.values() if e.internal_kind == "image"),
-        sound_count=sum(1 for e in entries.values() if e.internal_kind == "sound"),
-    )
-    deps.store.update_unity_state(uid, "previewed")
-    return {"ok": True}
-
-
 # ── POST /api/unity-packages/{uid}/import ────────────────────────────
 
 

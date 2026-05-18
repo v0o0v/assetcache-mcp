@@ -17,11 +17,9 @@
     {% endif %}
   </td>
   <td class="unity-actions">
-    {# M7 patch — form method="post" 는 JSON 응답을 페이지로 렌더하는 회귀가 있어
-       vanilla fetch (app.js 의 gahUnityAction) 으로 통일. 응답 후 페이지 새로고침. #}
-    {% if item.import_state in ("discovered", "previewed") %}
-      <button type="button" onclick="gahUnityAction(this, 'preview', {{ item.id }})">{{ _("미리보기") }}</button>
-    {% endif %}
+    {# M7 patch — 미리보기 버튼 제거. 임포트 시 자산 카운트가 자동으로 preview 컬럼
+       채움 (importer 가 parse_pathnames 결과 활용). previewed state 는 MCP 도구
+       경로로만 도달 가능 — 그 경우에도 임포트/건너뜀 그대로 가능. #}
     {% if item.import_state in ("discovered", "previewed", "skipped") %}
       <button type="button" onclick="gahUnityAction(this, 'import', {{ item.id }})">{{ _("임포트") }}</button>
     {% endif %}

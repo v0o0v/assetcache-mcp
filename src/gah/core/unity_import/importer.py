@@ -61,6 +61,15 @@ class UnityImporter:
             result = extract_targets(row.package_path, dest, target_guids)
             self._write_manifest(dest, row)
             now = int(time.time())
+            # M7 patch — 미리보기 버튼 제거 후, 임포트 성공 시 자산 카운트가
+            # preview 컬럼에 자동으로 채워지도록 (사용자가 임포트 후 표에서
+            # 🖼 N · 🔊 N 확인 가능).
+            self._store.update_unity_preview(
+                unity_import_id,
+                asset_count=len(entries),
+                image_count=sum(1 for e in entries.values() if e.internal_kind == "image"),
+                sound_count=sum(1 for e in entries.values() if e.internal_kind == "sound"),
+            )
             self._store.update_unity_state(
                 unity_import_id,
                 "imported",

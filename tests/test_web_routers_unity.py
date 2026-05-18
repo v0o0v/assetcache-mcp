@@ -57,20 +57,9 @@ def test_scan_api_creates_rows(app_with_cache):
     assert len(rows) >= 1
 
 
-# ─── 3: POST /api/unity-packages/{id}/preview ────────────────────────
-
-
-def test_preview_api_updates_state(app_with_cache):
-    """/preview 후 state=previewed, preview_asset_count is not None."""
-    app, _, store = app_with_cache
-    client = TestClient(app)
-    client.post("/api/unity-packages/scan", json={"force": False})
-    uid = store.list_unity_imports()[0].id
-    r = client.post(f"/api/unity-packages/{uid}/preview")
-    assert r.status_code == 200
-    row = store.get_unity_import_by_id(uid)
-    assert row.import_state == "previewed"
-    assert row.preview_asset_count is not None
+# ─── 3: (removed) /api/unity-packages/{id}/preview — M7 patch: 미리보기 버튼
+#       제거 후 endpoint 도 제거. 임포트 시 자산 카운트가 preview 컬럼에 자동
+#       채워짐 (importer.py).
 
 
 # ─── 4: POST /api/unity-packages/{id}/import ─────────────────────────
