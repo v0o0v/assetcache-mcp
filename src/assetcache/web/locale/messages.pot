@@ -774,3 +774,19 @@ msgstr ""
 msgid "No scanned packages. Click 'Scan cache' to search for packages."
 msgstr ""
 
+#: src/assetcache/web/templates/_pypi_update_banner.html:34
+msgid "available"
+msgstr ""
+
+#: src/assetcache/web/templates/_pypi_update_banner.html:37
+msgid "Release notes"
+msgstr ""
+
+#: src/assetcache/tray.py:320
+msgid "v{version} update available →"
+msgstr ""
+
+#: src/assetcache/tray.py:332
+msgid "Upgrade command copied to clipboard"
+msgstr ""
+

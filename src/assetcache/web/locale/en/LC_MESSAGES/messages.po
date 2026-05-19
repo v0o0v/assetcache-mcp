@@ -825,3 +825,19 @@ msgstr "Migration failed:"
 msgid "Retry"
 msgstr "Retry"
 
+#: src/assetcache/web/templates/_pypi_update_banner.html:34
+msgid "available"
+msgstr "available"
+
+#: src/assetcache/web/templates/_pypi_update_banner.html:37
+msgid "Release notes"
+msgstr "Release notes"
+
+#: src/assetcache/tray.py:320
+msgid "v{version} update available →"
+msgstr "v{version} update available →"
+
+#: src/assetcache/tray.py:332
+msgid "Upgrade command copied to clipboard"
+msgstr "Upgrade command copied to clipboard"
+

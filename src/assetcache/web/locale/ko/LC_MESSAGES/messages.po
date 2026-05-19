@@ -815,3 +815,19 @@ msgstr "이주 실패:"
 msgid "Retry"
 msgstr "재시도"
 
+#: src/assetcache/web/templates/_pypi_update_banner.html:34
+msgid "available"
+msgstr "사용 가능"
+
+#: src/assetcache/web/templates/_pypi_update_banner.html:37
+msgid "Release notes"
+msgstr "릴리스 노트"
+
+#: src/assetcache/tray.py:320
+msgid "v{version} update available →"
+msgstr "v{version} 업데이트 가능 →"
+
+#: src/assetcache/tray.py:332
+msgid "Upgrade command copied to clipboard"
+msgstr "업그레이드 명령이 클립보드에 복사됨"
+
