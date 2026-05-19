@@ -1,4 +1,4 @@
-﻿"""Tests for gah.core.asset_kind — extension-based classification."""
+﻿"""Tests for assetcache.core.asset_kind — extension-based classification."""
 
 from __future__ import annotations
 

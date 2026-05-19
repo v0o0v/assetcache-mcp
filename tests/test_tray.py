@@ -1,4 +1,4 @@
-﻿"""Tests for gah.tray — icon contents and activation handler.
+﻿"""Tests for assetcache.tray — icon contents and activation handler.
 
 Visual quality of the tray icon is a manual check; here we only verify
 that the pixmap is no longer fully transparent (i.e. we actually drew

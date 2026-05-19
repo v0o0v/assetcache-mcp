@@ -1,4 +1,4 @@
-﻿"""Tests for gah.platform.single_instance."""
+﻿"""Tests for assetcache.platform.single_instance."""
 
 from __future__ import annotations
 

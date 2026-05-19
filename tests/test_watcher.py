@@ -1,4 +1,4 @@
-﻿"""Tests for gah.core.watcher — pure debouncer behavior.
+﻿"""Tests for assetcache.core.watcher — pure debouncer behavior.
 
 The watchdog Observer adapter (LibraryWatcher) is only smoke-checked at
 import time; its real correctness shows up in M1 manual verification.

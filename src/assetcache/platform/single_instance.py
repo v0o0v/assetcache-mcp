@@ -1,6 +1,6 @@
 """Cross-platform single-instance enforcement via an exclusive file lock.
 
-DESIGN.md §9 calls for a `gah.lock` file under the AppData root that
+DESIGN.md §9 calls for a `assetcache.lock` file under the AppData root that
 prevents a second tray-mode invocation from launching.  We use
 ``portalocker`` for the OS-level exclusive lock (Windows + POSIX).
 The lock file itself stores the holder's PID for human debugging; the

@@ -4,9 +4,9 @@
 을 호출하면 Qt `AutoConnection` 에 의해 main thread 이벤트 루프에서 슬롯이 실행되도록
 마샬링해 준다.
 
-`gah.web` 패키지의 다른 모듈이 PySide6 에 직접 의존하지 않도록, PySide6 import 는
+`assetcache.web` 패키지의 다른 모듈이 PySide6 에 직접 의존하지 않도록, PySide6 import 는
 이 모듈 내에서만 일어난다. `WebDeps.tray_bridge` 는 `Any | None` 으로 타입 선언되어
-있어 `gah.web` → Qt 트랜지티브 의존성이 생기지 않는다.
+있어 `assetcache.web` → Qt 트랜지티브 의존성이 생기지 않는다.
 """
 from __future__ import annotations
 

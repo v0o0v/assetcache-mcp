@@ -87,7 +87,7 @@ def make_tray_icon(
     ``/labels/admin`` 으로 이전.
 
     Imports of PySide6 are deferred to function scope so that simply
-    importing ``gah.tray`` (e.g. from the test suite) doesn't drag in
+    importing ``assetcache.tray`` (e.g. from the test suite) doesn't drag in
     the Qt platform plugin.
     """
     from PySide6.QtCore import QCoreApplication

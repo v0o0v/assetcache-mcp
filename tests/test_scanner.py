@@ -1,4 +1,4 @@
-﻿"""Tests for gah.core.scanner — boot-time full-scan reconciliation."""
+﻿"""Tests for assetcache.core.scanner — boot-time full-scan reconciliation."""
 
 from __future__ import annotations
 

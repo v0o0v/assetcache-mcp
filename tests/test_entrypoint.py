@@ -1,4 +1,4 @@
-﻿"""Tests for the CLI entrypoint in gah.__main__."""
+﻿"""Tests for the CLI entrypoint in assetcache.__main__."""
 
 from __future__ import annotations
 

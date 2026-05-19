@@ -12,7 +12,7 @@ Per memory ``project_m2_analysis_backend.md``:
 
 ``base_url`` is the only knob a user needs to flip when swapping
 backends — everything else (model name, timeout, retries) flows in
-from :class:`gah.config.Config`.
+from :class:`assetcache.config.Config`.
 """
 
 from __future__ import annotations

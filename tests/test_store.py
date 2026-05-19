@@ -1,4 +1,4 @@
-﻿"""Tests for gah.core.store — SQLite schema + pack/asset CRUD."""
+﻿"""Tests for assetcache.core.store — SQLite schema + pack/asset CRUD."""
 
 from __future__ import annotations
 

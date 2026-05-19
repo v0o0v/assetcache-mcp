@@ -190,7 +190,7 @@ def register_all_tools(server: FastMCP, deps: t.ToolDeps) -> None:
 
 
 def run_stdio() -> None:
-    """``python -m gah --mcp`` 진입점.
+    """``python -m assetcache --mcp`` 진입점.
 
     GUI 인스턴스와는 별 프로세스. 워처는 안 띄움. KeyboardInterrupt 는
     graceful 종료 (예외 다시 던지지 않음).

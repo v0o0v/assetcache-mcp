@@ -1,4 +1,4 @@
-﻿"""Tests for gah.core.manifest — pack manifest parsing + vendor heuristics."""
+﻿"""Tests for assetcache.core.manifest — pack manifest parsing + vendor heuristics."""
 
 from __future__ import annotations
 

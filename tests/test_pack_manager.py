@@ -1,4 +1,4 @@
-﻿"""Tests for gah.core.pack_manager — pack ingestion end-to-end."""
+﻿"""Tests for assetcache.core.pack_manager — pack ingestion end-to-end."""
 
 from __future__ import annotations
 

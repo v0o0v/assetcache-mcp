@@ -3,7 +3,7 @@
 M5: main_window / library_view / labels_admin Qt UI 의존성 제거.
 트레이 + 분석 큐 + 워처는 그대로, GUI 는 FastAPI 웹서버 + 시스템 브라우저로.
 
-PySide6 imports remain function-scoped so importing ``gah.app`` in a
+PySide6 imports remain function-scoped so importing ``assetcache.app`` in a
 non-GUI context (CLI ``--version``, unit tests) does not require a Qt
 platform plugin.
 """
@@ -204,14 +204,14 @@ def run_tray(paths: AppPaths, config: Config, argv: Sequence[str] | None = None)
         webbrowser.open(url)
 
     # state 보존 (디버그)
-    qapp._gah_tray = tray  # type: ignore[attr-defined]
-    qapp._gah_store = store  # type: ignore[attr-defined]
-    qapp._gah_watcher = watcher  # type: ignore[attr-defined]
-    qapp._gah_queue = queue  # type: ignore[attr-defined]
-    qapp._gah_registry = registry  # type: ignore[attr-defined]
-    qapp._gah_searcher = searcher  # type: ignore[attr-defined]
-    qapp._gah_usage = usage  # type: ignore[attr-defined]
-    qapp._gah_web = web  # type: ignore[attr-defined]
+    qapp._assetcache_tray = tray  # type: ignore[attr-defined]
+    qapp._assetcache_store = store  # type: ignore[attr-defined]
+    qapp._assetcache_watcher = watcher  # type: ignore[attr-defined]
+    qapp._assetcache_queue = queue  # type: ignore[attr-defined]
+    qapp._assetcache_registry = registry  # type: ignore[attr-defined]
+    qapp._assetcache_searcher = searcher  # type: ignore[attr-defined]
+    qapp._assetcache_usage = usage  # type: ignore[attr-defined]
+    qapp._assetcache_web = web  # type: ignore[attr-defined]
 
     log.info("GAH tray ready (url=%s, library=%s)", url, library_root)
     rc = qapp.exec()

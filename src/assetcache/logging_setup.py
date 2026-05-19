@@ -20,8 +20,8 @@ _BACKUPS = 5
 
 # Sentinels marking handlers owned by setup_logging, so repeated calls
 # don't stack additional handlers (idempotency requirement).
-_FILE_HANDLER_ATTR = "_gah_file_handler"
-_CONSOLE_HANDLER_ATTR = "_gah_console_handler"
+_FILE_HANDLER_ATTR = "_assetcache_file_handler"
+_CONSOLE_HANDLER_ATTR = "_assetcache_console_handler"
 
 
 def setup_logging(log_path: Path, level: int = logging.INFO) -> None:

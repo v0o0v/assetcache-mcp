@@ -2,7 +2,7 @@
 
 This package is intentionally empty at import time — the concrete
 ``SpriteAnalyzer`` / ``SoundAnalyzer`` classes are imported lazily by
-``gah.core.analysis_queue`` to keep heavy dependencies (Pillow, librosa,
+``assetcache.core.analysis_queue`` to keep heavy dependencies (Pillow, librosa,
 torch) out of the import path for callers that only need M1 features.
 """
 

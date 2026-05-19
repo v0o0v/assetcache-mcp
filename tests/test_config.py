@@ -1,4 +1,4 @@
-﻿"""Tests for gah.config — paths and TOML configuration."""
+﻿"""Tests for assetcache.config — paths and TOML configuration."""
 
 from __future__ import annotations
 
