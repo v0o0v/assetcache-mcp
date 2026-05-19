@@ -71,8 +71,12 @@ async def update_settings(
         log.warning("설정 저장 실패: %s", e)
 
     response = JSONResponse({"ok": True})
-    # 언어 변경 시 쿠키에도 기록 (LocaleMiddleware 가 읽음)
-    if payload.ui_language is not None and payload.ui_language != "auto":
+    # 언어 변경 시 쿠키 동기화 (LocaleMiddleware 가 읽음).
+    # "auto" 면 기존 쿠키 삭제 — 안 그러면 잔존 쿠키가 Config.ui_language 보다
+    # 우선이라 "자동 감지" 가 실제로 자동 동작 안 함.
+    if payload.ui_language == "auto":
+        response.delete_cookie("gah_locale")
+    elif payload.ui_language is not None:
         response.set_cookie(
             "gah_locale",
             payload.ui_language,
