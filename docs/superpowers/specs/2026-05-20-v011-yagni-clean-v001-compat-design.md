@@ -2,7 +2,7 @@
 
 ## 1. 배경
 
-v0.0.1 (Game Asset Helper / `gah`) 은 [`docs/RELEASE_NOTES_v0.0.1.md`](../../RELEASE_NOTES_v0.0.1.md) 에 따라 [GitHub release v0.0.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.0.1) 이 published 되었으나, **실 외부 사용자·다운로드 0** (사용자 2026-05-26 확인).
+v0.0.1 (Game Asset Helper / `gah`) 은 [`docs/RELEASE_NOTES_v0.0.1.md`](../../RELEASE_NOTES_v0.0.1.md) 에 따라 [GitHub release v0.0.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.0.1) 이 published 되었으나, **실 외부 사용자·다운로드 0** (사용자 2026-05-20 확인).
 
 따라서 M10 Phase 1 에서 만든 v0.0.1 데이터 폴더 마이그레이션 helper (`core/migration.py` + `web/routers/migration.py` + `_migration_banner.html` + `--migrate=copy|move` + 관련 +21 테스트 + i18n msgid 3건 + README/CLAUDE/HANDOFF 안내) 는 dead code. 같은 PR 에 M10 rename 누락 2건 (`mcp/server.py` 의 `FastMCP("game-asset-helper", ...)`, `tools/setup_m6_test.py` 의 `%APPDATA%\GameAssetHelper\` 경로 안내) 도 묶어 정리한다. v0.0.1 / `gah` / `GameAssetHelper` 잔재를 한 번에 제거하는 "yagni-clean v0.0.1 compat" patch.
 
