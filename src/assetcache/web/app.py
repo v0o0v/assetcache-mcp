@@ -27,7 +27,6 @@ from .routers import (
     health,
     labels_admin,
     library,
-    migration as migration_router,
     packs,
     pages,
     picks,
@@ -154,7 +153,6 @@ def build_app(deps: WebDeps) -> FastAPI:
     app.include_router(projects.router)             # M7 Phase 5 — 활성 프로젝트 API
     app.include_router(projects_pages_router)       # M7 Phase 6 — 프로젝트 HTML 페이지
     app.include_router(settings_router.router)       # M8 — 설정 페이지
-    app.include_router(migration_router.router)      # M10 — 마이그레이션 API
     app.include_router(updates_router.router)        # M10 — PyPI 업데이트 알림 API
 
     # ── 전역 에러 핸들러 ──────────────────────────────────────────────

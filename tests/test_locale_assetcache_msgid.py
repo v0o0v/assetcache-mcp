@@ -1,8 +1,7 @@
-"""ko/en .po catalog 의 M10 신규 msgid 정합성 검사.
+"""ko/en .po catalog 의 M10 Phase 2.7 (PyPI 신버전 알림) msgid 정합성 검사.
 
-Phase 1.7 (마이그레이션 배너) + Phase 2.7 (PyPI 신버전 알림) 의 신규 msgid 가
-ko + en 양쪽 .po 카탈로그에 모두 존재하는지 보장한다. 신규 msgid 가 한쪽에만
-추가되거나 컴파일이 누락된 회귀를 빠르게 잡는다.
+신규 msgid 가 한쪽 언어에만 추가되거나 컴파일이 누락된 회귀를 빠르게 잡는다.
+Phase 1.7 (마이그레이션 배너) msgid 3건은 v0.1.1 yagni-clean 에서 제거됨.
 """
 from __future__ import annotations
 
@@ -15,12 +14,9 @@ LOCALE_ROOT = (
 )
 
 NEW_MSGIDS = [
-    # Phase 1.7 (마이그레이션 배너) — 영어 msgid 3건
-    "v0.0.1 data detected",
-    "Copy",
-    "Migrating...",
-    # Phase 2.7 (PyPI 신버전 알림) — 영어 msgid 2건
+    # Phase 2.7 (PyPI 신버전 알림) — 영어 msgid 3건
     "available",
+    "Copy",
     "Upgrade command copied to clipboard",
 ]
 
@@ -28,7 +24,7 @@ NEW_MSGIDS = [
 def _load_po(path: Path) -> set[str]:
     """Single-line `msgid "..."` 항목만 추출.
 
-    M10 의 신규 msgid 5건은 모두 single-line 이라 본 단순 파서로 충분하다.
+    검사 대상 msgid 는 모두 single-line 이라 본 단순 파서로 충분하다.
     multi-line msgid 가 필요한 시점에는 babel.messages.pofile 로 보강한다.
     """
     msgids: set[str] = set()

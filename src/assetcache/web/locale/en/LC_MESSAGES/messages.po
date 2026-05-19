@@ -785,10 +785,6 @@ msgstr "Added at"
 msgid "No scanned packages. Click 'Scan cache' to search for packages."
 msgstr "No scanned packages. Click 'Scan cache' to search for packages."
 
-#: src/assetcache/web/templates/_migration_banner.html:66
-msgid "v0.0.1 data detected"
-msgstr "v0.0.1 data detected"
-
 #: src/assetcache/web/templates/_migration_banner.html:68
 msgid "files"
 msgstr "files"
@@ -797,10 +793,6 @@ msgstr "files"
 msgid "Migrate to AssetCacheMCP."
 msgstr "Migrate to AssetCacheMCP."
 
-#: src/assetcache/web/templates/_migration_banner.html:72
-msgid "Copy"
-msgstr "Copy"
-
 #: src/assetcache/web/templates/_migration_banner.html:73
 msgid "Move"
 msgstr "Move"
@@ -808,10 +800,6 @@ msgstr "Move"
 #: src/assetcache/web/templates/_migration_banner.html:74
 msgid "Later"
 msgstr "Later"
-
-#: src/assetcache/web/templates/_migration_banner.html:79
-msgid "Migrating..."
-msgstr "Migrating..."
 
 #: src/assetcache/web/templates/_migration_banner.html:84
 msgid "Migration complete. Reloading the new data folder."
@@ -828,6 +816,10 @@ msgstr "Retry"
 #: src/assetcache/web/templates/_pypi_update_banner.html:34
 msgid "available"
 msgstr "available"
+
+#: src/assetcache/web/templates/_pypi_update_banner.html:36
+msgid "Copy"
+msgstr "Copy"
 
 #: src/assetcache/web/templates/_pypi_update_banner.html:37
 msgid "Release notes"

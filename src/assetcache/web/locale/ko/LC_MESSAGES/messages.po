@@ -775,10 +775,6 @@ msgstr "추가 시각"
 msgid "No scanned packages. Click 'Scan cache' to search for packages."
 msgstr "스캔된 패키지가 없습니다. '캐시 스캔'을 클릭하여 패키지를 검색하세요."
 
-#: src/assetcache/web/templates/_migration_banner.html:66
-msgid "v0.0.1 data detected"
-msgstr "v0.0.1 데이터를 발견했습니다"
-
 #: src/assetcache/web/templates/_migration_banner.html:68
 msgid "files"
 msgstr "파일"
@@ -787,10 +783,6 @@ msgstr "파일"
 msgid "Migrate to AssetCacheMCP."
 msgstr "AssetCacheMCP 로 이주합니다."
 
-#: src/assetcache/web/templates/_migration_banner.html:72
-msgid "Copy"
-msgstr "복사"
-
 #: src/assetcache/web/templates/_migration_banner.html:73
 msgid "Move"
 msgstr "이동"
@@ -798,10 +790,6 @@ msgstr "이동"
 #: src/assetcache/web/templates/_migration_banner.html:74
 msgid "Later"
 msgstr "나중에"
-
-#: src/assetcache/web/templates/_migration_banner.html:79
-msgid "Migrating..."
-msgstr "이주 중..."
 
 #: src/assetcache/web/templates/_migration_banner.html:84
 msgid "Migration complete. Reloading the new data folder."
@@ -818,6 +806,10 @@ msgstr "재시도"
 #: src/assetcache/web/templates/_pypi_update_banner.html:34
 msgid "available"
 msgstr "사용 가능"
+
+#: src/assetcache/web/templates/_pypi_update_banner.html:36
+msgid "Copy"
+msgstr "복사"
 
 #: src/assetcache/web/templates/_pypi_update_banner.html:37
 msgid "Release notes"
