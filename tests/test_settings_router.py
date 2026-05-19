@@ -70,6 +70,21 @@ def test_settings_get_includes_current_locale(client, web_deps):
     assert 'value="ko"' in body
 
 
+def test_settings_post_auto_clears_cookie(client, web_deps):
+    """ui_language='auto' 저장 시 기존 gah_locale 쿠키 삭제.
+
+    잔존 쿠키가 LocaleMiddleware 2단계 (쿠키) 에서 Config.ui_language 3단계보다
+    우선이라, 쿠키를 명시 delete 안 하면 "자동 감지" 가 실제로 동작 안 함.
+    """
+    r = client.post("/api/settings", json={"ui_language": "auto"})
+    assert r.status_code == 200
+    assert web_deps.config.ui_language == "auto"
+    set_cookie = r.headers.get("set-cookie", "")
+    assert "gah_locale" in set_cookie
+    # delete_cookie 는 Max-Age=0 으로 만료 set
+    assert "max-age=0" in set_cookie.lower()
+
+
 def test_settings_post_autostart_failure_returns_500(client, web_deps, monkeypatch):
     """권한 거부 (GPO) 또는 OSError 시 500 + ok=False 응답."""
     from gah.platform import autostart as autostart_mod
