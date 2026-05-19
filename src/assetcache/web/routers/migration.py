@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import uuid
 from typing import Literal
 
@@ -20,7 +21,10 @@ from assetcache.core.migration import (
 router = APIRouter(prefix="/api/migration", tags=["migration"])
 
 # task_id → MigrationRunner (in-memory, 앱 프로세스 1개 가정)
+# task_id → asyncio.Task (GC 방지용 강한 참조 보존)
+# 마이그레이션은 1회성이라 메모리 누수 영향 작음. 앱 재시작 시 초기화.
 _runners: dict[str, MigrationRunner] = {}
+_tasks: dict[str, asyncio.Task] = {}
 
 
 class RunRequest(BaseModel):
@@ -65,7 +69,7 @@ async def run_migration(req: RunRequest, request: Request):
         await runner.run(candidate, mode=req.mode)
         # runner.run 이 마커 + path rewrite 모두 처리 (Task 1.3 통합)
 
-    asyncio.create_task(_do())
+    _tasks[task_id] = asyncio.create_task(_do())
 
     return {"task_id": task_id}
 
@@ -78,12 +82,14 @@ async def progress(task_id: str):
 
     async def event_stream():
         while runner.state in (MigrationState.PENDING, MigrationState.RUNNING):
-            yield f'data: {{"state":"{runner.state}","progress":{runner.progress}}}\n\n'
+            payload = json.dumps({"state": str(runner.state), "progress": runner.progress})
+            yield f"data: {payload}\n\n"
             await asyncio.sleep(0.5)
         if runner.state == MigrationState.DONE:
-            yield 'event: done\ndata: {}\n\n'
+            yield "event: done\ndata: {}\n\n"
         else:
-            yield f'event: error\ndata: {{"error":"{runner.error}"}}\n\n'
+            error_payload = json.dumps({"error": runner.error})
+            yield f"event: error\ndata: {error_payload}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
