@@ -4,7 +4,7 @@
 **마지막 완료 작업**: **M10 — v2 PyPI 1차 배포 + AssetCacheMCP rename** (Phase 0~5 모두 main 머지 완료)
 **M10 결과**: [PyPI v0.1.0 Latest](https://pypi.org/project/assetcache-mcp/0.1.0/) + [GitHub release v0.1.0 Latest](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.0) + repo rename `v0o0v/assetcache-mcp`
 **현재 브랜치**: `main` (HEAD = `7ba6551` workflow fix → `d9a3862` M10 PR #11 merge)
-**다음 세션 작업**: 사용자 결정 — Mac/Linux 검증 / v0.1.1 patch / 사용자 피드백 대응 / Claude Desktop config 자동 마이그레이션
+**다음 세션 작업**: 사용자 결정 — Mac/Linux 검증 / v0.1.1 patch / 사용자 피드백 대응
 
 이 문서는 작업이 중단될 때 다음 세션이 "현재 어디까지 와 있는가"를 한 번에 파악하도록 작성된 스냅샷이다.
 
