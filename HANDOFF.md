@@ -1,58 +1,50 @@
 # HANDOFF — Cowork → Claude Code (또는 다음 세션)
 
-**마지막 인계 시각**: 2026-05-19 (v0.0.1 첫 GitHub release published)
-**마지막 완료 마일스톤**: **M8 — 패키징 + i18n** — ✅ 완료 (수동 검증 통과 + v0.0.1 release publish)
-**현재 브랜치**: `main` (origin/main 과 sync, working tree clean, 마지막 commit `75053b5`)
-**다음 작업**: **v0.0.2/v0.1.0 점진 release** 또는 **v2 brainstorming**
+**마지막 인계 시각**: 2026-05-19 (M9 implementation 완료 + path pivot — SignPath → PyPI 우선)
+**마지막 완료 작업**: **M9 — 코드 서명 + 자동 업데이트** implementation (17 task, 1111 tests, code review APPROVED-AFTER-DOGFOOD) — 단 PyPI 채택으로 **머지 보류**
+**v2 distribution 결정**: **PyPI 1순위** (`pipx install <pkg>` 무료 cross-platform), SignPath 는 Option B
+**v2 앱 이름 변경**: Game Asset Helper / `gah` → **AssetCacheMCP** / `assetcache-mcp` (PyPI) / `assetcache` (CLI)
+**현재 브랜치**: `feat/m9-code-signing-and-auto-update` (main 위 21 commits, **push 안 됨**, **main 머지 보류**)
+**main 브랜치**: 마지막 commit `9069e55` (M9 plan + cover) — 그 이후 모든 변경은 feat/m9 위에만
+**다음 세션 작업**: **새 마일스톤 (M10?) — PyPI + rename to AssetCacheMCP** spec/plan/implementation
 
 이 문서는 작업이 중단될 때 다음 세션이 "현재 어디까지 와 있는가"를 한 번에 파악하도록 작성된 스냅샷이다.
 
 ## 1. 한 줄 요약
 
-M8 (패키징 + i18n) ✅ 완료 + 사용자 수동 검증 통과 + **v0.0.1 첫 GitHub release published** (2026-05-19, [release page](https://github.com/v0o0v/game-asset-helper/releases/tag/v0.0.1)). PR #9 main 머지 + 후속 fix 3건 (PR #10 + main fast-forward 2 commit). 빌드된 `dist/GameAssetHelper.exe` (308 MB, --onefile + --noconsole) 실 부팅 검증 — port 9874 + HTTP 200 76ms + 한국어 i18n 정상 렌더. pytest **1046 passed + 1 skipped + 40 deselected**. MCP **20 도구**. 신규 의존성 2 (Babel>=2.14, pyinstaller>=6 dev). 다음 = **v0.0.2/v0.1.0 점진 또는 v2 brainstorming**.
+M9 implementation 완료 (`feat/m9-code-signing-and-auto-update` 21 commits, **1111 passed + 1 skipped + 40 deselected**, MCP 20 도구 그대로, 회귀 0). 코드 리뷰 결과 **APPROVED-AFTER-DOGFOOD** (Critical 0, Important 3, Minor 4). 그러나 직후 사용자가 **Mac 지원 의도 + SmartScreen 우회 + 비용 최소화** 관점에서 path 재고 → **PyPI 1순위** 결정. SignPath 신청은 보류 (신청 초안만 `docs/SIGNPATH_APPLICATION.md` + `docs/CODE_SIGNING_POLICY.md` 에 작성 — option B 보존). 다음 세션 = 새 마일스톤으로 **PyPI 배포 + AssetCacheMCP rename** 시작.
 
-수동 검증 시나리오는 [`milestones/M8_verification.md`](./milestones/M8_verification.md) 참고.
+## 2. 검증된 사실 (M9 완료 시점)
 
-## 2. 검증된 사실 (M8 완료)
-
-자동 — `pytest -q` 결과 **1046 passed + 1 skipped + 40 deselected**
+자동 — `pytest -q` 결과 **1111 passed + 1 skipped + 40 deselected** (M9 +65, baseline 1046)
 
 | Phase | 핵심 산출물 | 신규 테스트 |
 |---|---|---:|
-| 0 — 스캐폴딩 | 의존성 + Config 신규 필드 (ui_language/ui_theme) + autostart 스켈레톤 | +5 |
-| 1 — i18n 인프라 | `_t()` gettext + LocaleMiddleware 5단계 + app.py 통합 | +14 |
-| 2 — 문자열 추출 + 번역 | babel.cfg + 159건 msgid + ko.po + en.po + .mo 컴파일 | +2 |
-| 3 — 설정 페이지 + 다크모드 | /settings GET+POST + 헤더 테마 토글 + CSS data-theme | +9 |
-| 4 — autostart | winreg HKCU\\...\\Run + 트레이 메뉴 + /api/autostart | +9~10 |
-| 5 — 빌드 | generate_tray_ico.py + tray.ico + gah.spec + smoke + README | +4 |
-| 6 — 검증 + DRY | SUPPORTED 통합 (locale_middleware→i18n) + 문서 마감 | 0 |
-| **M8 전체** | **MCP 20 도구 그대로, 신규 의존성 2** | **+44** |
-
-`pytest -m mcp_integration -v` — 2/2 (**20 도구** 확인).
+| 0 — SignPath 신청 + RELEASE_BUILD_GUIDE | `docs/RELEASE_BUILD_GUIDE.md` (7단계 절차) | 0 |
+| 1 — Checker + Version | Config `[update]` + `version.py` semver-lite + `UpdateChecker.check_once` + `PollingLoop` | +24 |
+| 2 — Downloader + Installer | `UpdateDownloader` (httpx stream + SHA256) + `UpdateInstaller` (STEP 1/2/3) + ctypes `wait_for_pid` + `__main__ --complete-update` | +24 |
+| 3 — Web UI | `/api/updates/{check,start,status,install}` + SSE + `_update_banner.html` + i18n msgid +8 + base.html 통합 | +12 |
+| 4 — 트레이 | `tray.py` 동적 메뉴 + Qt Signal cross-thread 마샬링 | +4 |
+| 5 — 검증 + 문서 + dogfood prep | `M9_verification.md` (6 시나리오) + README §배포 갱신 + v0.0.2 version bump + RELEASE_NOTES_v0.0.2.md | 0 |
+| 후속 — SignPath 신청 docs | `docs/SIGNPATH_APPLICATION.md` + `docs/CODE_SIGNING_POLICY.md` | 0 |
+| **M9 전체** | **MCP 20 도구 그대로, 신규 의존성 1 (`respx>=0.20` dev)** | **+64~65** |
 
 ## 3. 환경 (재현용)
 
 | 항목 | 값 |
 |---|---|
-| OS | Windows 10 |
+| OS | Windows 10 (Mac/Linux 지원 v3 또는 별도 마일스톤에서) |
 | Python | python.org 3.12 (`C:\Users\v0o0v\AppData\Local\Programs\Python\Python312\python.exe`) |
 | venv | `C:\Users\v0o0v\.venvs\gah\` |
 | 작업 폴더 | `D:\ClaudeCowork\game-asset-helper\game-asset-helper\` |
-| 런타임 데이터 | `C:\Users\v0o0v\AppData\Roaming\GameAssetHelper\` |
+| 런타임 데이터 | `C:\Users\v0o0v\AppData\Roaming\GameAssetHelper\` (rename 후 `AssetCacheMCP\`) |
 | 라이브러리 루트 | `%APPDATA%\GameAssetHelper\library\` |
-| 메타 DB | `%APPDATA%\GameAssetHelper\metadata.db` (WAL, `unity_imports` + `projects` + `asset_usage` M7 에서 확장) |
-| **M7: unity_import 패키지** | `src/gah/core/unity_import/` (types/cache_paths/unitypackage/scanner/importer/remote_optin) |
-| **M8: i18n 카탈로그** | `src/gah/web/locale/ko/LC_MESSAGES/messages.mo` + `en/` (Babel gettext) |
-| **M8: 빌드 스펙** | `gah.spec` (PyInstaller --onefile) + `scripts/generate_tray_ico.py` |
-| **MCP 도구 수** | 20 도구 (M7 이후 그대로) |
+| 메타 DB | `%APPDATA%\GameAssetHelper\metadata.db` (WAL, M7 에서 `unity_imports` / `projects` / `asset_usage` 확장) |
+| **MCP 도구 수** | 20 도구 (M9 신규 0 — 업데이트는 사용자 UX 영역) |
 
 **금기**: Microsoft Store Python, Cowork 작업 폴더 내부 venv.
 
-M8 신규 의존성: `Babel>=2.14` (런타임), `pyinstaller>=6` (dev).
-
-```powershell
-pip install -e D:\ClaudeCowork\game-asset-helper\game-asset-helper[dev]
-```
+M9 신규 의존성: `respx>=0.20` (dev — httpx mock).
 
 ## 4. 새 세션에서 바로 이어가는 방법
 
@@ -68,102 +60,89 @@ cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
 git status
 ```
 
-→ `On branch main`, `up to date with 'origin/main'`, working tree clean. 마지막 commit `4971232`.
+→ feat/m9 브랜치 상태. **main 으로 checkout 후 작업 시작 권장** (M9 는 보존, 신규 마일스톤은 main 위에 분기).
+
+```powershell
+git checkout main
+```
 
 ```powershell
 pytest -q
 ```
 
-→ `1046 passed, 1 skipped, 40 deselected`.
+→ `1046 passed, 1 skipped, 40 deselected` (main 기준, M9 의 +65 는 feat/m9 에만).
 
-## 5. 다음 세션 진입 절차 (v1 release 또는 v2)
+## 5. 다음 세션 진입 절차 (v2 PyPI + rename)
 
-### 5.1 환경 복원 + 회귀
+### 5.1 환경 복원
 
-```powershell
-& "$env:USERPROFILE\.venvs\gah\Scripts\Activate.ps1"
-```
+위 §4 와 동일.
 
-```powershell
-cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
-```
+### 5.2 결정 (v2 distribution + rename)
 
-```powershell
-git status
-```
+✅ **확정** (다음 세션은 이 결정에서 시작):
+- **PyPI 1순위** — `pipx install assetcache-mcp` 또는 `uv tool install assetcache-mcp` 로 cross-platform 배포
+- **앱 이름** — `AssetCacheMCP` (display) / `assetcache-mcp` (PyPI) / `assetcache` (CLI)
+- **Package dir** — `src/gah/` → `src/assetcache/`
+- **데이터 폴더** — `%APPDATA%\GameAssetHelper\` → `%APPDATA%\AssetCacheMCP\` (v0.0.1 사용자 마이그레이션 helper 필요)
+- **SignPath** — 보류 (option B). 신청 docs 는 feat/m9 에 보존 (`docs/SIGNPATH_APPLICATION.md` + `docs/CODE_SIGNING_POLICY.md`)
+- **M9 코드** — feat/m9 보존. PyPI 흐름에 맞게 일부 모듈 (version / checker / web banner / tray Signal) 재사용, Installer / swap / --complete-update 는 drop. 자세한 retain/drop 표는 [memory project-m9-pivot-state](file://memory/project_m9_pivot_state.md)
 
-→ `On branch main`, working tree clean.
+### 5.3 다음 세션 첫 작업 (5~10분)
 
-```powershell
-pytest -q
-```
-
-→ `1046 passed, 1 skipped, 40 deselected`.
-
-### 5.2 다음 결정 (사용자)
-
-**✅ v0.0.1 release published** (2026-05-19) — [release page](https://github.com/v0o0v/game-asset-helper/releases/tag/v0.0.1). GameAssetHelper.exe 323 MB asset 업로드 완료, SHA256 `450e4888b8f504933d7456eddd1575fd12ebf6581411d239cb920587f92482bb`. release notes 는 Ollama 설치 + GAH 설치 + MCP 설정 3단계 (개발자 검증 정보 없음, 사용자 설치 절차 위주).
-
-이후 갈래:
-
-1. **v0.0.2/v0.1.0 점진 release** — 사용자 피드백 반영, 버그 fix, 작은 기능 추가, 재빌드 + tag push. version bump 시 두 군데 — `pyproject.toml` `version` + `src/gah/__init__.py` `__version__` — 갱신.
-2. **v2 brainstorming** — v2 미룸 항목 (Pack/프로젝트 풍부 UX, E2E, 추가 언어, 인스톨러, 코드 서명 등) + `superpowers:brainstorming` 으로 설계.
-
-### 5.3 PyInstaller 빌드 (이미 검증됨)
-
-수동 검증 통과 — `dist/GameAssetHelper.exe --tray` 가 트레이 + WebServer (port 9874) + 한국어 i18n + 다크모드 + autostart 모두 정상 동작 확인.
-
-빌드 절차 (release 산출 시):
-
-```powershell
-pybabel compile -d src/gah/web/locale
-```
-
-```powershell
-python scripts/generate_tray_ico.py
-```
-
-```powershell
-pyinstaller gah.spec
-```
-
-산출: `dist/GameAssetHelper.exe` (~308 MB, --onefile + --noconsole).
+1. `git checkout main` (M9 branch 보존)
+2. `pypi.org/project/assetcache-mcp` 점유 확인 (점유 시 변형: `assetcache`, `asset-cache-mcp`, `assetcachemcp`, etc.)
+3. PyPI 계정 + 2FA 활성화 확인 (없으면 등록)
+4. `superpowers:brainstorming` 으로 새 spec 시작 — 범위는 사용자와 합의:
+   - PyPI 패키지 + entry point 셋업
+   - 이름 rename 작업 (1~2일 mechanical)
+   - v0.0.1 사용자 마이그레이션 helper (`%APPDATA%\GameAssetHelper\` → `%APPDATA%\AssetCacheMCP\`)
+   - M9 모듈 cherry-pick / refactor / drop
+   - Mac/Linux 지원 범위 (v2 에 포함 vs 별도 마일스톤)
+5. spec → plan → subagent-driven-development 흐름
 
 ### 5.4 다음 세션이 자동 로드하는 메모리
 
-- `project_v001_release_published.md` — **v0.0.1 첫 GitHub release published 스냅샷** (URL, exe asset, SHA256, 재빌드 시 두 군데 version 갱신, release notes 톤 패턴)
-- `project_m8_complete.md` — M8 완료 스냅샷 + 수동 검증 통과 + 후속 fix 3건 + v1 release/v2 결정 사항
-- `project_m8_starting_state.md` — STALE (M8 완료, project_m8_complete 참조)
-- `feedback_manual_verification_fixes.md` — 수동 검증 중 발견 fix 는 별도 브랜치 누적 + 사용자가 push/PR/머지 (이번 세션에 정립)
+- [`project_v2_distribution_strategy.md`](file://memory/project_v2_distribution_strategy.md) — **PyPI 1순위 결정 + Mac 지원 의도 + 비용 분석**
+- [`project_v2_rename_to_assetcachemcp.md`](file://memory/project_v2_rename_to_assetcachemcp.md) — **AssetCacheMCP rename 범위 + 마이그레이션**
+- [`project_m9_pivot_state.md`](file://memory/project_m9_pivot_state.md) — **M9 implementation 완료 + 어느 모듈 재사용 가능한지**
+- `project_v001_release_published.md` — v0.0.1 release 컨텍스트
+- `feedback_ask_via_popup.md` — 질문은 AskUserQuestion popup 으로 (2026-05-19 사용자 명시)
+- `feedback_korean_for_pr_and_commits.md` — 한글 PR/commit/docs
+- `feedback_run_commands_directly.md` — Claude 가 자동화 가능 명령은 직접 실행
 
-## 6. 마일스톤 정렬 (v1 완료)
+## 6. 마일스톤 정렬 (v1 완료, v2 in progress)
 
-| # | 이름 | 일정 | 상태 |
-|---:|---|---:|---|
-| M5 | 웹 GUI 전환 + 리디자인 + Claude pick | 5.5주 | ✅ 완료 |
-| M6 | 시트 분석 + 애니메이션 | 1주 | ✅ 완료 |
-| M7 | Unity Asset Store 임포트 | 1주 | ✅ 완료 |
-| **M8** | **패키징 + i18n** | **1주** | **✅ 완료** |
+| # | 이름 | 상태 |
+|---:|---|---|
+| M0~M8 | v1 (뼈대 ~ 패키징 + i18n) | ✅ 완료 (main 머지) |
+| M9 | 코드 서명 + 자동 업데이트 | ⚠️ implementation 완료 / **머지 보류** (PyPI 채택으로 path pivot) |
+| **다음** | **PyPI + AssetCacheMCP rename** (M10? 또는 v2.0) | 📋 spec 작성 대기 |
 
-v1 전체 완료. 총 일정 ≈ 18.5주.
+v1 release: [v0.0.1 on GitHub](https://github.com/v0o0v/game-asset-helper/releases/tag/v0.0.1) (서명 X, SmartScreen 차단 해제 안내).
 
-## 7. 알려진 한계 / v2 보류 항목
+## 7. v2 보류 항목 (PyPI / rename 외)
 
-- SmartScreen 경고 (코드 서명 없음 — v2)
-- exe 크기 308 MB (실측, CLIP 가중치는 첫 실행 시 다운로드라 빌드에 미포함)
-- 빌드된 exe 첫 부팅 시 Ollama cold-start + CLIP 모델 init 으로 1~2분 소요 (M2.1 알려진 트레이드오프)
-- publisher 패널 실제 HTTP 구현 (v2 — 현재 skeleton 만)
-- 자동 동기화 스케줄러 (v2)
-- 캐시에서 사라진 .unitypackage 자동 제거 (v2)
-- 다중 캐시 경로 (v2)
-- UPM .tgz 임포트 (v2)
-- get_active_project / set_active_project / get_project_preferences MCP 도구 (v2)
-- PSD/TGA 확장자 임포트 (v2)
-- 임포트 완료 후 unity_imports 자동 되돌림 (v2)
-- 라이브러리 카드 직접 피드백 입력 UI (v2)
-- Pack/프로젝트 풍부 UX (v2)
-- Playwright E2E 테스트 (v2)
-- 추가 언어 ja/zh (v2)
-- MSI/NSIS 인스톨러 (v2)
-- 자동 업데이트 (v2)
-- 트레이 알림 (v2)
+v2 backlog 의 다른 theme (UX 풍부화 / Unity import 확장 / 분석 정확도 등) 은 그대로 보류. PyPI + rename 끝나면 우선순위 재정렬.
+
+- Pack/프로젝트 풍부 UX (메타 수정, manual_override, pin/block, 사용 분포 차트)
+- 라이브러리 카드 직접 피드백 입력 UI
+- 트레이 알림
+- Pack/라벨 페이지 내 검색
+- 새 axis 추가 UI
+- 다중 Asset Store 캐시 경로
+- UPM `.tgz` / scoped registry 임포트
+- PSD/TGA 임포트
+- publisher 패널 실제 HTTP 구현
+- 자동 동기화 스케줄러
+- 캐시에서 사라진 `.unitypackage` 자동 제거
+- 사운드 임베딩 보조 (CLAP/PANNs)
+- Ollama 오디오 안정성 모니터링
+- 비균일 atlas 시트 지원
+- 시트 frame size 입력 GUI
+- Playwright E2E 테스트
+- 추가 언어 (ja / zh)
+- Mac/Linux 지원 (`sys.platform` 가드 + autostart/installer 분기)
+- MSI/NSIS 인스톨러 (Windows 캐주얼 사용자용 — 단 PyPI 가 우선이라 우선순위 낮음)
+- get_active_project / set_active_project / get_project_preferences MCP 도구
+- M9 의 코드 서명 + 자동 업데이트 (option B — SignPath 신청 docs 보존)

@@ -163,27 +163,23 @@ python -m gah --tray
 python -m gah --version
 ```
 
-## 8. 다음 작업 (v0.0.2 점진 또는 v2)
+## 8. 다음 작업 (v2 — PyPI 배포 + AssetCacheMCP rename)
 
-M8 가 **✅ 완료**됐다 — v1 모든 마일스톤 종료 (M0~M8). **v0.0.1 첫 GitHub release published** (2026-05-19, [release page](https://github.com/v0o0v/game-asset-helper/releases/tag/v0.0.1) — `GameAssetHelper.exe` 323MB 첨부). 다음 작업은 사용자 결정:
+v1 (M0~M8) ✅ 완료 + [v0.0.1 GitHub release published](https://github.com/v0o0v/game-asset-helper/releases/tag/v0.0.1) (`GameAssetHelper.exe` 323MB). M9 (코드 서명 + 자동 업데이트) implementation 완료 (`feat/m9-code-signing-and-auto-update` 21 commits, 1111 tests) — 단 **path pivot: PyPI 1순위 결정** 으로 main 머지 보류.
 
-1. **v0.0.2/v0.1.0 점진 release** — 사용자 피드백 반영, 버그 fix, 작은 기능 추가, 재빌드 + tag push
-2. **v2 brainstorming** — Pack/프로젝트 풍부 UX, E2E, 추가 언어, 인스톨러 등 v2 미룸 항목으로 `superpowers:brainstorming`
+**v2 결정 사항** (2026-05-19):
 
-### 8.1 현재 상태 (M8 완료)
+1. **PyPI 1순위 배포** — `pipx install assetcache-mcp` 또는 `uv tool install assetcache-mcp` 로 Windows + Mac + Linux 동시 지원. SmartScreen 우회 불필요, 비용 $0
+2. **앱 rename** — `Game Asset Helper` / `gah` → **`AssetCacheMCP`** / `assetcache-mcp` (PyPI 패키지) / `assetcache` (CLI). 패키지 디렉터리 `src/gah/` → `src/assetcache/`
+3. **M9 보류** — Installer / swap / `--complete-update` 는 PyPI 흐름에서 불필요 (`pip install -U` 가 대체). UpdateChecker / version / web banner / tray Signal 등 cross-platform 모듈은 재사용 가능
+4. **SignPath** — Option B 로 보류. 신청 docs (`docs/SIGNPATH_APPLICATION.md` + `docs/CODE_SIGNING_POLICY.md`) 는 `feat/m9` 에 보존
 
-- 브랜치 `main` (마지막 commit `75053b5` — release(v0.0.1): README 갱신 + LICENSE + release notes).
-- **1046 passed + 1 skipped + 40 deselected**. 회귀 0.
-- M8 완료된 인프라 요약:
-  - **Phase 0** — Config 신규 필드 (ui_language/ui_theme) + autostart 스켈레톤 (+5 테스트)
-  - **Phase 1** — `_t()` gettext + LocaleMiddleware 5단계 + app.py 통합 (+14 테스트)
-  - **Phase 2** — babel.cfg + 159건 msgid 영어화 + ko.po + en.po + .mo 컴파일 (+2 테스트)
-  - **Phase 3** — /settings 페이지 + 다크모드 토글 (Alpine + localStorage + data-theme) (+9 테스트)
-  - **Phase 4** — autostart.py (winreg HKCU\\...\\Run) + 트레이 메뉴 (+9~10 테스트)
-  - **Phase 5** — generate_tray_ico.py + tray.ico + gah.spec + smoke + README (+4 테스트)
-  - **Phase 6** — verification + 문서 마감 + DRY 정리 (SUPPORTED 통합) (0 테스트)
-- MCP **20 도구** (M7 그대로).
-- 신규 의존성: Babel>=2.14 (런타임), pyinstaller>=6 (dev).
+### 8.1 현재 상태
+
+- **main 브랜치** — 마지막 commit `9069e55` (M9 plan + cover). M9 이후 모든 변경은 `feat/m9` 위에만
+- **feat/m9-code-signing-and-auto-update** — 21 commits, **1111 passed + 1 skipped + 40 deselected**, push 안 됨, main 머지 보류
+- MCP **20 도구** (M9 신규 0)
+- v1 release: [v0.0.1 published](https://github.com/v0o0v/game-asset-helper/releases/tag/v0.0.1) (서명 X, SmartScreen 차단 해제 안내 release notes 포함)
 
 ### 8.2 다음 세션 진입 시 첫 작업
 
@@ -195,28 +191,36 @@ M8 가 **✅ 완료**됐다 — v1 모든 마일스톤 종료 (M0~M8). **v0.0.1 
    cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
    ```
 
-2. **상태 확인**:
+2. **main 으로 체크아웃** (M9 보존):
    ```powershell
-   git status
+   git checkout main
    ```
-   → `On branch main`, working tree clean (마지막 commit `75053b5`).
 
 3. **회귀 검증**:
    ```powershell
    pytest -q
    ```
-   → `1046 passed, 1 skipped, 40 deselected`.
+   → `1046 passed, 1 skipped, 40 deselected` (main 기준, M9 의 +65 는 feat/m9 에만).
 
-4. **v0.0.2/v0.1.0 점진 release 또는 v2 결정** — [`HANDOFF.md`](./HANDOFF.md) §5.2 참고.
+4. **PyPI 점유 확인**:
+   - https://pypi.org/project/assetcache-mcp/ 가 404 면 점유 가능. 점유 시 변형 (`assetcachemcp`, `asset-cache-mcp`, etc.) 검토
 
-### 8.3 마일스톤 정렬 (v1 완료)
+5. **새 spec 시작** — `superpowers:brainstorming` 으로 v2 마일스톤 범위 합의:
+   - PyPI 패키지 + entry point 셋업
+   - rename 작업 (~1~2일 mechanical)
+   - v0.0.1 사용자 데이터 마이그레이션 helper (`%APPDATA%\GameAssetHelper\` → `%APPDATA%\AssetCacheMCP\`)
+   - M9 모듈 cherry-pick / refactor / drop 범위
+   - Mac/Linux 지원 범위 (v2 포함 vs 별도 마일스톤)
 
-| # | 이름 | 일정 | 상태 |
-|---:|---|---:|---|
-| M5 | 웹 GUI 전환 + 리디자인 + Claude pick | 5.5주 | ✅ 완료 |
-| M6 | 시트 분석 + 애니메이션 | 1주 | ✅ 완료 |
-| M7 | Unity Asset Store 임포트 | 1주 | ✅ 완료 |
-| **M8** | **패키징 + i18n** | **1주** | **✅ 완료** |
+자세한 결정 사항 + 마이그레이션 + M9 retain/drop 표는 [`HANDOFF.md`](./HANDOFF.md) + [memory 3건](file://memory/).
+
+### 8.3 마일스톤 정렬
+
+| # | 이름 | 상태 |
+|---:|---|---|
+| M0~M8 | v1 (뼈대 ~ 패키징 + i18n) | ✅ 완료 (main 머지) |
+| M9 | 코드 서명 + 자동 업데이트 | ⚠️ implementation 완료 / **머지 보류** (PyPI 채택으로 path pivot) |
+| **다음** | **v2 — PyPI + AssetCacheMCP rename** | 📋 spec 작성 대기 |
 
 참고 DESIGN: §3 (아키텍처), §4.9 (Unity Asset Store Importer — M7), §4.10 (활성 프로젝트/프로젝트 페이지 — M7), §4.5 (MCP — 20 도구), §4.8 (트레이 + 웹 UI), §11 (로드맵).
 
