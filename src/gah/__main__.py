@@ -14,14 +14,23 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from pathlib import Path
 from typing import Sequence
 
-from . import __version__
-from .config import default_app_paths, load_config
-from .logging_setup import setup_logging
-from .platform.single_instance import AlreadyRunning, SingleInstance
+# PyInstaller windowed (--noconsole) 빌드는 sys.stdout / sys.stderr 가 None.
+# logging.StreamHandler / uvicorn print 가 None.write() 호출 시 AttributeError
+# 또는 hang 으로 부팅 차단. dev 환경 + console 빌드는 영향 없음.
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w", encoding="utf-8")  # noqa: SIM115
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w", encoding="utf-8")  # noqa: SIM115
+
+from gah import __version__
+from gah.config import default_app_paths, load_config
+from gah.logging_setup import setup_logging
+from gah.platform.single_instance import AlreadyRunning, SingleInstance
 
 
 EXIT_OK = 0
@@ -76,7 +85,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         # MCP stdio 진입 — 단독 프로세스. GUI 인스턴스가 떠 있어도 OK
         # (SQLite WAL + busy_timeout=5000 + write_lock 이 동시 write 흡수).
         # single_instance 락은 안 잡음 — stdio 서버는 GUI 와 무관한 별 프로세스.
-        from .mcp.server import run_stdio
+        from gah.mcp.server import run_stdio
 
         run_stdio()
         return EXIT_OK
@@ -84,7 +93,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     # Default mode: tray
     try:
         with SingleInstance(paths.lock_path):
-            from .app import run_tray
+            from gah.app import run_tray
 
             rc = run_tray(paths, config)
             log.info("GAH exiting (rc=%s)", rc)

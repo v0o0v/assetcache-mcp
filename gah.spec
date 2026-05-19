@@ -13,7 +13,7 @@
 #   - SingleInstance lock 후 트레이 + 브라우저 자동 열림
 
 from pathlib import Path
-from PyInstaller.utils.hooks import collect_data_files
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 block_cipher = None
 
@@ -29,24 +29,32 @@ datas = [
 # open_clip 의 모델 메타 (가중치는 첫 실행 시 다운로드)
 datas += collect_data_files("open_clip", excludes=["*.pt"])
 
+# gah 의 모든 서브모듈을 명시적으로 포함.
+# __main__.py 의 lazy import (from .app import run_tray 등) 는 PyInstaller 의
+# static analysis 가 못 따라가서 첫 빌드 시 web/core/mcp 패키지 통째로 누락됐다.
+# torch / open_clip 도 명시 — gah 가 의존하지만 dynamic import 라 추적 어려움.
+hiddenimports = collect_submodules("gah") + [
+    "uvicorn.logging",
+    "uvicorn.loops",
+    "uvicorn.loops.auto",
+    "uvicorn.protocols",
+    "uvicorn.protocols.http",
+    "uvicorn.protocols.http.auto",
+    "uvicorn.protocols.websockets",
+    "uvicorn.protocols.websockets.auto",
+    "uvicorn.lifespan",
+    "uvicorn.lifespan.on",
+    # open_clip / torch — gah.core.clip_labeler 가 lazy import
+    "open_clip",
+    "open_clip_torch",
+]
+
 a = Analysis(
     ["src/gah/__main__.py"],
     pathex=[str(REPO / "src")],
     binaries=[],
     datas=datas,
-    hiddenimports=[
-        "gah",
-        "uvicorn.logging",
-        "uvicorn.loops",
-        "uvicorn.loops.auto",
-        "uvicorn.protocols",
-        "uvicorn.protocols.http",
-        "uvicorn.protocols.http.auto",
-        "uvicorn.protocols.websockets",
-        "uvicorn.protocols.websockets.auto",
-        "uvicorn.lifespan",
-        "uvicorn.lifespan.on",
-    ],
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
