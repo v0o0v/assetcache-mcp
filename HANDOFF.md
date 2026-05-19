@@ -1,15 +1,15 @@
 # HANDOFF — Cowork → Claude Code (또는 다음 세션)
 
-**마지막 인계 시각**: 2026-05-19 (M8 완료 + 수동 검증 통과 + 후속 patch 3건 main 누적)
-**마지막 완료 마일스톤**: **M8 — 패키징 + i18n** — ✅ 완료 (수동 검증 통과)
-**현재 브랜치**: `main` (origin/main 과 sync, working tree clean, 마지막 commit `4971232`)
-**다음 작업**: **v1 release** (GitHub release + `GameAssetHelper.exe` 업로드) 또는 **v2 brainstorming**
+**마지막 인계 시각**: 2026-05-19 (v0.0.1 첫 GitHub release published)
+**마지막 완료 마일스톤**: **M8 — 패키징 + i18n** — ✅ 완료 (수동 검증 통과 + v0.0.1 release publish)
+**현재 브랜치**: `main` (origin/main 과 sync, working tree clean, 마지막 commit `75053b5`)
+**다음 작업**: **v0.0.2/v0.1.0 점진 release** 또는 **v2 brainstorming**
 
 이 문서는 작업이 중단될 때 다음 세션이 "현재 어디까지 와 있는가"를 한 번에 파악하도록 작성된 스냅샷이다.
 
 ## 1. 한 줄 요약
 
-M8 (패키징 + i18n) ✅ 완료 + 사용자 수동 검증 통과. PR #9 main 머지 + 후속 fix 3건 (PR #10 + main fast-forward 2 commit). 빌드된 `dist/GameAssetHelper.exe` (308 MB, --onefile + --noconsole) 실 부팅 검증 — port 9874 + HTTP 200 76ms + 한국어 i18n 정상 렌더. pytest **1046 passed + 1 skipped + 40 deselected**. MCP **20 도구**. 신규 의존성 2 (Babel>=2.14, pyinstaller>=6 dev). 다음 = **v1 release 또는 v2 brainstorming**.
+M8 (패키징 + i18n) ✅ 완료 + 사용자 수동 검증 통과 + **v0.0.1 첫 GitHub release published** (2026-05-19, [release page](https://github.com/v0o0v/game-asset-helper/releases/tag/v0.0.1)). PR #9 main 머지 + 후속 fix 3건 (PR #10 + main fast-forward 2 commit). 빌드된 `dist/GameAssetHelper.exe` (308 MB, --onefile + --noconsole) 실 부팅 검증 — port 9874 + HTTP 200 76ms + 한국어 i18n 정상 렌더. pytest **1046 passed + 1 skipped + 40 deselected**. MCP **20 도구**. 신규 의존성 2 (Babel>=2.14, pyinstaller>=6 dev). 다음 = **v0.0.2/v0.1.0 점진 또는 v2 brainstorming**.
 
 수동 검증 시나리오는 [`milestones/M8_verification.md`](./milestones/M8_verification.md) 참고.
 
@@ -102,7 +102,11 @@ pytest -q
 
 ### 5.2 다음 결정 (사용자)
 
-1. **v1 release** — `pyinstaller gah.spec` → `dist/GameAssetHelper.exe` (308 MB, 검증 완료) 를 GitHub release 페이지에 업로드. SmartScreen 안내 포함.
+**✅ v0.0.1 release published** (2026-05-19) — [release page](https://github.com/v0o0v/game-asset-helper/releases/tag/v0.0.1). GameAssetHelper.exe 323 MB asset 업로드 완료, SHA256 `450e4888b8f504933d7456eddd1575fd12ebf6581411d239cb920587f92482bb`. release notes 는 Ollama 설치 + GAH 설치 + MCP 설정 3단계 (개발자 검증 정보 없음, 사용자 설치 절차 위주).
+
+이후 갈래:
+
+1. **v0.0.2/v0.1.0 점진 release** — 사용자 피드백 반영, 버그 fix, 작은 기능 추가, 재빌드 + tag push. version bump 시 두 군데 — `pyproject.toml` `version` + `src/gah/__init__.py` `__version__` — 갱신.
 2. **v2 brainstorming** — v2 미룸 항목 (Pack/프로젝트 풍부 UX, E2E, 추가 언어, 인스톨러, 코드 서명 등) + `superpowers:brainstorming` 으로 설계.
 
 ### 5.3 PyInstaller 빌드 (이미 검증됨)
@@ -127,6 +131,7 @@ pyinstaller gah.spec
 
 ### 5.4 다음 세션이 자동 로드하는 메모리
 
+- `project_v001_release_published.md` — **v0.0.1 첫 GitHub release published 스냅샷** (URL, exe asset, SHA256, 재빌드 시 두 군데 version 갱신, release notes 톤 패턴)
 - `project_m8_complete.md` — M8 완료 스냅샷 + 수동 검증 통과 + 후속 fix 3건 + v1 release/v2 결정 사항
 - `project_m8_starting_state.md` — STALE (M8 완료, project_m8_complete 참조)
 - `feedback_manual_verification_fixes.md` — 수동 검증 중 발견 fix 는 별도 브랜치 누적 + 사용자가 push/PR/머지 (이번 세션에 정립)
