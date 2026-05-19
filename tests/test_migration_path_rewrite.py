@@ -1,10 +1,18 @@
-"""마이그레이션 후 path rewrite (config.toml + metadata.db)."""
+"""마이그레이션 후 path rewrite — config.toml 만 (metadata.db 는 무손상).
+
+assets.path 는 pack_manager.ingest_pack 에서 library_root 기준 POSIX 상대경로로
+저장되므로 (`file_path.relative_to(library_root).as_posix()`, pack_manager.py:89,
+M1 이래 불변), data_dir 마이그레이션 시 DB rewrite 가 필요하지 않다.
+config.toml.library_dir_override (절대경로) 만 새 base 로 rewrite 되면 상대경로
+assets.path 가 자동으로 새 위치로 resolve 된다.
+
+unity_imports.package_path / projects.external_id 등 다른 path-like 컬럼은
+외부 (Asset Store cache, Unity 프로젝트 디렉터리) 라 원래 rewrite 대상이 아니다.
+"""
 from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
-
-import pytest
 
 from assetcache.core.migration import (
     MigrationCandidate,
@@ -57,59 +65,47 @@ def test_rewrite_does_not_touch_external_paths(tmp_path):
     assert 'C:/Custom/External/Pack' in config_path.read_text(encoding="utf-8")
 
 
-def test_rewrite_metadata_db_assets_path(tmp_path):
-    """metadata.db 의 assets.path 중 구 base 시작 행만 rewrite."""
+def test_rewrite_leaves_metadata_db_untouched(tmp_path):
+    """metadata.db 전체를 건드리지 않는다.
+
+    assets.path 는 library_root 기준 상대경로 ("pack/asset.png") 라서 마이그레이션이
+    DB 를 열거나 수정할 이유가 없다. 다른 path-like 컬럼 (unity_imports.package_path,
+    projects.external_id) 도 외부 경로라 rewrite 대상 아님. 따라서 마이그레이션은
+    DB 파일을 그대로 두고, .db.bak 도 만들지 않는다.
+    """
     candidate = _make_candidate(tmp_path)
     db_path = candidate.target / "metadata.db"
-    src_lib = candidate.source / "library"
-    tgt_lib = candidate.target / "library"
 
     conn = sqlite3.connect(db_path)
     conn.execute("CREATE TABLE assets (id INTEGER PRIMARY KEY, path TEXT)")
-    conn.execute("INSERT INTO assets (path) VALUES (?)", (f"{src_lib}/pack/asset.png",))
-    conn.execute("INSERT INTO assets (path) VALUES (?)", ("C:/External/foo.png",))
-    conn.commit()
-    conn.close()
-
-    rewrite_paths_after_migration(candidate)
-
-    conn = sqlite3.connect(db_path)
-    rows = list(conn.execute("SELECT path FROM assets ORDER BY id"))
-    conn.close()
-    assert str(tgt_lib) in rows[0][0]
-    assert rows[1][0] == "C:/External/foo.png"
-
-
-def test_rewrite_does_not_touch_unity_imports_path(tmp_path):
-    """unity_imports.unitypackage_path 는 Asset Store cache 라 rewrite X."""
-    candidate = _make_candidate(tmp_path)
-    db_path = candidate.target / "metadata.db"
-    conn = sqlite3.connect(db_path)
-    conn.execute("CREATE TABLE unity_imports (id INTEGER PRIMARY KEY, unitypackage_path TEXT)")
     conn.execute(
-        "INSERT INTO unity_imports (unitypackage_path) VALUES (?)",
-        ("C:/Users/foo/AppData/Roaming/Unity/Asset Store-5.x/...",),
+        "INSERT INTO assets (path) VALUES (?)", ("pack/asset.png",)
+    )
+    conn.execute(
+        "CREATE TABLE unity_imports (id INTEGER PRIMARY KEY, package_path TEXT)"
+    )
+    conn.execute(
+        "INSERT INTO unity_imports (package_path) VALUES (?)",
+        ("C:/Users/foo/AppData/Roaming/Unity/Asset Store-5.x/p.unitypackage",),
     )
     conn.commit()
     conn.close()
 
-    rewrite_paths_after_migration(candidate)
-
-    conn = sqlite3.connect(db_path)
-    rows = list(conn.execute("SELECT unitypackage_path FROM unity_imports"))
-    conn.close()
-    assert "Asset Store-5.x" in rows[0][0]
-
-
-def test_rewrite_creates_db_backup(tmp_path):
-    """metadata.db 가 .bak 백업 됐는지."""
-    candidate = _make_candidate(tmp_path)
-    db_path = candidate.target / "metadata.db"
-    conn = sqlite3.connect(db_path)
-    conn.execute("CREATE TABLE assets (id INTEGER PRIMARY KEY, path TEXT)")
-    conn.commit()
-    conn.close()
+    before_mtime = db_path.stat().st_mtime_ns
+    before_bytes = db_path.read_bytes()
 
     rewrite_paths_after_migration(candidate)
 
-    assert (candidate.target / "metadata.db.bak").exists()
+    # 파일 내용/타임스탬프 무변경
+    assert db_path.read_bytes() == before_bytes
+    assert db_path.stat().st_mtime_ns == before_mtime
+    # 백업 파일도 안 만든다 (수정하지 않으니 백업 불필요)
+    assert not (candidate.target / "metadata.db.bak").exists()
+
+    # 행도 그대로 — assets.path 는 상대경로 그대로, unity_imports 도 그대로
+    conn = sqlite3.connect(db_path)
+    rows = list(conn.execute("SELECT path FROM assets"))
+    unity_rows = list(conn.execute("SELECT package_path FROM unity_imports"))
+    conn.close()
+    assert rows == [("pack/asset.png",)]
+    assert "Asset Store-5.x" in unity_rows[0][0]
