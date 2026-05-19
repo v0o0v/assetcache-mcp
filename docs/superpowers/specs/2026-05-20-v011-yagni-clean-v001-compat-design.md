@@ -30,13 +30,13 @@ v0.0.1 (Game Asset Helper / `gah`) 은 [`docs/RELEASE_NOTES_v0.0.1.md`](../../RE
 | `src/assetcache/core/migration.py` | 전체 (197 lines) |
 | `src/assetcache/web/routers/migration.py` | 전체 (101 lines) |
 | `src/assetcache/web/templates/_migration_banner.html` | 전체 |
-| `tests/test_migration_detect.py` | 전체 |
-| `tests/test_migration_runner.py` | 전체 |
-| `tests/test_migration_path_rewrite.py` | 전체 |
-| `tests/test_migration_router.py` | 전체 |
-| `tests/test_cli_migrate.py` | 전체 |
+| `tests/test_migration_detect.py` | 전체 (6 tests) |
+| `tests/test_migration_runner.py` | 전체 (6 tests) |
+| `tests/test_migration_path_rewrite.py` | 전체 (3 tests) |
+| `tests/test_migration_router.py` | 전체 (3 tests) |
+| `tests/test_cli_migrate.py` | 전체 (2 tests) |
 
-합계 **-21 테스트** (M10 Phase 1 baseline).
+합계 **-20 테스트** (Task 2 collect-only 실측, plan 초안의 -21 가정 정정).
 
 ### 3.2 부분 축소 (live 코드)
 
@@ -91,7 +91,7 @@ v0.0.1 (Game Asset Helper / `gah`) 은 [`docs/RELEASE_NOTES_v0.0.1.md`](../../RE
 1. main 동기화 (`git pull`) → 회귀 baseline 확인 (`pytest -q` → **1103 passed + 1 skipped + 40 deselected**)
 2. branch checkout `chore/v011-yagni-clean` (이미 완료)
 3. 이 spec commit
-4. **삭제 phase** — test 5 파일 일괄 삭제 + i18n test 갱신 → `pytest -q` → **1082 passed** (회귀 정확히 -21 신호)
+4. **삭제 phase** — test 5 파일 일괄 삭제 + i18n test 갱신 → `pytest -q` → **1083 passed** (회귀 정확히 -20 신호)
 5. **부분 축소 phase** — commit 단위 (each ≤ 1 file group):
    - CLI: `__main__.py` cleanup
    - Config: `config.py` cleanup
@@ -105,7 +105,7 @@ v0.0.1 (Game Asset Helper / `gah`) 은 [`docs/RELEASE_NOTES_v0.0.1.md`](../../RE
 7. **M10 rename fix phase** — `mcp/server.py` + `tools/setup_m6_test.py` → `pytest -q` + `pytest -m mcp_integration` (FastMCP name 변경 영향 확인)
 8. **문서 phase** — live 완전 제거 (한 commit) + historical 후기 추가 (한 commit)
 9. **version bump** — `pyproject.toml` + `__init__.py` → commit
-10. **회귀 최종** — `pytest -q` → 1082 passed + 1 skipped + 40 deselected; `pytest -m mcp_integration` 통과
+10. **회귀 최종** — `pytest -q` → 1083 passed + 1 skipped + 40 deselected; `pytest -m mcp_integration` 통과
 11. **PR 준비** — push, PR 생성, merge, tag v0.1.1 push 는 사용자가 직접 수행 (사용자 메모: 수동 검증·푸시·머지는 사용자 책임)
 
 ## 5. 위험 / 주의사항
@@ -113,12 +113,12 @@ v0.0.1 (Game Asset Helper / `gah`) 은 [`docs/RELEASE_NOTES_v0.0.1.md`](../../RE
 - **FastMCP server name 변경**: Claude Code/Desktop 에 이미 등록된 MCP 도구의 prefix 가 `mcp__game-asset-helper__*` → `mcp__assetcache-mcp__*` 로 바뀐다. 단 v0.0.1 사용자 0, v0.1.0 publish 1일째라 외부 영향 거의 0. release notes 에 "MCP 클라이언트 reconnect 필요" 명시.
 - **`tools/setup_m6_test.py` 경로 안내 갱신**: 사용자만 사용하는 도구. 갱신 후 사용자가 새 경로 (`%APPDATA%\AssetCacheMCP\library`) 로 다시 작업 폴더 선택.
 - **Babel 재추출**: `babel.cfg` 변경 0 이라 새 문자열 추출 0. 단순 cleanup.
-- **회귀 목표 -21**: baseline 1082 가 새 baseline. 다음 patch 가 이 baseline 기준이라 정확히 떨어져야.
+- **회귀 목표 -20**: baseline 1083 가 새 baseline. 다음 patch 가 이 baseline 기준이라 정확히 떨어져야.
 - **historical 문서 후기 노트**: 짧게, 본문 보존. 검증 시점의 사실을 왜곡하지 않음.
 
 ## 6. 검증
 
-**자동** — `pytest -q` → **1082 passed + 1 skipped + 40 deselected**. `pytest -m mcp_integration` → 2 cases pass (FastMCP name `assetcache-mcp` 인식 + 20 도구 카운트 유지).
+**자동** — `pytest -q` → **1083 passed + 1 skipped + 40 deselected**. `pytest -m mcp_integration` → 2 cases pass (FastMCP name `assetcache-mcp` 인식 + 20 도구 카운트 유지).
 
 **수동** (사용자):
 1. 트레이 부팅 (`python -m assetcache --tray`) → 마이그레이션 배너 안 보임 + PyPI 알림 배너만 정상
