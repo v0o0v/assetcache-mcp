@@ -1,4 +1,4 @@
-"""M4 — label_query 파서 (자연어 라벨 부울 → ParsedLabelQuery).
+﻿"""M4 — label_query 파서 (자연어 라벨 부울 → ParsedLabelQuery).
 
 문법 요약:
     expr     = or_expr
@@ -84,7 +84,7 @@ def registry_korean():
 
 
 def test_empty_input_returns_empty_parsed(registry_simple):
-    from gah.core.label_query import parse_label_query
+    from assetcache.core.label_query import parse_label_query
 
     parsed = parse_label_query("", registry_simple)
     assert parsed.labels_all == []
@@ -94,7 +94,7 @@ def test_empty_input_returns_empty_parsed(registry_simple):
 
 
 def test_single_bare_label_resolves_to_axis(registry_simple):
-    from gah.core.label_query import parse_label_query
+    from assetcache.core.label_query import parse_label_query
 
     parsed = parse_label_query("hero", registry_simple)
     # 단일 atom → labels_all 1 개 (axis 자동 매칭)
@@ -107,7 +107,7 @@ def test_single_bare_label_resolves_to_axis(registry_simple):
 
 
 def test_axis_label_explicit_form_matches_exact(registry_simple):
-    from gah.core.label_query import parse_label_query
+    from assetcache.core.label_query import parse_label_query
 
     parsed = parse_label_query("sound_mood:dark", registry_simple)
     assert len(parsed.labels_all) == 1
@@ -116,7 +116,7 @@ def test_axis_label_explicit_form_matches_exact(registry_simple):
 
 
 def test_and_two_atoms_to_labels_all(registry_simple):
-    from gah.core.label_query import parse_label_query
+    from assetcache.core.label_query import parse_label_query
 
     parsed = parse_label_query("hero AND pixel_art", registry_simple)
     assert {(f.axis, f.label) for f in parsed.labels_all} == {
@@ -128,7 +128,7 @@ def test_and_two_atoms_to_labels_all(registry_simple):
 
 
 def test_or_two_atoms_to_labels_any(registry_simple):
-    from gah.core.label_query import parse_label_query
+    from assetcache.core.label_query import parse_label_query
 
     parsed = parse_label_query("bright OR dark", registry_simple)
     # bright/dark 모두 sound_mood — 모호 없음 (sound_mood 에만 있다고 가정한 simple registry)
@@ -141,7 +141,7 @@ def test_or_two_atoms_to_labels_any(registry_simple):
 
 
 def test_not_atom_to_labels_none(registry_simple):
-    from gah.core.label_query import parse_label_query
+    from assetcache.core.label_query import parse_label_query
 
     parsed = parse_label_query("NOT calm", registry_simple)
     assert parsed.labels_all == []
@@ -153,7 +153,7 @@ def test_not_atom_to_labels_none(registry_simple):
 
 def test_implicit_and_between_adjacent_atoms(registry_simple):
     """공백 사이 atom 은 AND 로 묵시 처리 — `hero pixel_art` == `hero AND pixel_art`."""
-    from gah.core.label_query import parse_label_query
+    from assetcache.core.label_query import parse_label_query
 
     parsed = parse_label_query("hero pixel_art", registry_simple)
     assert {(f.axis, f.label) for f in parsed.labels_all} == {
@@ -164,7 +164,7 @@ def test_implicit_and_between_adjacent_atoms(registry_simple):
 
 def test_nested_parens_pure_and(registry_simple):
     """`(hero AND pixel_art)` — 단일 그룹 그대로 labels_all."""
-    from gah.core.label_query import parse_label_query
+    from assetcache.core.label_query import parse_label_query
 
     parsed = parse_label_query("(hero AND pixel_art)", registry_simple)
     assert {(f.axis, f.label) for f in parsed.labels_all} == {
@@ -174,7 +174,7 @@ def test_nested_parens_pure_and(registry_simple):
 
 
 def test_nested_parens_pure_or(registry_simple):
-    from gah.core.label_query import parse_label_query
+    from assetcache.core.label_query import parse_label_query
 
     parsed = parse_label_query("(bright OR dark OR calm)", registry_simple)
     assert {(f.axis, f.label) for f in parsed.labels_any} == {
@@ -186,7 +186,7 @@ def test_nested_parens_pure_or(registry_simple):
 
 def test_mixed_and_or_raises_unsupported_expression(registry_simple):
     """`(hero AND pixel_art) OR background` — v1 한계."""
-    from gah.core.label_query import UnsupportedExpression, parse_label_query
+    from assetcache.core.label_query import UnsupportedExpression, parse_label_query
 
     with pytest.raises(UnsupportedExpression):
         parse_label_query("(hero AND pixel_art) OR background", registry_simple)
@@ -194,7 +194,7 @@ def test_mixed_and_or_raises_unsupported_expression(registry_simple):
 
 def test_unknown_token_goes_to_free_text(registry_simple):
     """등록되지 않은 토큰 — 파서가 free_text 로 빼낸다."""
-    from gah.core.label_query import parse_label_query
+    from assetcache.core.label_query import parse_label_query
 
     parsed = parse_label_query("hero zelda_quest_iv", registry_simple)
     # hero → labels_all, zelda_quest_iv → free_text
@@ -204,7 +204,7 @@ def test_unknown_token_goes_to_free_text(registry_simple):
 
 def test_ambiguous_bare_label_raises_with_candidates(registry_ambiguous):
     """`dark` 가 sound_mood + sprite_palette 양쪽 → AmbiguousLabel + 후보."""
-    from gah.core.label_query import AmbiguousLabel, parse_label_query
+    from assetcache.core.label_query import AmbiguousLabel, parse_label_query
 
     with pytest.raises(AmbiguousLabel) as ei:
         parse_label_query("dark", registry_ambiguous)
@@ -214,7 +214,7 @@ def test_ambiguous_bare_label_raises_with_candidates(registry_ambiguous):
 
 def test_uppercase_only_keywords_lowercase_treated_as_label(registry_simple):
     """`and` (소문자) 는 키워드가 아니라 토큰. simple registry 에 `and` 라벨은 없으므로 free_text 로."""
-    from gah.core.label_query import parse_label_query
+    from assetcache.core.label_query import parse_label_query
 
     parsed = parse_label_query("hero and pixel_art", registry_simple)
     # hero / pixel_art 는 라벨이지만 `and` (소문자) 가 키워드가 아니므로
@@ -228,7 +228,7 @@ def test_uppercase_only_keywords_lowercase_treated_as_label(registry_simple):
 
 
 def test_korean_label_matches(registry_korean):
-    from gah.core.label_query import parse_label_query
+    from assetcache.core.label_query import parse_label_query
 
     parsed = parse_label_query("어두움 AND 오케스트라", registry_korean)
     assert {(f.axis, f.label) for f in parsed.labels_all} == {
@@ -239,7 +239,7 @@ def test_korean_label_matches(registry_korean):
 
 def test_quoted_string_token_preserved(registry_simple):
     """`"dark cave"` 따옴표 안 토큰은 단일 free_token — 라벨 매칭 없이 free_text 로."""
-    from gah.core.label_query import parse_label_query
+    from assetcache.core.label_query import parse_label_query
 
     parsed = parse_label_query('"dark cave"', registry_simple)
     assert parsed.labels_all == []
@@ -255,7 +255,7 @@ def test_precedence_not_then_and_then_or_or_unsupported(registry_simple):
     raise 가 정상. 만약 단순화 가능한 케이스라면 정확 매핑이어도 OK 단,
     혼합 표현임을 인지하는 것이 핵심.
     """
-    from gah.core.label_query import UnsupportedExpression, parse_label_query
+    from assetcache.core.label_query import UnsupportedExpression, parse_label_query
 
     with pytest.raises(UnsupportedExpression):
         parse_label_query("bright OR dark AND NOT calm", registry_simple)

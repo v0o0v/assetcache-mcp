@@ -1,4 +1,4 @@
-"""M4 — MCP 도구 확장 + 4 신규 도구 (saved_searches).
+﻿"""M4 — MCP 도구 확장 + 4 신규 도구 (saved_searches).
 
 확장:
 - `tool_find_asset` — `label_query` 파서 호출 + AmbiguousLabel/UnsupportedExpression
@@ -28,7 +28,7 @@ import pytest
 
 
 def _find_req(**kw):
-    from gah.mcp.models import FindAssetRequest
+    from assetcache.mcp.models import FindAssetRequest
 
     return FindAssetRequest(**kw)
 
@@ -39,7 +39,7 @@ def _find_req(**kw):
 def test_find_asset_label_query_parses_and_injects(mcp_tool_deps) -> None:
     """`label_query="pixel_art"` 가 파서를 거쳐 labels_all 에 주입되고,
     `category=pixel_art` 매칭 자산만 후보."""
-    from gah.mcp.tools import tool_find_asset
+    from assetcache.mcp.tools import tool_find_asset
 
     deps = mcp_tool_deps()
     res = tool_find_asset(deps, _find_req(query="hero", label_query="pixel_art"))
@@ -49,8 +49,8 @@ def test_find_asset_label_query_parses_and_injects(mcp_tool_deps) -> None:
 
 def test_find_asset_structured_labels_plus_label_query_merge(mcp_tool_deps) -> None:
     """구조화 labels_all + label_query 양쪽 — 둘 다 적용 (병합)."""
-    from gah.mcp.models import AxisLabel
-    from gah.mcp.tools import tool_find_asset
+    from assetcache.mcp.models import AxisLabel
+    from assetcache.mcp.tools import tool_find_asset
 
     deps = mcp_tool_deps()
     res = tool_find_asset(deps, _find_req(
@@ -63,7 +63,7 @@ def test_find_asset_structured_labels_plus_label_query_merge(mcp_tool_deps) -> N
 
 def test_find_asset_ambiguous_label_returns_400_with_candidates(mcp_tool_deps) -> None:
     """`label_query` 의 모호 토큰 — `400_invalid_input` + 후보 axis 안내."""
-    from gah.mcp.tools import McpToolError, tool_find_asset
+    from assetcache.mcp.tools import McpToolError, tool_find_asset
 
     deps = mcp_tool_deps()
     # 모호 라벨을 만들기 — 같은 token 을 2 axis 에 인위 등록.
@@ -81,7 +81,7 @@ def test_find_asset_ambiguous_label_returns_400_with_candidates(mcp_tool_deps) -
 
 def test_find_asset_diversity_mmr_propagates_to_searcher(mcp_tool_deps) -> None:
     """`diversity="mmr"` 가 SearchRequest 까지 전파."""
-    from gah.mcp.tools import tool_find_asset
+    from assetcache.mcp.tools import tool_find_asset
 
     deps = mcp_tool_deps()
     res = tool_find_asset(deps, _find_req(
@@ -99,8 +99,8 @@ def test_find_asset_diversity_mmr_propagates_to_searcher(mcp_tool_deps) -> None:
 def test_report_feedback_negative_inserts_signed_weight(
     mcp_tool_deps, populated_store
 ) -> None:
-    from gah.mcp.models import ReportFeedbackRequest
-    from gah.mcp.tools import tool_find_asset, tool_report_feedback
+    from assetcache.mcp.models import ReportFeedbackRequest
+    from assetcache.mcp.tools import tool_find_asset, tool_report_feedback
 
     deps = mcp_tool_deps()
     store, ids = populated_store
@@ -127,7 +127,7 @@ def test_report_feedback_negative_inserts_signed_weight(
 def test_report_feedback_unknown_reason_validation_error() -> None:
     from pydantic import ValidationError
 
-    from gah.mcp.models import ReportFeedbackRequest
+    from assetcache.mcp.models import ReportFeedbackRequest
 
     with pytest.raises(ValidationError):
         ReportFeedbackRequest(query_id=1, asset_id=2, reason="bogus")
@@ -137,8 +137,8 @@ def test_report_feedback_unknown_reason_validation_error() -> None:
 
 
 def test_save_search_persists_and_returns_id(mcp_tool_deps) -> None:
-    from gah.mcp.models import SaveSearchRequest
-    from gah.mcp.tools import tool_save_search
+    from assetcache.mcp.models import SaveSearchRequest
+    from assetcache.mcp.tools import tool_save_search
 
     deps = mcp_tool_deps()
     res = tool_save_search(deps, SaveSearchRequest(
@@ -151,8 +151,8 @@ def test_save_search_persists_and_returns_id(mcp_tool_deps) -> None:
 
 
 def test_save_search_duplicate_name_returns_400(mcp_tool_deps) -> None:
-    from gah.mcp.models import SaveSearchRequest
-    from gah.mcp.tools import McpToolError, tool_save_search
+    from assetcache.mcp.models import SaveSearchRequest
+    from assetcache.mcp.tools import McpToolError, tool_save_search
 
     deps = mcp_tool_deps()
     req = SaveSearchRequest(project_id="proj_dup_mcp", name="dup_name",
@@ -164,8 +164,8 @@ def test_save_search_duplicate_name_returns_400(mcp_tool_deps) -> None:
 
 
 def test_list_saved_searches_sorted_last_used_desc(mcp_tool_deps) -> None:
-    from gah.mcp.models import RunSavedSearchRequest, SaveSearchRequest
-    from gah.mcp.tools import tool_list_saved_searches, tool_run_saved_search, tool_save_search
+    from assetcache.mcp.models import RunSavedSearchRequest, SaveSearchRequest
+    from assetcache.mcp.tools import tool_list_saved_searches, tool_run_saved_search, tool_save_search
 
     deps = mcp_tool_deps()
     pid = "proj_list_mcp"
@@ -181,8 +181,8 @@ def test_list_saved_searches_sorted_last_used_desc(mcp_tool_deps) -> None:
 
 
 def test_delete_saved_search_returns_ok_when_present(mcp_tool_deps) -> None:
-    from gah.mcp.models import DeleteSavedSearchRequest, SaveSearchRequest
-    from gah.mcp.tools import tool_delete_saved_search, tool_save_search
+    from assetcache.mcp.models import DeleteSavedSearchRequest, SaveSearchRequest
+    from assetcache.mcp.tools import tool_delete_saved_search, tool_save_search
 
     deps = mcp_tool_deps()
     pid = "proj_del_mcp"
@@ -194,8 +194,8 @@ def test_delete_saved_search_returns_ok_when_present(mcp_tool_deps) -> None:
 
 
 def test_delete_saved_search_404_when_missing(mcp_tool_deps) -> None:
-    from gah.mcp.models import DeleteSavedSearchRequest
-    from gah.mcp.tools import McpToolError, tool_delete_saved_search
+    from assetcache.mcp.models import DeleteSavedSearchRequest
+    from assetcache.mcp.tools import McpToolError, tool_delete_saved_search
 
     deps = mcp_tool_deps()
     with pytest.raises(McpToolError) as ei:
@@ -207,8 +207,8 @@ def test_delete_saved_search_404_when_missing(mcp_tool_deps) -> None:
 
 def test_run_saved_search_delegates_to_find_asset(mcp_tool_deps) -> None:
     """저장된 query_json 을 로드해 find_asset 와 같은 결과를 반환."""
-    from gah.mcp.models import RunSavedSearchRequest, SaveSearchRequest
-    from gah.mcp.tools import tool_run_saved_search, tool_save_search
+    from assetcache.mcp.models import RunSavedSearchRequest, SaveSearchRequest
+    from assetcache.mcp.tools import tool_run_saved_search, tool_save_search
 
     deps = mcp_tool_deps()
     pid = "proj_run_mcp"
@@ -224,8 +224,8 @@ def test_run_saved_search_delegates_to_find_asset(mcp_tool_deps) -> None:
 
 
 def test_run_saved_search_404_when_name_missing(mcp_tool_deps) -> None:
-    from gah.mcp.models import RunSavedSearchRequest
-    from gah.mcp.tools import McpToolError, tool_run_saved_search
+    from assetcache.mcp.models import RunSavedSearchRequest
+    from assetcache.mcp.tools import McpToolError, tool_run_saved_search
 
     deps = mcp_tool_deps()
     with pytest.raises(McpToolError) as ei:
@@ -240,7 +240,7 @@ def test_run_saved_search_404_when_name_missing(mcp_tool_deps) -> None:
 
 def test_register_all_tools_count_is_20(mcp_tool_deps) -> None:
     """M3 의 12 → M4 의 16 → M5 의 17 → M6 의 18 → M7 의 20 (scan+list 추가)."""
-    from gah.mcp.server import build_server
+    from assetcache.mcp.server import build_server
 
     deps = mcp_tool_deps()
     server = build_server(

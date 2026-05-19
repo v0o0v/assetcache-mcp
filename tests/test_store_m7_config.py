@@ -1,9 +1,9 @@
-"""M7 — Config 신규 5 필드 + backward compat 회귀."""
+﻿"""M7 — Config 신규 5 필드 + backward compat 회귀."""
 from __future__ import annotations
 
 from pathlib import Path
 
-from gah.config import Config, load_config, save_config
+from assetcache.config import Config, load_config, save_config
 
 
 def test_config_defaults_for_new_fields():

@@ -1,4 +1,4 @@
-"""CLI entrypoint for Game Asset Helper.
+﻿"""CLI entrypoint for Game Asset Helper.
 
 Boot order (DESIGN §4.5):
     1. parse args
@@ -27,10 +27,10 @@ if sys.stdout is None:
 if sys.stderr is None:
     sys.stderr = open(os.devnull, "w", encoding="utf-8")  # noqa: SIM115
 
-from gah import __version__
-from gah.config import default_app_paths, load_config
-from gah.logging_setup import setup_logging
-from gah.platform.single_instance import AlreadyRunning, SingleInstance
+from assetcache import __version__
+from assetcache.config import default_app_paths, load_config
+from assetcache.logging_setup import setup_logging
+from assetcache.platform.single_instance import AlreadyRunning, SingleInstance
 
 
 EXIT_OK = 0
@@ -78,14 +78,14 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     level = getattr(logging, str(args.log_level).upper(), logging.INFO)
     setup_logging(paths.log_path, level=level)
-    log = logging.getLogger("gah.main")
+    log = logging.getLogger("assetcache.main")
     log.info("GAH starting (version=%s, data_dir=%s)", __version__, paths.data_dir)
 
     if args.mcp:
         # MCP stdio 진입 — 단독 프로세스. GUI 인스턴스가 떠 있어도 OK
         # (SQLite WAL + busy_timeout=5000 + write_lock 이 동시 write 흡수).
         # single_instance 락은 안 잡음 — stdio 서버는 GUI 와 무관한 별 프로세스.
-        from gah.mcp.server import run_stdio
+        from assetcache.mcp.server import run_stdio
 
         run_stdio()
         return EXIT_OK
@@ -93,7 +93,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     # Default mode: tray
     try:
         with SingleInstance(paths.lock_path):
-            from gah.app import run_tray
+            from assetcache.app import run_tray
 
             rc = run_tray(paths, config)
             log.info("GAH exiting (rc=%s)", rc)

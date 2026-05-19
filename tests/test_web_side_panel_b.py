@@ -1,9 +1,9 @@
-"""M5 Phase 3B — B 탭 사이드 패널 검증 (Task 3.4 / 3.5 / 3.6)."""
+﻿"""M5 Phase 3B — B 탭 사이드 패널 검증 (Task 3.4 / 3.5 / 3.6)."""
 from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 # ── 공통 fixtures ──────────────────────────────────────────────────────
@@ -82,7 +82,7 @@ def test_main_css_has_chip_matched():
     from pathlib import Path
     css = (
         Path(__file__).parent.parent
-        / "src/gah/web/static/css/main.css"
+        / "src/assetcache/web/static/css/main.css"
     ).read_text(encoding="utf-8")
     assert ".chip.matched" in css
 
@@ -92,7 +92,7 @@ def test_main_css_chip_matched_uses_var(client):
     from pathlib import Path
     css = (
         Path(__file__).parent.parent
-        / "src/gah/web/static/css/main.css"
+        / "src/assetcache/web/static/css/main.css"
     ).read_text(encoding="utf-8")
     # --chip-matched 변수 참조
     assert "--chip-matched" in css
@@ -142,7 +142,7 @@ def test_main_css_has_kind_tabs():
     from pathlib import Path
     css = (
         Path(__file__).parent.parent
-        / "src/gah/web/static/css/main.css"
+        / "src/assetcache/web/static/css/main.css"
     ).read_text(encoding="utf-8")
     assert ".kind-tabs" in css
 
@@ -151,27 +151,27 @@ def test_main_css_has_kind_tabs():
 
 
 def test_classify_axis_sound_category():
-    from gah.web.routers.filters import _classify_axis
+    from assetcache.web.routers.filters import _classify_axis
     assert _classify_axis("sound_category") == "sound"
 
 
 def test_classify_axis_sound_tempo():
-    from gah.web.routers.filters import _classify_axis
+    from assetcache.web.routers.filters import _classify_axis
     assert _classify_axis("sound_tempo") == "sound"
 
 
 def test_classify_axis_sheet_grid():
-    from gah.web.routers.filters import _classify_axis
+    from assetcache.web.routers.filters import _classify_axis
     assert _classify_axis("sheet_grid") == "sheet"
 
 
 def test_classify_axis_category_is_sprite():
-    from gah.web.routers.filters import _classify_axis
+    from assetcache.web.routers.filters import _classify_axis
     assert _classify_axis("category") == "sprite"
 
 
 def test_classify_axis_style_is_sprite():
-    from gah.web.routers.filters import _classify_axis
+    from assetcache.web.routers.filters import _classify_axis
     assert _classify_axis("style") == "sprite"
 
 
@@ -299,7 +299,7 @@ def test_main_css_has_chip_class():
     from pathlib import Path
     css = (
         Path(__file__).parent.parent
-        / "src/gah/web/static/css/main.css"
+        / "src/assetcache/web/static/css/main.css"
     ).read_text(encoding="utf-8")
     assert ".chip" in css
 
@@ -309,7 +309,7 @@ def test_main_css_chip_matched_box_shadow_only():
     from pathlib import Path
     css = (
         Path(__file__).parent.parent
-        / "src/gah/web/static/css/main.css"
+        / "src/assetcache/web/static/css/main.css"
     ).read_text(encoding="utf-8")
     idx = css.find(".chip.matched")
     assert idx >= 0, ".chip.matched 스타일 없음"
@@ -327,7 +327,7 @@ def test_main_css_has_axis_group():
     from pathlib import Path
     css = (
         Path(__file__).parent.parent
-        / "src/gah/web/static/css/main.css"
+        / "src/assetcache/web/static/css/main.css"
     ).read_text(encoding="utf-8")
     assert ".axis-group" in css
 
@@ -337,7 +337,7 @@ def test_main_css_has_chip_flow():
     from pathlib import Path
     css = (
         Path(__file__).parent.parent
-        / "src/gah/web/static/css/main.css"
+        / "src/assetcache/web/static/css/main.css"
     ).read_text(encoding="utf-8")
     assert ".chip-flow" in css
 

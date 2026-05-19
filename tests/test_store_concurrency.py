@@ -1,4 +1,4 @@
-"""Store write_lock + busy_timeout + new mark_asset_pending writer.
+﻿"""Store write_lock + busy_timeout + new mark_asset_pending writer.
 
 The single sqlite3 connection is shared across threads (``check_same_thread=False``),
 so callers must serialise themselves.  After M2.1, ``Store.write_lock`` makes
@@ -10,8 +10,8 @@ from __future__ import annotations
 import sqlite3
 import threading
 
-from gah.core.manifest import PackManifest
-from gah.core.store import LabelScore, Store
+from assetcache.core.manifest import PackManifest
+from assetcache.core.store import LabelScore, Store
 
 
 def _seed_pack_and_assets(s: Store, n_assets: int = 50) -> list[int]:

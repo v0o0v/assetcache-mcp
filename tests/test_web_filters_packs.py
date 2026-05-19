@@ -1,9 +1,9 @@
-"""M5 Phase 3B-2 — Task 3.8: /api/filters/packs + 다축 필터 검증."""
+﻿"""M5 Phase 3B-2 — Task 3.8: /api/filters/packs + 다축 필터 검증."""
 from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 # ── 공통 fixtures ──────────────────────────────────────────────────────
@@ -186,7 +186,7 @@ def test_main_css_has_multi_filters():
     from pathlib import Path
     css = (
         Path(__file__).parent.parent
-        / "src/gah/web/static/css/main.css"
+        / "src/assetcache/web/static/css/main.css"
     ).read_text(encoding="utf-8")
     assert ".multi-filters" in css
 
@@ -196,7 +196,7 @@ def test_main_css_has_filter_group():
     from pathlib import Path
     css = (
         Path(__file__).parent.parent
-        / "src/gah/web/static/css/main.css"
+        / "src/assetcache/web/static/css/main.css"
     ).read_text(encoding="utf-8")
     assert ".filter-group" in css
 
@@ -206,6 +206,6 @@ def test_main_css_has_filter_label():
     from pathlib import Path
     css = (
         Path(__file__).parent.parent
-        / "src/gah/web/static/css/main.css"
+        / "src/assetcache/web/static/css/main.css"
     ).read_text(encoding="utf-8")
     assert ".filter-label" in css

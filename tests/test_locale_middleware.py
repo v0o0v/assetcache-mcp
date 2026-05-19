@@ -1,4 +1,4 @@
-"""M8 — LocaleMiddleware 5단계 결정 + ContextVar 격리 테스트."""
+﻿"""M8 — LocaleMiddleware 5단계 결정 + ContextVar 격리 테스트."""
 from __future__ import annotations
 
 from contextvars import copy_context
@@ -8,8 +8,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from gah.config import Config
-from gah.web.locale_middleware import LocaleMiddleware, current_locale
+from assetcache.config import Config
+from assetcache.web.locale_middleware import LocaleMiddleware, current_locale
 
 
 @pytest.fixture

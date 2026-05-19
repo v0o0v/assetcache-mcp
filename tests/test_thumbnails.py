@@ -1,4 +1,4 @@
-"""M4/M6 — `core/thumbnails.py` lazy 256×256 PNG 캐시.
+﻿"""M4/M6 — `core/thumbnails.py` lazy 256×256 PNG 캐시.
 
 sprite + spritesheet 자산 처리 (M6 부터), sound → None.
 캐시 hit 시 즉시 반환 (재생성 없음).
@@ -24,7 +24,7 @@ def _make_sprite_png(target: Path, *, size: int = 512) -> Path:
 
 
 def test_first_call_generates_256_png(tmp_path: Path) -> None:
-    from gah.core.thumbnails import ensure_thumbnail
+    from assetcache.core.thumbnails import ensure_thumbnail
     from PIL import Image
 
     asset_path = _make_sprite_png(tmp_path / "src" / "hero.png", size=512)
@@ -40,7 +40,7 @@ def test_first_call_generates_256_png(tmp_path: Path) -> None:
 
 
 def test_second_call_returns_cached_file_without_regeneration(tmp_path: Path) -> None:
-    from gah.core.thumbnails import ensure_thumbnail
+    from assetcache.core.thumbnails import ensure_thumbnail
 
     asset_path = _make_sprite_png(tmp_path / "src" / "hero.png", size=512)
     cache_dir = tmp_path / "cache" / "thumbnails"
@@ -58,7 +58,7 @@ def test_second_call_returns_cached_file_without_regeneration(tmp_path: Path) ->
 
 
 def test_sound_kind_returns_none(tmp_path: Path) -> None:
-    from gah.core.thumbnails import ensure_thumbnail
+    from assetcache.core.thumbnails import ensure_thumbnail
 
     # 사운드 자산: 썸네일 생성 안 함 → None
     out = ensure_thumbnail(
@@ -70,7 +70,7 @@ def test_sound_kind_returns_none(tmp_path: Path) -> None:
 
 def test_spritesheet_kind_generates_thumbnail(tmp_path: Path) -> None:
     """M6 — spritesheet 자산도 sprite 와 동일하게 256×256 썸네일 생성."""
-    from gah.core.thumbnails import ensure_thumbnail
+    from assetcache.core.thumbnails import ensure_thumbnail
     from PIL import Image
 
     # 가로로 긴 시트 (8 프레임 × 32px = 256×32) 모사
@@ -88,7 +88,7 @@ def test_spritesheet_kind_generates_thumbnail(tmp_path: Path) -> None:
 
 
 def test_cache_directory_auto_created(tmp_path: Path) -> None:
-    from gah.core.thumbnails import ensure_thumbnail
+    from assetcache.core.thumbnails import ensure_thumbnail
 
     asset_path = _make_sprite_png(tmp_path / "src" / "x.png", size=64)
     deep_cache = tmp_path / "deeply" / "nested" / "cache"
@@ -103,7 +103,7 @@ def test_cache_directory_auto_created(tmp_path: Path) -> None:
 def test_invalid_path_returns_none_and_logs(
     tmp_path: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
-    from gah.core.thumbnails import ensure_thumbnail
+    from assetcache.core.thumbnails import ensure_thumbnail
 
     # 존재하지 않는 경로 → Pillow 가 FileNotFoundError, 헬퍼는 swallow + 로그.
     bogus = tmp_path / "does_not_exist.png"

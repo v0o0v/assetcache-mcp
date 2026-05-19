@@ -1,4 +1,4 @@
-"""M5 — HTML 페이지 라우트 (라우터 prefix 없음).
+﻿"""M5 — HTML 페이지 라우트 (라우터 prefix 없음).
 
 `/` 는 `/library` 로 redirect. 각 페이지가 `base.html` 을 extend.
 """
@@ -6,7 +6,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from gah.core.labels import SEED_LABELS
+from assetcache.core.labels import SEED_LABELS
 from .packs import _list_packs_dicts
 
 

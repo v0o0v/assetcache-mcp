@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for GAH tests.
+﻿"""Shared pytest fixtures for GAH tests.
 
 Heavy third-party imports (numpy, Pillow, soundfile, respx, torch) are
 deliberately inside fixture bodies / helper functions rather than at
@@ -106,7 +106,7 @@ def store(tmp_appdata: Path) -> Iterator["object"]:
     Returns the live Store object; callers can use ``store.conn`` if they
     need raw SQL access for assertions.
     """
-    from gah.core.store import Store
+    from assetcache.core.store import Store
 
     s = Store(tmp_appdata / "test.db")
     s.initialize()
@@ -133,7 +133,7 @@ def asset_factory(store, make_pack):
     """
     import time
 
-    from gah.core.manifest import PackManifest
+    from assetcache.core.manifest import PackManifest
 
     counter = {"n": 0}
 
@@ -351,7 +351,7 @@ def fake_clip_backend():
     C.3 step of M2 is implemented; until then this fixture will simply
     fail to collect — that is intentional and matches the RED phase.
     """
-    from gah.core.clip_labeler import FakeBackend  # type: ignore[import-not-found]
+    from assetcache.core.clip_labeler import FakeBackend  # type: ignore[import-not-found]
 
     return FakeBackend(dim=128)
 
@@ -363,7 +363,7 @@ def analyzer_inputs(fixture_dir: Path):
     Same lazy-import note as ``fake_clip_backend`` — only resolvable once
     ``gah.core.analyzer.base`` lands in C.4.
     """
-    from gah.core.analyzer.base import AnalyzerInput  # type: ignore[import-not-found]
+    from assetcache.core.analyzer.base import AnalyzerInput  # type: ignore[import-not-found]
 
     def _build(
         name: str,
@@ -472,7 +472,7 @@ def populated_store(store, fake_embedder):
     import json
     import time
 
-    from gah.core.store import AssetRow  # noqa: F401 -- import sanity-check
+    from assetcache.core.store import AssetRow  # noqa: F401 -- import sanity-check
 
     now = int(time.time())
 
@@ -621,7 +621,7 @@ def consistency_summary_factory():
     Lazy import means the fixture is resolvable only after C.3 lands the
     ``gah.core.usage_tracker`` module — exactly the M2 pattern.
     """
-    from gah.core.usage_tracker import ProjectUsageSummary  # type: ignore[import-not-found]
+    from assetcache.core.usage_tracker import ProjectUsageSummary  # type: ignore[import-not-found]
 
     def _make(
         *,
@@ -654,12 +654,12 @@ def mcp_tool_deps(populated_store, fake_embedder):
 
     Resolves M3 modules lazily so RED-phase collection still works.
     """
-    from gah.config import Config
-    from gah.core.consistency import ConsistencyScorer  # type: ignore[import-not-found]
-    from gah.core.search import HybridSearcher  # type: ignore[import-not-found]
-    from gah.core.usage_tracker import UsageTracker  # type: ignore[import-not-found]
-    from gah.core.labels import LabelRegistry
-    from gah.mcp.tools import ToolDeps  # type: ignore[import-not-found]
+    from assetcache.config import Config
+    from assetcache.core.consistency import ConsistencyScorer  # type: ignore[import-not-found]
+    from assetcache.core.search import HybridSearcher  # type: ignore[import-not-found]
+    from assetcache.core.usage_tracker import UsageTracker  # type: ignore[import-not-found]
+    from assetcache.core.labels import LabelRegistry
+    from assetcache.mcp.tools import ToolDeps  # type: ignore[import-not-found]
 
     store, _ids = populated_store
     config = Config()
@@ -696,14 +696,14 @@ def deps_fixture(tmp_path):
     Phase 1B / 1C 의 FastAPI app factory + WebServer 테스트에서 사용.
     Ollama 네트워크 호출 없이 동작하도록 fake_embedder 패턴 재사용.
     """
-    from gah.config import AppPaths, Config
-    from gah.core.store import Store
-    from gah.core.labels import LabelRegistry
-    from gah.core.consistency import ConsistencyScorer
-    from gah.core.usage_tracker import UsageTracker
-    from gah.core.search import HybridSearcher
-    from gah.web.deps import WebDeps
-    from gah.web.pending import PendingPickQueue
+    from assetcache.config import AppPaths, Config
+    from assetcache.core.store import Store
+    from assetcache.core.labels import LabelRegistry
+    from assetcache.core.consistency import ConsistencyScorer
+    from assetcache.core.usage_tracker import UsageTracker
+    from assetcache.core.search import HybridSearcher
+    from assetcache.web.deps import WebDeps
+    from assetcache.web.pending import PendingPickQueue
 
     paths = AppPaths(
         data_dir=tmp_path,
@@ -711,8 +711,8 @@ def deps_fixture(tmp_path):
         cache_dir=tmp_path / "cache",
         db_path=tmp_path / "metadata.db",
         config_path=tmp_path / "config.toml",
-        log_path=tmp_path / "logs" / "gah.log",
-        lock_path=tmp_path / "gah.lock",
+        log_path=tmp_path / "logs" / "assetcache.log",
+        lock_path=tmp_path / "assetcache.lock",
     )
     paths.ensure_dirs()
 
@@ -763,13 +763,13 @@ def populated_deps(tmp_path, populated_store, fake_embedder):
     populated_store (2 packs × 3 assets, bootstrap 포함) 를 WebDeps 로 래핑.
     6개 test_web_*.py 파일이 동일하게 정의하던 fixture 를 conftest 로 통합.
     """
-    from gah.config import AppPaths, Config
-    from gah.core.labels import LabelRegistry
-    from gah.core.consistency import ConsistencyScorer
-    from gah.core.usage_tracker import UsageTracker
-    from gah.core.search import HybridSearcher
-    from gah.web.deps import WebDeps
-    from gah.web.pending import PendingPickQueue
+    from assetcache.config import AppPaths, Config
+    from assetcache.core.labels import LabelRegistry
+    from assetcache.core.consistency import ConsistencyScorer
+    from assetcache.core.usage_tracker import UsageTracker
+    from assetcache.core.search import HybridSearcher
+    from assetcache.web.deps import WebDeps
+    from assetcache.web.pending import PendingPickQueue
 
     store, _ids = populated_store
     cfg = Config()
@@ -779,8 +779,8 @@ def populated_deps(tmp_path, populated_store, fake_embedder):
         cache_dir=tmp_path / "cache",
         db_path=tmp_path / "metadata.db",
         config_path=tmp_path / "config.toml",
-        log_path=tmp_path / "logs" / "gah.log",
-        lock_path=tmp_path / "gah.lock",
+        log_path=tmp_path / "logs" / "assetcache.log",
+        lock_path=tmp_path / "assetcache.lock",
     )
     paths.ensure_dirs()
     registry = LabelRegistry(store)
@@ -806,7 +806,7 @@ def populated_deps(tmp_path, populated_store, fake_embedder):
 def populated_client(populated_deps):
     """populated_deps 를 기반으로 한 TestClient — HTTP 레벨 통합 테스트용."""
     from fastapi.testclient import TestClient
-    from gah.web.app import build_app
+    from assetcache.web.app import build_app
 
     with TestClient(build_app(populated_deps)) as c:
         yield c

@@ -1,8 +1,8 @@
-"""M8 — Config 신규 필드 (ui_language, ui_theme) 회귀 테스트."""
+﻿"""M8 — Config 신규 필드 (ui_language, ui_theme) 회귀 테스트."""
 from __future__ import annotations
 from pathlib import Path
 
-from gah.config import Config, load_config, save_config
+from assetcache.config import Config, load_config, save_config
 
 
 def test_config_defaults_include_ui_language_and_theme():

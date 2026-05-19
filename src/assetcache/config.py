@@ -74,8 +74,8 @@ def default_app_paths(data_root: str | os.PathLike[str] | None = None) -> AppPat
         cache_dir=root / "cache",
         db_path=root / "metadata.db",
         config_path=root / "config.toml",
-        log_path=root / "logs" / "gah.log",
-        lock_path=root / "gah.lock",
+        log_path=root / "logs" / "assetcache.log",
+        lock_path=root / "assetcache.lock",
     )
 
 

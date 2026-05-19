@@ -1,4 +1,4 @@
-"""M7 — 라이브러리 ↔ Unity 후보 격리 (I-1~I-4) + 프로젝트 간 선호도 격리 (I-5)."""
+﻿"""M7 — 라이브러리 ↔ Unity 후보 격리 (I-1~I-4) + 프로젝트 간 선호도 격리 (I-5)."""
 from __future__ import annotations
 
 import inspect
@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from gah.core.unity_import.scanner import UnityAssetStoreScanner
-from gah.core.unity_import.unitypackage import parse_pathnames
+from assetcache.core.unity_import.scanner import UnityAssetStoreScanner
+from assetcache.core.unity_import.unitypackage import parse_pathnames
 from tests.fixtures.unity.make_unitypackage import make_fixture_unitypackage
 
 
@@ -73,7 +73,7 @@ def test_i2_preview_no_side_effects(cache_with_one_pkg, store):
 
 def test_i3_library_router_does_not_query_unity_imports():
     """I-3: 라이브러리 라우터가 unity_imports 테이블을 조회하지 않는다."""
-    import gah.web.routers.library as lib_router
+    import assetcache.web.routers.library as lib_router
 
     src = inspect.getsource(lib_router)
     assert "unity_imports" not in src, (
@@ -83,7 +83,7 @@ def test_i3_library_router_does_not_query_unity_imports():
 
 def test_i4_unity_router_does_not_call_library_api():
     """I-4: Unity 라우터가 라이브러리 API (list_assets/find_asset 등) 를 호출하지 않는다."""
-    import gah.web.routers.unity_asset_store as unity_router
+    import assetcache.web.routers.unity_asset_store as unity_router
 
     src = inspect.getsource(unity_router)
     # 라이브러리 검색 / 자산 조회 API 호출 금지

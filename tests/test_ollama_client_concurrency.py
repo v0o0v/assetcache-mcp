@@ -1,4 +1,4 @@
-"""Concurrency tests for :class:`OllamaClient` — semaphore-based cap on
+﻿"""Concurrency tests for :class:`OllamaClient` — semaphore-based cap on
 simultaneous backend calls.
 
 Each test spins up *N* threads that hit ``chat()``/``embed()`` while a
@@ -19,7 +19,7 @@ from contextlib import contextmanager
 import httpx
 import pytest
 
-from gah.core.ollama_client import ChatMessage, OllamaClient
+from assetcache.core.ollama_client import ChatMessage, OllamaClient
 
 
 # ── inflight tracker -------------------------------------------------

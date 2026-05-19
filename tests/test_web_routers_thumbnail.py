@@ -1,8 +1,8 @@
-"""M5 — /api/thumbnail/{asset_id} (lazy 256×256 PNG) 검증."""
+﻿"""M5 — /api/thumbnail/{asset_id} (lazy 256×256 PNG) 검증."""
 from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-"""M5 — FastAPI 앱 팩토리.
+﻿"""M5 — FastAPI 앱 팩토리.
 
 `build_app(deps)` 가 FastAPI 인스턴스를 반환. lifespan 에서 PendingPickQueue
 의 cleanup_expired 백그라운드 잡 실행. 라우터 10개 등록 (Phase 2B 에서
@@ -17,7 +17,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-import gah
+import assetcache
 from .deps import WebDeps
 from .i18n import _load_translations, setup_jinja_i18n
 from .locale_middleware import LocaleMiddleware
@@ -92,7 +92,7 @@ def build_app(deps: WebDeps) -> FastAPI:
 
     app = FastAPI(
         title="Game Asset Helper",
-        version=gah.__version__,
+        version=assetcache.__version__,
         lifespan=_lifespan,
     )
     app.state.deps = deps

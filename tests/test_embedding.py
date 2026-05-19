@@ -1,12 +1,12 @@
-"""EmbeddingEncoder tests using a fake OllamaClient."""
+﻿"""EmbeddingEncoder tests using a fake OllamaClient."""
 
 from __future__ import annotations
 
 import numpy as np
 import pytest
 
-from gah.core.embedding import EmbeddingEncoder, decode_vector
-from gah.core.ollama_client import OllamaError
+from assetcache.core.embedding import EmbeddingEncoder, decode_vector
+from assetcache.core.ollama_client import OllamaError
 
 
 class _FakeOllama:

@@ -1,4 +1,4 @@
-"""M7 — Unity Asset Store 캐시 경로 검출 (D3).
+﻿"""M7 — Unity Asset Store 캐시 경로 검출 (D3).
 
 우선순위:
   1. Config.unity_asset_store_cache_path (사용자가 설정에서 입력)
@@ -14,7 +14,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from gah.config import Config
+from assetcache.config import Config
 
 
 def detect_cache_path(config: Config) -> Path | None:

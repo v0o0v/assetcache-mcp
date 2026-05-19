@@ -1,4 +1,4 @@
-"""M6 — SpritesheetAnalyzer (시트 감지 + Gemma + 폴백)."""
+﻿"""M6 — SpritesheetAnalyzer (시트 감지 + Gemma + 폴백)."""
 from __future__ import annotations
 
 import shutil
@@ -8,8 +8,8 @@ from unittest.mock import MagicMock
 import pytest
 from PIL import Image
 
-from gah.core.analyzer.base import AnalyzerInput, AnalyzerResult
-from gah.core.analyzer.spritesheet import SpritesheetAnalyzer
+from assetcache.core.analyzer.base import AnalyzerInput, AnalyzerResult
+from assetcache.core.analyzer.spritesheet import SpritesheetAnalyzer
 
 FIXTURES = Path(__file__).parent / "fixtures" / "sheets"
 
@@ -30,8 +30,8 @@ def _make_single_png(path: Path):
 @pytest.fixture()
 def sprite_mock():
     """SpriteAnalyzer mock — analyze() 가 dummy AnalyzerResult 반환."""
-    from gah.core.store import SpriteMeta
-    from gah.core.searchable import SearchableTexts
+    from assetcache.core.store import SpriteMeta
+    from assetcache.core.searchable import SearchableTexts
     sa = MagicMock()
     sa.analyze.return_value = AnalyzerResult(
         kind="sprite", state="ok", error=None,
@@ -150,7 +150,7 @@ def test_animation_tags_backward_compat(tmp_path, sprite_mock, ollama_mock, regi
 
 
 def test_gemma_failure_partial_state(tmp_path, sprite_mock, registry_mock, embedder_mock):
-    from gah.core.ollama_client import OllamaError
+    from assetcache.core.ollama_client import OllamaError
     bad_ollama = MagicMock()
     bad_ollama.chat.side_effect = OllamaError(stage="chat", path="/api/chat")
     png = tmp_path / "x.png"

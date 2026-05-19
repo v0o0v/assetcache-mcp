@@ -1,4 +1,4 @@
-"""M5 — Ollama 미가용 시 graceful degradation 회귀 테스트.
+﻿"""M5 — Ollama 미가용 시 graceful degradation 회귀 테스트.
 
 - ui_search_results: OllamaError → 200 + 친화 메시지 fragment
 - api_search: OllamaError → 503 + {"code": "503_ollama_unavailable"}
@@ -17,7 +17,7 @@ def test_ui_search_results_returns_error_fragment_when_ollama_down(
 ):
     """HybridSearcher.hybrid 가 OllamaError 를 던지면
     /ui/search-results 는 200 + 검색 실패 친화 메시지를 반환한다."""
-    from gah.core.ollama_client import OllamaError
+    from assetcache.core.ollama_client import OllamaError
 
     def _fake_hybrid(sr):
         raise OllamaError(
@@ -42,7 +42,7 @@ def test_api_search_returns_503_when_ollama_down(
 ):
     """HybridSearcher.hybrid 가 OllamaError 를 던지면
     /api/search 는 503 + code=503_ollama_unavailable JSON 을 반환한다."""
-    from gah.core.ollama_client import OllamaError
+    from assetcache.core.ollama_client import OllamaError
 
     def _fake_hybrid(sr):
         raise OllamaError(stage="embed", path="native")
@@ -65,7 +65,7 @@ def test_empty_query_still_works_when_ollama_down(
 ):
     """빈 query 는 _list_all_assets 폴백 경로라 OllamaError 가 발생해도
     /ui/search-results 가 200 + 정상 결과 그리드를 반환한다."""
-    from gah.core.ollama_client import OllamaError
+    from assetcache.core.ollama_client import OllamaError
 
     def _fake_hybrid(sr):
         raise OllamaError(stage="embed", path="native")

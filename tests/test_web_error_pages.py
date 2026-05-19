@@ -1,4 +1,4 @@
-"""M5 Phase 6A — 에러 페이지 (404/500) 검증.
+﻿"""M5 Phase 6A — 에러 페이지 (404/500) 검증.
 
 전역 exception_handler:
   - /api/* 경로 → JSON {"detail": "..."}
@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 @pytest.fixture

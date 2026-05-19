@@ -1,4 +1,4 @@
-"""Tests for M5 Config fields and UsageSource enum.
+﻿"""Tests for M5 Config fields and UsageSource enum.
 
 M5 features:
 - 7 web GUI configuration fields (host, port, timeouts, browser behavior)
@@ -6,7 +6,7 @@ M5 features:
 """
 
 import pytest
-from gah.config import Config, UsageSource
+from assetcache.config import Config, UsageSource
 
 
 def test_default_web_host():

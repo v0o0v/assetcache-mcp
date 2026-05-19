@@ -1,10 +1,10 @@
-"""M5 Phase 3D-2 — 통일성/페널티 요약 API + 상세 모달 검증 (Task 3.15)."""
+﻿"""M5 Phase 3D-2 — 통일성/페널티 요약 API + 상세 모달 검증 (Task 3.15)."""
 from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 # ── fixtures ──────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-"""System tray icon for Game Asset Helper.
+﻿"""System tray icon for Game Asset Helper.
 
 The icon is drawn at runtime with ``QPainter`` so we don't carry a PNG
 file in the source tree.  Polished artwork lands with M6.
@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Callable, Optional
 
-from gah.platform.autostart import is_autostart_enabled, set_autostart
+from assetcache.platform.autostart import is_autostart_enabled, set_autostart
 
 if TYPE_CHECKING:  # pragma: no cover
     from PySide6.QtGui import QIcon
@@ -122,16 +122,16 @@ def make_tray_icon(
 
         def _run() -> None:
             try:
-                from gah.core.unity_import.cache_paths import detect_cache_path
-                from gah.core.unity_import.scanner import UnityAssetStoreScanner
-                from gah.config import load_config
-                from gah.platform.single_instance import get_app_paths
+                from assetcache.core.unity_import.cache_paths import detect_cache_path
+                from assetcache.core.unity_import.scanner import UnityAssetStoreScanner
+                from assetcache.config import load_config
+                from assetcache.platform.single_instance import get_app_paths
             except ImportError:
                 _log.debug("unity_import 모듈 없음 — 수동 스캔 skip")
                 return
             try:
                 paths, cfg = get_app_paths(), load_config()
-                from gah.core.store import Store
+                from assetcache.core.store import Store
                 store = Store(paths.db_path)
                 store.initialize()
                 cache = detect_cache_path(cfg)

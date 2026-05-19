@@ -1,9 +1,9 @@
-"""M5 — PendingPickQueue (Claude request_user_pick 의 in-process 큐) 검증."""
+﻿"""M5 — PendingPickQueue (Claude request_user_pick 의 in-process 큐) 검증."""
 from __future__ import annotations
 import asyncio
 import pytest
 
-from gah.web.pending import (
+from assetcache.web.pending import (
     PendingPick,
     PendingPickQueue,
     MaxPendingExceeded,

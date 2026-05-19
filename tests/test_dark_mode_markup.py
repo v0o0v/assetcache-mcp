@@ -1,10 +1,10 @@
-"""M8 — 다크모드 토글 헤더 마크업 + theme.js 로드 확인."""
+﻿"""M8 — 다크모드 토글 헤더 마크업 + theme.js 로드 확인."""
 from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 @pytest.fixture

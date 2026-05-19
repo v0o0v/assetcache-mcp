@@ -1,8 +1,8 @@
-"""UsageTracker — 명시 + 암묵 채택 이력 기록.
+﻿"""UsageTracker — 명시 + 암묵 채택 이력 기록.
 
 ProjectUsageSummary 는 ``store.py`` 가 source of truth — usage_tracker 는
-re-export 한다. 그래서 ``from gah.core.usage_tracker import ProjectUsageSummary``
-와 ``from gah.core.store import ProjectUsageSummary`` 둘 다 같은 객체.
+re-export 한다. 그래서 ``from assetcache.core.usage_tracker import ProjectUsageSummary``
+와 ``from assetcache.core.store import ProjectUsageSummary`` 둘 다 같은 객체.
 """
 
 from __future__ import annotations

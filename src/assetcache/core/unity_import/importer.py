@@ -1,4 +1,4 @@
-"""M7 — UnityImporter (D5).
+﻿"""M7 — UnityImporter (D5).
 
 선택된 .unitypackage 를 library/<pack_name>/<원본 Unity 경로>/ 로 물리 복사.
 pack.json 자동 생성. 워처가 새 디렉터리 감지하면 일반 인테이크 흐름 진입.
@@ -11,8 +11,8 @@ import re
 import time
 from pathlib import Path
 
-from gah.core.unity_import.types import UnityImportResult
-from gah.core.unity_import.unitypackage import extract_targets, parse_pathnames
+from assetcache.core.unity_import.types import UnityImportResult
+from assetcache.core.unity_import.unitypackage import extract_targets, parse_pathnames
 
 
 def _normalize_pack_name(asset_name: str) -> str:

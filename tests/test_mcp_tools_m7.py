@@ -1,4 +1,4 @@
-"""M7 — MCP scan_unity_asset_store_cache + list_unity_packages 도구."""
+﻿"""M7 — MCP scan_unity_asset_store_cache + list_unity_packages 도구."""
 from __future__ import annotations
 
 import os
@@ -6,12 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from gah.mcp.tools import McpToolError
+from assetcache.mcp.tools import McpToolError
 
 
 def test_scan_normal(cache_dir_with_pkgs, mcp_tool_deps):
-    from gah.mcp.tools import tool_scan_unity_asset_store_cache
-    from gah.mcp.models import ScanUnityAssetStoreCacheRequest
+    from assetcache.mcp.tools import tool_scan_unity_asset_store_cache
+    from assetcache.mcp.models import ScanUnityAssetStoreCacheRequest
 
     deps = mcp_tool_deps()
     req = ScanUnityAssetStoreCacheRequest(force=False, filter=None)
@@ -22,8 +22,8 @@ def test_scan_normal(cache_dir_with_pkgs, mcp_tool_deps):
 
 
 def test_scan_cache_not_found(mcp_tool_deps, monkeypatch, tmp_path):
-    from gah.mcp.tools import tool_scan_unity_asset_store_cache, McpToolError
-    from gah.mcp.models import ScanUnityAssetStoreCacheRequest
+    from assetcache.mcp.tools import tool_scan_unity_asset_store_cache, McpToolError
+    from assetcache.mcp.models import ScanUnityAssetStoreCacheRequest
 
     # 모든 캐시 경로 후보를 차단: env, config, APPDATA 기본 경로
     monkeypatch.delenv("ASSETSTORE_CACHE_PATH", raising=False)
@@ -38,8 +38,8 @@ def test_scan_cache_not_found(mcp_tool_deps, monkeypatch, tmp_path):
 
 
 def test_scan_with_filter(cache_dir_with_pkgs, mcp_tool_deps):
-    from gah.mcp.tools import tool_scan_unity_asset_store_cache
-    from gah.mcp.models import ScanUnityAssetStoreCacheRequest, ScanFilter
+    from assetcache.mcp.tools import tool_scan_unity_asset_store_cache
+    from assetcache.mcp.models import ScanUnityAssetStoreCacheRequest, ScanFilter
 
     deps = mcp_tool_deps()
     req = ScanUnityAssetStoreCacheRequest(
@@ -50,8 +50,8 @@ def test_scan_with_filter(cache_dir_with_pkgs, mcp_tool_deps):
 
 
 def test_list_returns_all(cache_dir_with_pkgs, mcp_tool_deps):
-    from gah.mcp.tools import tool_scan_unity_asset_store_cache, tool_list_unity_packages
-    from gah.mcp.models import ScanUnityAssetStoreCacheRequest, ListUnityPackagesRequest
+    from assetcache.mcp.tools import tool_scan_unity_asset_store_cache, tool_list_unity_packages
+    from assetcache.mcp.models import ScanUnityAssetStoreCacheRequest, ListUnityPackagesRequest
 
     deps = mcp_tool_deps()
     tool_scan_unity_asset_store_cache(deps, ScanUnityAssetStoreCacheRequest())
@@ -62,8 +62,8 @@ def test_list_returns_all(cache_dir_with_pkgs, mcp_tool_deps):
 
 
 def test_list_filter_state(cache_dir_with_pkgs, mcp_tool_deps):
-    from gah.mcp.tools import tool_scan_unity_asset_store_cache, tool_list_unity_packages
-    from gah.mcp.models import ScanUnityAssetStoreCacheRequest, ListUnityPackagesRequest
+    from assetcache.mcp.tools import tool_scan_unity_asset_store_cache, tool_list_unity_packages
+    from assetcache.mcp.models import ScanUnityAssetStoreCacheRequest, ListUnityPackagesRequest
 
     deps = mcp_tool_deps()
     tool_scan_unity_asset_store_cache(deps, ScanUnityAssetStoreCacheRequest())
@@ -73,8 +73,8 @@ def test_list_filter_state(cache_dir_with_pkgs, mcp_tool_deps):
 
 
 def test_list_publisher_glob(cache_dir_with_pkgs, mcp_tool_deps):
-    from gah.mcp.tools import tool_scan_unity_asset_store_cache, tool_list_unity_packages
-    from gah.mcp.models import ScanUnityAssetStoreCacheRequest, ListUnityPackagesRequest, ScanFilter
+    from assetcache.mcp.tools import tool_scan_unity_asset_store_cache, tool_list_unity_packages
+    from assetcache.mcp.models import ScanUnityAssetStoreCacheRequest, ListUnityPackagesRequest, ScanFilter
 
     deps = mcp_tool_deps()
     tool_scan_unity_asset_store_cache(deps, ScanUnityAssetStoreCacheRequest())
@@ -87,8 +87,8 @@ def test_list_publisher_glob(cache_dir_with_pkgs, mcp_tool_deps):
 
 
 def test_list_include_preview_populates(cache_dir_with_pkgs, mcp_tool_deps):
-    from gah.mcp.tools import tool_scan_unity_asset_store_cache, tool_list_unity_packages
-    from gah.mcp.models import ScanUnityAssetStoreCacheRequest, ListUnityPackagesRequest
+    from assetcache.mcp.tools import tool_scan_unity_asset_store_cache, tool_list_unity_packages
+    from assetcache.mcp.models import ScanUnityAssetStoreCacheRequest, ListUnityPackagesRequest
 
     deps = mcp_tool_deps()
     tool_scan_unity_asset_store_cache(deps, ScanUnityAssetStoreCacheRequest())
@@ -98,8 +98,8 @@ def test_list_include_preview_populates(cache_dir_with_pkgs, mcp_tool_deps):
 
 
 def test_list_offset_limit(cache_dir_with_pkgs, mcp_tool_deps):
-    from gah.mcp.tools import tool_scan_unity_asset_store_cache, tool_list_unity_packages
-    from gah.mcp.models import ScanUnityAssetStoreCacheRequest, ListUnityPackagesRequest
+    from assetcache.mcp.tools import tool_scan_unity_asset_store_cache, tool_list_unity_packages
+    from assetcache.mcp.models import ScanUnityAssetStoreCacheRequest, ListUnityPackagesRequest
 
     deps = mcp_tool_deps()
     tool_scan_unity_asset_store_cache(deps, ScanUnityAssetStoreCacheRequest())
@@ -109,8 +109,8 @@ def test_list_offset_limit(cache_dir_with_pkgs, mcp_tool_deps):
 
 
 def test_list_import_url_format(cache_dir_with_pkgs, mcp_tool_deps):
-    from gah.mcp.tools import tool_scan_unity_asset_store_cache, tool_list_unity_packages
-    from gah.mcp.models import ScanUnityAssetStoreCacheRequest, ListUnityPackagesRequest
+    from assetcache.mcp.tools import tool_scan_unity_asset_store_cache, tool_list_unity_packages
+    from assetcache.mcp.models import ScanUnityAssetStoreCacheRequest, ListUnityPackagesRequest
 
     deps = mcp_tool_deps()
     tool_scan_unity_asset_store_cache(deps, ScanUnityAssetStoreCacheRequest())
@@ -123,8 +123,8 @@ def test_list_import_url_format(cache_dir_with_pkgs, mcp_tool_deps):
 
 
 def test_list_empty_when_no_imports(mcp_tool_deps):
-    from gah.mcp.tools import tool_list_unity_packages
-    from gah.mcp.models import ListUnityPackagesRequest
+    from assetcache.mcp.tools import tool_list_unity_packages
+    from assetcache.mcp.models import ListUnityPackagesRequest
 
     deps = mcp_tool_deps()
     req = ListUnityPackagesRequest()

@@ -1,10 +1,10 @@
-"""M5 — 사운드 인라인 ▶ 재생 (/api/audio/{id} + /ui/audio-player/{id}) 검증."""
+﻿"""M5 — 사운드 인라인 ▶ 재생 (/api/audio/{id} + /ui/audio-player/{id}) 검증."""
 from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 @pytest.fixture
@@ -47,7 +47,7 @@ def test_audio_player_fragment_invalid_id_returns_422(client):
 
 def test_audio_sprite_kind_returns_404(populated_client):
     """sprite asset 에 audio 요청 → 404 (sound kind 아님)."""
-    from gah.core.store import Store
+    from assetcache.core.store import Store
 
     store: Store = populated_client.app.state.deps.store
     sprites = [a for a in store.list_assets(limit=20) if a.kind == "sprite"]
@@ -60,7 +60,7 @@ def test_audio_sprite_kind_returns_404(populated_client):
 
 def test_audio_player_sprite_kind_returns_404(populated_client):
     """sprite asset 에 audio-player fragment 요청 → 404."""
-    from gah.core.store import Store
+    from assetcache.core.store import Store
 
     store: Store = populated_client.app.state.deps.store
     sprites = [a for a in store.list_assets(limit=20) if a.kind == "sprite"]
@@ -79,7 +79,7 @@ def test_audio_player_fragment_html_with_existing_sound(populated_client, tmp_pa
     from pathlib import Path
     import numpy as np
     import soundfile as sf
-    from gah.core.store import Store
+    from assetcache.core.store import Store
 
     store: Store = populated_client.app.state.deps.store
     sounds = [a for a in store.list_assets(limit=20) if a.kind == "sound"]

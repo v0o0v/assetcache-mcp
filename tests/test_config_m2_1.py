@@ -1,4 +1,4 @@
-"""Config tests for M2.1 parallelization fields.
+﻿"""Config tests for M2.1 parallelization fields.
 
 * ``ollama_parallel`` is brand new — caps concurrent Ollama HTTP calls.
 * ``analysis_concurrency`` default changes from 1 → 3 so the analysis
@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from gah.config import Config, load_config, save_config
+from assetcache.config import Config, load_config, save_config
 
 
 def test_default_parallel_is_two() -> None:

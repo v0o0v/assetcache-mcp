@@ -1,4 +1,4 @@
-"""SoundAnalyzer tests — 3-tier fallback chain + 10-axis label persistence."""
+﻿"""SoundAnalyzer tests — 3-tier fallback chain + 10-axis label persistence."""
 
 from __future__ import annotations
 
@@ -7,10 +7,10 @@ import json
 import httpx
 import pytest
 
-from gah.core.analyzer.sound import SoundAnalyzer
-from gah.core.embedding import EmbeddingEncoder
-from gah.core.labels import LabelRegistry
-from gah.core.ollama_client import OllamaClient
+from assetcache.core.analyzer.sound import SoundAnalyzer
+from assetcache.core.embedding import EmbeddingEncoder
+from assetcache.core.labels import LabelRegistry
+from assetcache.core.ollama_client import OllamaClient
 
 
 class _FakeEmbedOllama:

@@ -1,11 +1,11 @@
-"""M7 — .unitypackage 파서 + 추출 회귀."""
+﻿"""M7 — .unitypackage 파서 + 추출 회귀."""
 from __future__ import annotations
 
 from pathlib import Path
 
 import pytest
 
-from gah.core.unity_import.unitypackage import parse_pathnames, extract_targets
+from assetcache.core.unity_import.unitypackage import parse_pathnames, extract_targets
 from tests.fixtures.unity.make_unitypackage import make_fixture_unitypackage
 
 

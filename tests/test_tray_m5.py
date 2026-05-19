@@ -1,4 +1,4 @@
-"""M5 — 트레이 메뉴 + Claude 요청 알림 검증.
+﻿"""M5 — 트레이 메뉴 + Claude 요청 알림 검증.
 
 PySide6 의존성 때문에 offscreen QApplication 필요.
 conftest.py 의 qt_offscreen autouse fixture 가 이미 QT_QPA_PLATFORM=offscreen
@@ -18,7 +18,7 @@ def qapp(monkeypatch):
 
 
 def test_open_main_invokes_callback(qapp):
-    from gah.tray import make_tray_icon
+    from assetcache.tray import make_tray_icon
     called = []
     tray = make_tray_icon(qapp, on_open_main=lambda: called.append(1))
     try:
@@ -32,7 +32,7 @@ def test_open_main_invokes_callback(qapp):
 
 def test_make_tray_icon_no_open_labels_param(qapp):
     """on_open_labels 매개변수가 더 이상 존재하지 않는다 (M5 폐기)."""
-    from gah.tray import make_tray_icon
+    from assetcache.tray import make_tray_icon
     import inspect
     sig = inspect.signature(make_tray_icon)
     assert "on_open_labels" not in sig.parameters
@@ -40,7 +40,7 @@ def test_make_tray_icon_no_open_labels_param(qapp):
 
 def test_menu_has_no_labels_admin_entry(qapp):
     """트레이 메뉴에 '라벨 관리' 항목 없음 (웹 페이지 /labels/admin 으로 대체)."""
-    from gah.tray import make_tray_icon
+    from assetcache.tray import make_tray_icon
     tray = make_tray_icon(qapp, on_open_main=lambda: None)
     try:
         actions = tray.contextMenu().actions()
@@ -51,7 +51,7 @@ def test_menu_has_no_labels_admin_entry(qapp):
 
 
 def test_notify_user_pick_request_with_count(qapp):
-    from gah.tray import make_tray_icon, notify_user_pick_request
+    from assetcache.tray import make_tray_icon, notify_user_pick_request
     tray = make_tray_icon(qapp, on_open_main=lambda: None)
     try:
         notify_user_pick_request(tray, count=3)
@@ -64,7 +64,7 @@ def test_notify_user_pick_request_with_count(qapp):
 
 
 def test_notify_user_pick_request_zero_resets_tooltip(qapp):
-    from gah.tray import make_tray_icon, notify_user_pick_request
+    from assetcache.tray import make_tray_icon, notify_user_pick_request
     tray = make_tray_icon(qapp, on_open_main=lambda: None)
     try:
         notify_user_pick_request(tray, count=3)

@@ -1,10 +1,10 @@
-"""M5 Phase 3D-2 — 저장된 검색 CRUD API 검증 (Task 3.14)."""
+﻿"""M5 Phase 3D-2 — 저장된 검색 CRUD API 검증 (Task 3.14)."""
 from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 # ── fixtures ──────────────────────────────────────────────────────────

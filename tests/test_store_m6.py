@@ -1,12 +1,12 @@
-"""M6 — Store animations_json 컬럼 + get_sprite_meta + update_asset_kind."""
+﻿"""M6 — Store animations_json 컬럼 + get_sprite_meta + update_asset_kind."""
 from __future__ import annotations
 
 import json
 
 import pytest
 
-from gah.core.manifest import PackManifest
-from gah.core.store import SpriteMeta, Store
+from assetcache.core.manifest import PackManifest
+from assetcache.core.store import SpriteMeta, Store
 
 
 @pytest.fixture()

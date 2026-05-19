@@ -1,4 +1,4 @@
-"""CLIP labeler tests.
+﻿"""CLIP labeler tests.
 
 The unit suite uses a deterministic :class:`FakeBackend` so no model
 weights are downloaded.  Two opt-in cases marked ``clip_integration``
@@ -11,9 +11,9 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from gah.core.clip_labeler import ClipLabeler, FakeBackend
-from gah.core.labels import LabelRegistry
-from gah.core.store import Store
+from assetcache.core.clip_labeler import ClipLabeler, FakeBackend
+from assetcache.core.labels import LabelRegistry
+from assetcache.core.store import Store
 
 
 def _seed_labels(store: Store) -> LabelRegistry:
@@ -113,7 +113,7 @@ def test_disabled_clip_returns_empty_dict(
 
 @pytest.mark.clip_integration
 def test_open_clip_backend_init_does_not_download_until_called() -> None:
-    from gah.core.clip_labeler import OpenClipBackend
+    from assetcache.core.clip_labeler import OpenClipBackend
 
     backend = OpenClipBackend(model="ViT-B-32", pretrained="openai")
     # 생성만으로는 가중치 다운로드/로딩 X
@@ -122,7 +122,7 @@ def test_open_clip_backend_init_does_not_download_until_called() -> None:
 
 @pytest.mark.clip_integration
 def test_open_clip_backend_actual_inference(fixture_dir) -> None:
-    from gah.core.clip_labeler import OpenClipBackend
+    from assetcache.core.clip_labeler import OpenClipBackend
 
     backend = OpenClipBackend(model="ViT-B-32", pretrained="openai")
     img_vec = backend.encode_image(fixture_dir / "tiny_pixel_32.png")

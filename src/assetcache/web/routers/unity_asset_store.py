@@ -1,4 +1,4 @@
-"""M7 — /unity-asset-store 페이지 + /api/unity-packages 그룹."""
+﻿"""M7 — /unity-asset-store 페이지 + /api/unity-packages 그룹."""
 
 from __future__ import annotations
 
@@ -7,10 +7,10 @@ import logging
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
-from gah.core.unity_import.cache_paths import detect_cache_path
-from gah.core.unity_import.importer import UnityImporter
-from gah.core.unity_import.scanner import UnityAssetStoreScanner
-from gah.core.unity_import.unitypackage import parse_pathnames
+from assetcache.core.unity_import.cache_paths import detect_cache_path
+from assetcache.core.unity_import.importer import UnityImporter
+from assetcache.core.unity_import.scanner import UnityAssetStoreScanner
+from assetcache.core.unity_import.unitypackage import parse_pathnames
 
 log = logging.getLogger(__name__)
 
@@ -123,7 +123,7 @@ async def api_import(uid: int, request: Request) -> dict[str, Any]:
     importer = UnityImporter(store=deps.store, library_root=library_root)
     result = importer.import_package(uid)
     if result.state == "imported":
-        from gah.core.scanner import reconcile_library
+        from assetcache.core.scanner import reconcile_library
         try:
             report = reconcile_library(deps.store, library_root)
             log.info("Unity 임포트 후 reconcile: %s", report)

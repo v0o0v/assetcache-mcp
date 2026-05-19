@@ -1,4 +1,4 @@
-"""M6 — 와이드/리스트 카드의 🎞 N frames 배지."""
+﻿"""M6 — 와이드/리스트 카드의 🎞 N frames 배지."""
 from __future__ import annotations
 
 import time
@@ -6,9 +6,9 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.core.manifest import PackManifest
-from gah.core.store import SpriteMeta
-from gah.web.app import build_app
+from assetcache.core.manifest import PackManifest
+from assetcache.core.store import SpriteMeta
+from assetcache.web.app import build_app
 
 _NOW = int(time.time())
 

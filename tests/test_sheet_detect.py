@@ -1,4 +1,4 @@
-"""M6 — sheet detection 오케스트레이션 (JSON 사이드카 → grid → None)."""
+﻿"""M6 — sheet detection 오케스트레이션 (JSON 사이드카 → grid → None)."""
 from __future__ import annotations
 
 import shutil
@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from gah.core.sheet.detect import SheetDetection, detect_sheet
+from assetcache.core.sheet.detect import SheetDetection, detect_sheet
 
 FIXTURES = Path(__file__).parent / "fixtures" / "sheets"
 

@@ -1,4 +1,4 @@
-"""M7 — .unitypackage 파서 + 추출 (D4, D5).
+﻿"""M7 — .unitypackage 파서 + 추출 (D4, D5).
 
 .unitypackage = gzip tar. 각 GUID 디렉터리에:
   <guid>/asset      — 실제 자산 바이트
@@ -16,7 +16,7 @@ from __future__ import annotations
 import tarfile
 from pathlib import Path
 
-from gah.core.unity_import.types import ExtractResult, UnityPackageEntry
+from assetcache.core.unity_import.types import ExtractResult, UnityPackageEntry
 
 _IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
 _SOUND_EXTS = {".wav", ".ogg", ".mp3"}

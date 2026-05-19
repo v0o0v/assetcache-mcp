@@ -1,4 +1,4 @@
-"""M8 — /settings 페이지 + POST /api/settings 통합 테스트."""
+﻿"""M8 — /settings 페이지 + POST /api/settings 통합 테스트."""
 from __future__ import annotations
 
 import pytest
@@ -14,7 +14,7 @@ def web_deps(deps_fixture):
 @pytest.fixture
 def web_app(web_deps):
     """web_deps 를 이용해 FastAPI 앱 생성."""
-    from gah.web.app import build_app
+    from assetcache.web.app import build_app
 
     return build_app(web_deps)
 
@@ -46,7 +46,7 @@ def test_settings_post_updates_ui_theme(client, web_deps):
 
 def test_settings_post_updates_autostart(client, web_deps, monkeypatch):
     """Task 11 에서 winreg 동기화 — 본 task 는 Config + 호출만 검증."""
-    from gah.platform import autostart as autostart_mod
+    from assetcache.platform import autostart as autostart_mod
     calls = []
     monkeypatch.setattr(autostart_mod, "set_autostart",
                        lambda enabled, exe_path=None: calls.append(enabled))
@@ -87,7 +87,7 @@ def test_settings_post_auto_clears_cookie(client, web_deps):
 
 def test_settings_post_autostart_failure_returns_500(client, web_deps, monkeypatch):
     """권한 거부 (GPO) 또는 OSError 시 500 + ok=False 응답."""
-    from gah.platform import autostart as autostart_mod
+    from assetcache.platform import autostart as autostart_mod
 
     def _boom(enabled, exe_path=None):
         raise OSError("Permission denied")

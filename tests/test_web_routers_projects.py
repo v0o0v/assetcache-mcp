@@ -1,4 +1,4 @@
-"""M7 Phase 6 — /projects 목록 + /projects/<id> 상세 + 자산별 선호도 패널."""
+﻿"""M7 Phase 6 — /projects 목록 + /projects/<id> 상세 + 자산별 선호도 패널."""
 from __future__ import annotations
 
 import pytest
@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 @pytest.fixture
 def app_for_projects(deps_fixture):
     """deps_fixture 기반 FastAPI 앱 (Phase 6 프로젝트 페이지 전용)."""
-    from gah.web.app import build_app
+    from assetcache.web.app import build_app
 
     return build_app(deps_fixture)
 

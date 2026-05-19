@@ -1,8 +1,8 @@
-"""Config tests for the 9 new M2 fields."""
+﻿"""Config tests for the 9 new M2 fields."""
 
 from __future__ import annotations
 
-from gah.config import Config, load_config, save_config
+from assetcache.config import Config, load_config, save_config
 
 
 def test_new_fields_have_documented_defaults() -> None:

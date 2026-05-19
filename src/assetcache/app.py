@@ -1,4 +1,4 @@
-"""QApplication wiring for tray mode.
+﻿"""QApplication wiring for tray mode.
 
 M5: main_window / library_view / labels_admin Qt UI 의존성 제거.
 트레이 + 분석 큐 + 워처는 그대로, GUI 는 FastAPI 웹서버 + 시스템 브라우저로.
@@ -42,8 +42,8 @@ def _boot_unity_scan(config: Config, store: "Store") -> None:
     경로가 없거나 임포트 실패 시 조용히 종료.
     """
     try:
-        from gah.core.unity_import.cache_paths import detect_cache_path
-        from gah.core.unity_import.scanner import UnityAssetStoreScanner
+        from assetcache.core.unity_import.cache_paths import detect_cache_path
+        from assetcache.core.unity_import.scanner import UnityAssetStoreScanner
     except ImportError:
         log.debug("unity_import 모듈 없음 — 부팅 자동 스캔 skip")
         return

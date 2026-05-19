@@ -1,4 +1,4 @@
-"""M8 — autostart.py winreg get/set 단위 테스트 (mock)."""
+﻿"""M8 — autostart.py winreg get/set 단위 테스트 (mock)."""
 from __future__ import annotations
 
 import sys
@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from gah.platform import autostart
+from assetcache.platform import autostart
 
 
 @pytest.fixture
@@ -42,7 +42,7 @@ def test_is_enabled_returns_false_on_non_windows(monkeypatch):
 def test_set_enabled_writes_value(mock_winreg, tmp_path):
     key = MagicMock()
     mock_winreg.OpenKey.return_value.__enter__.return_value = key
-    exe = tmp_path / "GAH.exe"
+    exe = tmp_path / "assetcache.exe"
     exe.write_bytes(b"\x00")  # exists
     autostart.set_autostart(True, exe_path=exe)
     mock_winreg.SetValueEx.assert_called_once()

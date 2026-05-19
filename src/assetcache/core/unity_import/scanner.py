@@ -1,4 +1,4 @@
-"""M7 — Unity Asset Store 캐시 디렉터리 스캐너 (D2, D17)."""
+﻿"""M7 — Unity Asset Store 캐시 디렉터리 스캐너 (D2, D17)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 from typing import Iterable
 
-from gah.core.unity_import.types import UnityPackagePath, UnityScanResult
+from assetcache.core.unity_import.types import UnityPackagePath, UnityScanResult
 
 
 def _publisher_category(p: Path, cache_root: Path) -> tuple[str | None, str | None]:

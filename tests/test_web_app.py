@@ -1,10 +1,10 @@
-"""M5 — FastAPI app factory + lifespan + 9 router 등록 검증."""
+﻿"""M5 — FastAPI app factory + lifespan + 9 router 등록 검증."""
 from __future__ import annotations
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 @pytest.fixture

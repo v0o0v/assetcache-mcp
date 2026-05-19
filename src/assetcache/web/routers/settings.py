@@ -1,4 +1,4 @@
-"""M8 — /settings 페이지 + POST /api/settings (언어/테마/자동 시작)."""
+﻿"""M8 — /settings 페이지 + POST /api/settings (언어/테마/자동 시작)."""
 from __future__ import annotations
 
 import logging
@@ -8,8 +8,8 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
-from gah.config import save_config
-import gah.platform.autostart as _autostart_mod
+from assetcache.config import save_config
+import assetcache.platform.autostart as _autostart_mod
 
 log = logging.getLogger(__name__)
 

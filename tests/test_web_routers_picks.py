@@ -1,4 +1,4 @@
-"""M5 Phase 4A — /internal/user-pick POST + /api/user-pick/{rid} POST + /cancel 검증.
+﻿"""M5 Phase 4A — /internal/user-pick POST + /api/user-pick/{rid} POST + /cancel 검증.
 
 Task 4.1: /internal/user-pick (MCP loopback long-poll)
 Task 4.2: /api/user-pick/{rid} (사용자 응답) + /cancel (사용자 거부)
@@ -11,8 +11,8 @@ import pytest
 import httpx
 from httpx import ASGITransport
 
-from gah.web.app import build_app
-from gah.web.pending import PendingPickQueue, UserCancelledError
+from assetcache.web.app import build_app
+from assetcache.web.pending import PendingPickQueue, UserCancelledError
 
 
 # ─── helpers ────────────────────────────────────────────────────────────────
@@ -124,7 +124,7 @@ async def test_internal_user_pick_cancelled(deps_fixture):
 @pytest.mark.asyncio
 async def test_internal_user_pick_max_pending(deps_fixture):
     """queue 가 max_pending 에 도달하면 503 + code='503_too_many_pending'."""
-    from gah.web.deps import WebDeps
+    from assetcache.web.deps import WebDeps
 
     # max_pending=2 짜리 큐로 WebDeps 생성
     small_queue = PendingPickQueue(max_pending=2)
@@ -217,7 +217,7 @@ async def test_internal_user_pick_null_project_id(deps_fixture):
 @pytest.mark.asyncio
 async def test_internal_user_pick_broadcasts_sse_event(deps_fixture):
     """POST 시 SSE bus 에 user_pick_request 이벤트가 broadcast 된다."""
-    from gah.web import sse_bus
+    from assetcache.web import sse_bus
 
     # 먼저 subscribe
     loop = asyncio.get_event_loop()
@@ -271,7 +271,7 @@ async def test_internal_user_pick_broadcasts_sse_event(deps_fixture):
 @pytest.mark.asyncio
 async def test_api_user_pick_resolves(deps_fixture):
     """register → POST /api/user-pick/{rid} → future 완성 + SSE user_pick_resolved."""
-    from gah.web import sse_bus
+    from assetcache.web import sse_bus
 
     q = sse_bus.subscribe()
     try:
@@ -349,7 +349,7 @@ async def test_api_user_pick_already_resolved(deps_fixture):
 @pytest.mark.asyncio
 async def test_api_user_pick_cancel(deps_fixture):
     """cancel → future raises UserCancelledError + SSE user_pick_resolved(cancelled=True)."""
-    from gah.web import sse_bus
+    from assetcache.web import sse_bus
 
     q = sse_bus.subscribe()
     try:

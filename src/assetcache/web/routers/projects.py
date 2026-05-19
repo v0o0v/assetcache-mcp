@@ -1,4 +1,4 @@
-"""M7 Phase 5.1 + Phase 6 — 활성 프로젝트 API + SSE broadcast + 채택 endpoint +
+﻿"""M7 Phase 5.1 + Phase 6 — 활성 프로젝트 API + SSE broadcast + 채택 endpoint +
 프로젝트 목록/상세 HTML 페이지 + 선호도 패널 JSON API.
 
 Phase 5 endpoints:
@@ -95,7 +95,7 @@ async def put_active(request: Request):
 
     # config 영속 저장
     try:
-        from gah.config import save_config
+        from assetcache.config import save_config
         save_config(deps.config, deps.paths.config_path)
     except Exception as e:
         log.warning("active_project_id config 저장 실패: %s", e)

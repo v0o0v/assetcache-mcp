@@ -1,4 +1,4 @@
-"""M5 Phase 5B — 라벨 관리 라우터 (Task 5.3).
+﻿"""M5 Phase 5B — 라벨 관리 라우터 (Task 5.3).
 
 두 라우터를 노출한다.
   - ``router``    : prefix="/api"  — JSON CRUD (GET/POST/PATCH/DELETE + export/import)
@@ -14,8 +14,8 @@ from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 
-from gah.core.labels import SEED_LABELS, LabelValidationError
-from gah.web import sse_bus
+from assetcache.core.labels import SEED_LABELS, LabelValidationError
+from assetcache.web import sse_bus
 
 router = APIRouter(prefix="/api", tags=["labels_admin"])
 router_ui = APIRouter(prefix="/ui", tags=["labels_admin-ui"])
