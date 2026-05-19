@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from dataclasses import replace
+
 from assetcache.config import AppPaths, default_app_paths
 from assetcache.core.migration import (
     MigrationCandidate,
@@ -23,7 +25,6 @@ def _make_app_paths(tmp_path: Path, new_app: str = "AssetCacheMCP", old_app: str
     new_root = tmp_path / new_app
     old_root = tmp_path / old_app
     base = default_app_paths(new_root)
-    from dataclasses import replace
     return replace(base, legacy_data_dir=old_root)
 
 
