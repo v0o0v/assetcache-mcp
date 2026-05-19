@@ -1,4 +1,4 @@
-"""M5 Phase 4B — GET /ui/pick-card/{rid} HTML fragment 검증.
+﻿"""M5 Phase 4B — GET /ui/pick-card/{rid} HTML fragment 검증.
 
 Task 4.4:
   - 200 + 후보 card data-asset-id 렌더
@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 @pytest.fixture
@@ -32,7 +32,7 @@ def _register_pick(deps, asset_ids: list[int], reason: str | None = None):
     import threading
     import time
     import uuid
-    from gah.web.pending import PendingPick
+    from assetcache.web.pending import PendingPick
 
     rid = uuid.uuid4().hex
     # TestClient 는 sync — Future 없이 메타만 삽입하면 /ui/pick-card 는 futures 를 쓰지 않는다.

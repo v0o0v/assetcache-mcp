@@ -1,4 +1,4 @@
-"""M7 — /unity-asset-store 라우터 + API 회귀."""
+﻿"""M7 — /unity-asset-store 라우터 + API 회귀."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -24,7 +24,7 @@ def app_with_cache(tmp_path, monkeypatch, deps_fixture):
     make_fixture_unitypackage(pub / "Mega.unitypackage", include_psd=False)
     monkeypatch.setenv("ASSETSTORE_CACHE_PATH", str(cache))
 
-    from gah.web.app import build_app
+    from assetcache.web.app import build_app
 
     app = build_app(deps_fixture)
     return app, cache, deps_fixture.store
@@ -131,7 +131,7 @@ def test_empty_cache_message(deps_fixture, monkeypatch):
     # config 의 unity_asset_store_cache_path 도 비움
     deps_fixture.config.unity_asset_store_cache_path = ""
 
-    from gah.web.app import build_app
+    from assetcache.web.app import build_app
 
     app = build_app(deps_fixture)
     client = TestClient(app)

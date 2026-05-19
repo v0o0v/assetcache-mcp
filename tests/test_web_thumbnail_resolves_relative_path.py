@@ -1,4 +1,4 @@
-"""M5 bugfix 회귀 테스트 — assets.path 상대경로 → 절대경로 해석.
+﻿"""M5 bugfix 회귀 테스트 — assets.path 상대경로 → 절대경로 해석.
 
 실제 버그: assets.path 는 library_root 기준 상대경로(예: kenney_m2_verify/hello.jpg)
 이지만 thumbnail/audio endpoint 가 Path(asset.path) 를 절대경로로 취급해
@@ -14,8 +14,8 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
-from gah.web.deps import resolve_asset_path
+from assetcache.web.app import build_app
+from assetcache.web.deps import resolve_asset_path
 
 
 # ── resolve_asset_path 단위 테스트 ─────────────────────────────────────
@@ -23,8 +23,8 @@ from gah.web.deps import resolve_asset_path
 
 def test_resolve_asset_path_uses_library_root(deps_fixture, tmp_path):
     """library_root 가 설정된 경우 root / rel_path 로 절대경로 생성."""
-    from gah.config import AppPaths, Config
-    from gah.web.deps import WebDeps
+    from assetcache.config import AppPaths, Config
+    from assetcache.web.deps import WebDeps
 
     root = tmp_path / "my_library"
     deps_with_root = WebDeps(
@@ -44,8 +44,8 @@ def test_resolve_asset_path_uses_library_root(deps_fixture, tmp_path):
 
 def test_resolve_asset_path_fallback_to_paths_library_dir(deps_fixture):
     """library_root=None 이면 paths.library_dir 로 폴백."""
-    from gah.config import AppPaths, Config
-    from gah.web.deps import WebDeps
+    from assetcache.config import AppPaths, Config
+    from assetcache.web.deps import WebDeps
 
     deps_no_root = WebDeps(
         store=deps_fixture.store,
@@ -122,7 +122,7 @@ def test_thumbnail_endpoint_resolves_relative_path(deps_fixture, thumb_client):
 def test_thumbnail_endpoint_none_library_root_falls_back(deps_fixture):
     """library_root=None 인 WebDeps 에서도 paths.library_dir 폴백이 동작한다."""
     from PIL import Image
-    from gah.web.deps import WebDeps
+    from assetcache.web.deps import WebDeps
 
     deps_no_root = WebDeps(
         store=deps_fixture.store,

@@ -1,14 +1,14 @@
-"""M6 — tool_suggest_animation_frames."""
+﻿"""M6 — tool_suggest_animation_frames."""
 from __future__ import annotations
 
 import time
 
 import pytest
 
-from gah.core.manifest import PackManifest
-from gah.core.store import SpriteMeta, Store
-from gah.mcp.models import SuggestAnimationFramesRequest
-from gah.mcp.tools import McpToolError, ToolDeps, tool_suggest_animation_frames
+from assetcache.core.manifest import PackManifest
+from assetcache.core.store import SpriteMeta, Store
+from assetcache.mcp.models import SuggestAnimationFramesRequest
+from assetcache.mcp.tools import McpToolError, ToolDeps, tool_suggest_animation_frames
 
 
 @pytest.fixture()

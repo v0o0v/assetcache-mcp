@@ -1,4 +1,4 @@
-"""M3 — Config 신규 필드 (검색 가중치 + 통일성 임계 + MCP 옵션)."""
+﻿"""M3 — Config 신규 필드 (검색 가중치 + 통일성 임계 + MCP 옵션)."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ def test_new_fields_have_documented_defaults():
 
     semantic 0.40 → 0.35, keyword 0.15 → 0.10, feedback 0.10 신규 (합 1.00 유지).
     """
-    from gah.config import Config
+    from assetcache.config import Config
 
     c = Config()
     assert c.weight_semantic == pytest.approx(0.35)
@@ -29,7 +29,7 @@ def test_new_fields_have_documented_defaults():
 
 def test_weight_sum_equals_one_within_tolerance():
     """M4 6채널 합 = 1.0 (M3 5채널 단언을 갱신)."""
-    from gah.config import Config
+    from assetcache.config import Config
 
     c = Config()
     total = (
@@ -40,13 +40,13 @@ def test_weight_sum_equals_one_within_tolerance():
 
 
 def test_implicit_top1_default_is_false():
-    from gah.config import Config
+    from assetcache.config import Config
 
     assert Config().implicit_top1_enabled is False
 
 
 def test_consistency_locked_fields_are_positive_int():
-    from gah.config import Config
+    from assetcache.config import Config
 
     c = Config()
     assert isinstance(c.consistency_locked_max_packs, int)
@@ -56,14 +56,14 @@ def test_consistency_locked_fields_are_positive_int():
 
 
 def test_mcp_search_default_count_in_range_1_to_50():
-    from gah.config import Config
+    from assetcache.config import Config
 
     c = Config()
     assert 1 <= c.mcp_search_default_count <= 50
 
 
 def test_toml_roundtrip_preserves_new_fields(tmp_path):
-    from gah.config import Config, load_config, save_config
+    from assetcache.config import Config, load_config, save_config
 
     c = Config(
         weight_semantic=0.50, weight_keyword=0.10, weight_label_match=0.15,

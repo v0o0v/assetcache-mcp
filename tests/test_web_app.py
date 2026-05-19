@@ -1,10 +1,10 @@
-"""M5 — FastAPI app factory + lifespan + 9 router 등록 검증."""
+﻿"""M5 — FastAPI app factory + lifespan + 9 router 등록 검증."""
 from __future__ import annotations
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def client(app_for_test):
 def test_build_app_returns_fastapi(deps_fixture):
     app = build_app(deps_fixture)
     assert isinstance(app, FastAPI)
-    assert app.title == "Game Asset Helper"
+    assert app.title == "AssetCacheMCP"
 
 
 def test_health_endpoint_200(client):

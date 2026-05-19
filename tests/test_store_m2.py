@@ -1,4 +1,4 @@
-"""M2 schema + CRUD tests for :class:`gah.core.store.Store`.
+﻿"""M2 schema + CRUD tests for :class:`assetcache.core.store.Store`.
 
 M2 extends the M1 schema with sprite_meta, sound_meta, assets_fts
 (FTS5), asset_embeddings, asset_labels, clip_label_cache, and labels.
@@ -13,8 +13,8 @@ import time
 
 import pytest
 
-from gah.core.manifest import PackManifest
-from gah.core.store import (
+from assetcache.core.manifest import PackManifest
+from assetcache.core.store import (
     LabelScore,
     SoundMeta,
     SpriteMeta,

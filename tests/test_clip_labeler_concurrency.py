@@ -1,4 +1,4 @@
-"""Concurrency tests for :class:`ClipLabeler` — a single ``threading.Lock``
+﻿"""Concurrency tests for :class:`ClipLabeler` — a single ``threading.Lock``
 serialises ``score_image()`` and ``warmup()`` because the underlying torch
 model is not thread-safe.
 
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import numpy as np
 
-from gah.core.clip_labeler import ClipLabeler, FakeBackend
+from assetcache.core.clip_labeler import ClipLabeler, FakeBackend
 
 
 class _InstrumentedBackend(FakeBackend):

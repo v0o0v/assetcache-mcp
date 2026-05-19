@@ -1,4 +1,4 @@
-"""M6 — sheet JSON 파서 (Aseprite Array/Hash + TexturePacker)."""
+﻿"""M6 — sheet JSON 파서 (Aseprite Array/Hash + TexturePacker)."""
 from __future__ import annotations
 
 import json
@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from gah.core.sheet.json_parser import parse
-from gah.core.sheet.types import AsepriteAtlas, TexturePackerAtlas
+from assetcache.core.sheet.json_parser import parse
+from assetcache.core.sheet.types import AsepriteAtlas, TexturePackerAtlas
 
 FIXTURES = Path(__file__).parent / "fixtures" / "sheets"
 

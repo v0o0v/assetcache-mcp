@@ -1,10 +1,10 @@
-"""M7 — UnityRemoteOptInClient skeleton 회귀 (D10)."""
+﻿"""M7 — UnityRemoteOptInClient skeleton 회귀 (D10)."""
 from __future__ import annotations
 
 import pytest
 
-from gah.config import Config
-from gah.core.unity_import.remote_optin import UnityRemoteOptInClient
+from assetcache.config import Config
+from assetcache.core.unity_import.remote_optin import UnityRemoteOptInClient
 
 
 def test_is_enabled_default_false():

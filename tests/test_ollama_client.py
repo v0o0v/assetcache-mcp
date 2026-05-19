@@ -1,4 +1,4 @@
-"""OllamaClient HTTP tests using ``respx`` for both OpenAI-compatible
+﻿"""OllamaClient HTTP tests using ``respx`` for both OpenAI-compatible
 and Ollama-native paths.
 """
 
@@ -9,7 +9,7 @@ import json
 import httpx
 import pytest
 
-from gah.core.ollama_client import (
+from assetcache.core.ollama_client import (
     ChatMessage,
     OllamaClient,
     OllamaError,
@@ -215,7 +215,7 @@ class TestColdStartRetry:
     def test_cold_start_timeout_retries_then_succeeds(self, mock_ollama, mocker) -> None:
         """OpenAI path 첫 호출이 ReadTimeout → backoff → 두 번째 OpenAI 호출 성공."""
         # time.sleep 을 mock 으로 cap 해서 테스트가 실제로 대기하지 않음
-        mocker.patch("gah.core.ollama_client.time.sleep", return_value=None)
+        mocker.patch("assetcache.core.ollama_client.time.sleep", return_value=None)
         responses = [
             httpx.ReadTimeout("model loading"),  # cold-start
             httpx.Response(200, json=_openai_response({"ok": True})),
@@ -236,7 +236,7 @@ class TestColdStartRetry:
 
     def test_cold_start_max_retries_exhausted_raises(self, mock_ollama, mocker) -> None:
         """ReadTimeout 이 반복되면 max_retries 후 OllamaError."""
-        mocker.patch("gah.core.ollama_client.time.sleep", return_value=None)
+        mocker.patch("assetcache.core.ollama_client.time.sleep", return_value=None)
         mock_ollama.post(
             "http://127.0.0.1:11434/v1/chat/completions"
         ).mock(side_effect=httpx.ReadTimeout("never loads"))
@@ -254,7 +254,7 @@ class TestColdStartRetry:
     ) -> None:
         """4xx 응답은 cold-start 아님 — native 폴백만 시도 후 즉시 raise (retry X)."""
         sleep_mock = mocker.patch(
-            "gah.core.ollama_client.time.sleep", return_value=None,
+            "assetcache.core.ollama_client.time.sleep", return_value=None,
         )
         oai = mock_ollama.post(
             "http://127.0.0.1:11434/v1/chat/completions"
@@ -276,7 +276,7 @@ class TestColdStartRetry:
     ) -> None:
         """OpenAI ConnectError → native 가 같은 attempt 안에서 성공하면 retry 없음."""
         sleep_mock = mocker.patch(
-            "gah.core.ollama_client.time.sleep", return_value=None,
+            "assetcache.core.ollama_client.time.sleep", return_value=None,
         )
         oai = mock_ollama.post(
             "http://127.0.0.1:11434/v1/chat/completions"

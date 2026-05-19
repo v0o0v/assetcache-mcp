@@ -1,4 +1,4 @@
-"""M5 Phase 6+ — Playwright e2e 테스트 인프라.
+﻿"""M5 Phase 6+ — Playwright e2e 테스트 인프라.
 
 각 e2e 테스트가 실제 FastAPI + uvicorn + 헤드리스 Chromium 으로 동작.
 mcp_integration 처럼 opt-in 마크 (-m e2e) 라 기본 회귀에서 제외.
@@ -75,16 +75,16 @@ class _FakeEmbedder:
 @pytest.fixture(scope="session")
 def e2e_web_server(e2e_library_root, tmp_path_factory):
     """uvicorn WebServer 를 백그라운드 스레드로 부팅. 세션 끝나면 stop."""
-    from gah.config import AppPaths, Config
-    from gah.core.consistency import ConsistencyScorer
-    from gah.core.labels import LabelRegistry
-    from gah.core.scanner import reconcile_library
-    from gah.core.search import HybridSearcher
-    from gah.core.store import Store
-    from gah.core.usage_tracker import UsageTracker
-    from gah.web.deps import WebDeps
-    from gah.web.pending import PendingPickQueue
-    from gah.web.server import WebServer
+    from assetcache.config import AppPaths, Config
+    from assetcache.core.consistency import ConsistencyScorer
+    from assetcache.core.labels import LabelRegistry
+    from assetcache.core.scanner import reconcile_library
+    from assetcache.core.search import HybridSearcher
+    from assetcache.core.store import Store
+    from assetcache.core.usage_tracker import UsageTracker
+    from assetcache.web.deps import WebDeps
+    from assetcache.web.pending import PendingPickQueue
+    from assetcache.web.server import WebServer
 
     tmp_dir = tmp_path_factory.mktemp("e2e_appdata")
     paths = AppPaths(
@@ -93,8 +93,8 @@ def e2e_web_server(e2e_library_root, tmp_path_factory):
         cache_dir=tmp_dir / "cache",
         db_path=tmp_dir / "metadata.db",
         config_path=tmp_dir / "config.toml",
-        log_path=tmp_dir / "logs" / "gah.log",
-        lock_path=tmp_dir / "gah.lock",
+        log_path=tmp_dir / "logs" / "assetcache.log",
+        lock_path=tmp_dir / "assetcache.lock",
     )
     paths.ensure_dirs()
 

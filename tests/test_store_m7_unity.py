@@ -1,4 +1,4 @@
-"""M7 — Store unity_imports CRUD + state 머신 invariant."""
+﻿"""M7 — Store unity_imports CRUD + state 머신 invariant."""
 from __future__ import annotations
 
 import time
@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from gah.core.unity_import.types import UnityPackagePath
+from assetcache.core.unity_import.types import UnityPackagePath
 
 
 @pytest.fixture
@@ -45,7 +45,7 @@ def test_upsert_unity_import(store, unity_path):
 
 def test_update_unity_state_to_imported(store, unity_path):
     import time
-    from gah.core.manifest import PackManifest
+    from assetcache.core.manifest import PackManifest
 
     # 실제 pack row 삽입 (FK 제약 충족)
     real_pack_id = store.upsert_pack(

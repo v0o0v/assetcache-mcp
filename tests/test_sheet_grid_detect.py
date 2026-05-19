@@ -1,10 +1,10 @@
-"""M6 — Pillow alpha 채널 격자 추정."""
+﻿"""M6 — Pillow alpha 채널 격자 추정."""
 from __future__ import annotations
 
 from PIL import Image
 
-from gah.core.sheet.grid_detect import grid_detect
-from gah.core.sheet.types import GridLayout
+from assetcache.core.sheet.grid_detect import grid_detect
+from assetcache.core.sheet.types import GridLayout
 
 
 def _make_grid(rows: int, cols: int, frame_w: int, frame_h: int,

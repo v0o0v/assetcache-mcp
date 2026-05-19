@@ -1,4 +1,4 @@
-"""M5 Phase 5B — 라벨 관리 라우터 검증 (Task 5.3).
+﻿"""M5 Phase 5B — 라벨 관리 라우터 검증 (Task 5.3).
 
 populated_client fixture 를 사용한다:
   - LabelRegistry.bootstrap() 으로 24 axis × ~316 seed 라벨 채워진 상태.
@@ -196,8 +196,8 @@ def test_delete_label_unknown_id_returns_404(populated_client):
 
 def test_post_label_broadcasts_signature_changed(populated_deps):
     """POST /api/labels → SSE bus 에 labels_signature_changed 이벤트 broadcast."""
-    from gah.web import sse_bus
-    from gah.web.app import build_app
+    from assetcache.web import sse_bus
+    from assetcache.web.app import build_app
     from fastapi.testclient import TestClient
 
     # SSE subscriber 등록 (synchronous 큐 모의)

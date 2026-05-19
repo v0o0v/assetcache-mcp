@@ -1,4 +1,4 @@
-"""M7 Phase 5.1 — 활성 프로젝트 API 회귀 테스트.
+﻿"""M7 Phase 5.1 — 활성 프로젝트 API 회귀 테스트.
 
 5 케이스 (라이브러리 카드 채택 흐름 제거 후):
   1. GET /api/active-project → active: None (기본 상태)
@@ -19,7 +19,7 @@ from fastapi.testclient import TestClient
 @pytest.fixture
 def app_for_projects(deps_fixture):
     """deps_fixture 기반 build_app."""
-    from gah.web.app import build_app
+    from assetcache.web.app import build_app
     return build_app(deps_fixture)
 
 

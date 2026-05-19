@@ -1,4 +1,4 @@
-"""Seed vocabulary + LabelRegistry tests.
+﻿"""Seed vocabulary + LabelRegistry tests.
 
 The registry layers an in-memory cache on top of the ``labels`` SQLite
 table and is the single source of truth for label vocabulary used by
@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import pytest
 
-from gah.core.labels import SEED_LABELS, LabelRegistry, LabelValidationError
-from gah.core.store import Store
+from assetcache.core.labels import SEED_LABELS, LabelRegistry, LabelValidationError
+from assetcache.core.store import Store
 
 
 EXPECTED_AXES = {

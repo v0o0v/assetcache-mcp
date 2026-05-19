@@ -1,4 +1,4 @@
-"""M7 — UnityImporter 추출 + pack.json + state 머신 회귀."""
+﻿"""M7 — UnityImporter 추출 + pack.json + state 머신 회귀."""
 from __future__ import annotations
 
 import json
@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from gah.core.unity_import.importer import UnityImporter
-from gah.core.unity_import.scanner import UnityAssetStoreScanner
+from assetcache.core.unity_import.importer import UnityImporter
+from assetcache.core.unity_import.scanner import UnityAssetStoreScanner
 from tests.fixtures.unity.make_unitypackage import make_fixture_unitypackage
 
 
@@ -68,7 +68,7 @@ def test_state_failed_on_error(cache_with_pkg, library_dir, store, monkeypatch):
     importer = UnityImporter(store=store, library_root=library_dir)
     def raise_oops(*a, **kw):
         raise OSError("disk full")
-    monkeypatch.setattr("gah.core.unity_import.importer.extract_targets", raise_oops)
+    monkeypatch.setattr("assetcache.core.unity_import.importer.extract_targets", raise_oops)
     result = importer.import_package(uid)
     assert result.state == "failed"
     row = store.get_unity_import_by_id(uid)

@@ -1,4 +1,4 @@
-"""M4 — 페널티 학습 (HybridSearcher 의 6번째 채널 `feedback`).
+﻿"""M4 — 페널티 학습 (HybridSearcher 의 6번째 채널 `feedback`).
 
 feedback_records 의 signed weight 가 다음 검색에 반영:
 - asset-level: 같은 project + asset 의 윈도우 내 행 weight 합
@@ -16,10 +16,10 @@ import pytest
 
 
 def _build_searcher(populated_store, fake_embedder, *, config_overrides=None):
-    from gah.config import Config
-    from gah.core.consistency import ConsistencyScorer
-    from gah.core.labels import LabelRegistry
-    from gah.core.search import HybridSearcher
+    from assetcache.config import Config
+    from assetcache.core.consistency import ConsistencyScorer
+    from assetcache.core.labels import LabelRegistry
+    from assetcache.core.search import HybridSearcher
 
     store, _ = populated_store
     config = Config(**(config_overrides or {}))
@@ -49,7 +49,7 @@ def _row_index(results, asset_id: int) -> int | None:
 def test_negative_feedback_lowers_next_search_feedback_channel(
     populated_store, fake_embedder
 ) -> None:
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, store = _build_searcher(populated_store, fake_embedder)
     _, ids = populated_store
@@ -69,7 +69,7 @@ def test_negative_feedback_lowers_next_search_feedback_channel(
 def test_positive_feedback_raises_next_search_feedback_channel(
     populated_store, fake_embedder
 ) -> None:
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, store = _build_searcher(populated_store, fake_embedder)
     _, ids = populated_store
@@ -85,8 +85,8 @@ def test_positive_and_negative_for_same_asset_sums(
     populated_store, fake_embedder
 ) -> None:
     """같은 자산에 +0.3 와 -0.5 → 합 -0.2 가중 (Config.weight_feedback 적용)."""
-    from gah.config import Config
-    from gah.core.search import SearchRequest
+    from assetcache.config import Config
+    from assetcache.core.search import SearchRequest
 
     searcher, store = _build_searcher(populated_store, fake_embedder)
     _, ids = populated_store
@@ -108,7 +108,7 @@ def test_feedback_outside_window_is_ignored(
     populated_store, fake_embedder
 ) -> None:
     """`feedback_window_seconds` 밖 (100일 전) 기록은 무시."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, store = _build_searcher(populated_store, fake_embedder)
     _, ids = populated_store
@@ -130,7 +130,7 @@ def test_feedback_outside_window_is_ignored(
 def test_feedback_in_other_project_does_not_affect_this_project(
     populated_store, fake_embedder
 ) -> None:
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, store = _build_searcher(populated_store, fake_embedder)
     _, ids = populated_store
@@ -151,7 +151,7 @@ def test_pack_level_penalty_when_three_negatives_in_same_pack(
     populated_store, fake_embedder
 ) -> None:
     """같은 팩에 negative 3 자산 누적 → pack 전체에 추가 -0.1."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, store = _build_searcher(populated_store, fake_embedder)
     _, ids = populated_store
@@ -176,8 +176,8 @@ def test_pack_level_penalty_not_applied_below_threshold(
     populated_store, fake_embedder
 ) -> None:
     """negative 2건 (임계 3 미만) → pack-wide penalty 없음."""
-    from gah.config import Config
-    from gah.core.search import SearchRequest
+    from assetcache.config import Config
+    from assetcache.core.search import SearchRequest
 
     config = Config()
     searcher, store = _build_searcher(populated_store, fake_embedder)
@@ -202,7 +202,7 @@ def test_weight_feedback_zero_means_no_effect(
     populated_store, fake_embedder
 ) -> None:
     """Config.weight_feedback=0 시 negative 기록이 있어도 final score 영향 없음."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, store = _build_searcher(
         populated_store, fake_embedder,
@@ -225,7 +225,7 @@ def test_unknown_reason_rejected_by_mcp_model() -> None:
     """`ReportFeedbackRequest.reason` Literal — 알 수 없는 값 → ValidationError."""
     from pydantic import ValidationError
 
-    from gah.mcp.models import ReportFeedbackRequest
+    from assetcache.mcp.models import ReportFeedbackRequest
 
     with pytest.raises(ValidationError):
         ReportFeedbackRequest(query_id=1, asset_id=2, reason="bogus_reason")

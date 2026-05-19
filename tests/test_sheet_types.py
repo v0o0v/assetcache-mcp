@@ -1,11 +1,11 @@
-"""M6 — sheet 데이터클래스 동등성·해시·repr 회귀."""
+﻿"""M6 — sheet 데이터클래스 동등성·해시·repr 회귀."""
 from __future__ import annotations
 
 import dataclasses
 
 import pytest
 
-from gah.core.sheet.types import (
+from assetcache.core.sheet.types import (
     AnimationSpec,
     AsepriteAtlas,
     FrameSpec,

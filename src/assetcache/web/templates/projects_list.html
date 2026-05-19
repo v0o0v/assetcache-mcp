@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{# M7 Phase 6A — 프로젝트 목록 페이지. #}
+
+{% block title %}{{ _("Projects") }} — {{ _("AssetCacheMCP") }}{% endblock %}
+
+{% block content %}
+<section class="projects-page" x-data="projectsPage()">
+  <header class="projects-header">
+    <h1>{{ _("Projects") }}</h1>
+    <button @click="showModal = true" type="button" class="btn-primary">{{ _("➕ New project") }}</button>
+  </header>
+
+  {% if rows %}
+  <table class="projects-table">
+    <thead>
+      <tr>
+        <th>{{ _("Display name") }}</th>
+        <th>{{ _("Path") }}</th>
+        <th>{{ _("First seen") }}</th>
+        <th>{{ _("Last activity") }}</th>
+        <th>{{ _("Adopted assets") }}</th>
+        <th>{{ _("Primary pack") }}</th>
+        <th>{{ _("Pin/block") }}</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+        <tr {% if r.id == active_project_id %}class="row-active" data-active="{{ r.id }}"{% endif %}>
+          <td><strong>{{ r.display_name or r.external_id }}</strong></td>
+          <td><code>{{ r.external_id }}</code></td>
+          <td>{{ r.first_seen | datetime }}</td>
+          <td>{{ r.last_seen | datetime }}</td>
+          <td>{{ r.asset_count }}</td>
+          <td>{{ r.top_pack_name or "—" }}</td>
+          <td>
+            {% if r.pinned_pack_id %}📌 {{ r.pinned_pack_name or r.pinned_pack_id }}{% endif %}
+            {% if r.blocked_count %}🚫 {{ r.blocked_count }}{% endif %}
+          </td>
+          <td><a href="/projects/{{ r.id }}" class="link-detail">{{ _("Details") }}</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="projects-empty">{{ _("No projects registered. Create a new project or adopt assets from a Unity project to register one automatically.") }}</p>
+  {% endif %}
+
+  {% include "_modal_new_project.html" %}
+</section>
+<script>
+function projectsPage() {
+  return {
+    showModal: false,
+    newExternal: "",
+    newDisplay: "",
+    async createNew() {
+      await fetch("/api/projects", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({external_id: this.newExternal, display_name: this.newDisplay}),
+      });
+      location.reload();
+    },
+  };
+}
+</script>
+{% endblock %}

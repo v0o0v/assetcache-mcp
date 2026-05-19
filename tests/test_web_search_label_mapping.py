@@ -1,9 +1,9 @@
-"""M5 Phase 3B-2 — Task 3.9: /api/search 라벨/매칭모드/pack_ids 통합 검증."""
+﻿"""M5 Phase 3B-2 — Task 3.9: /api/search 라벨/매칭모드/pack_ids 통합 검증."""
 from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 # ── 공통 fixtures ──────────────────────────────────────────────────────

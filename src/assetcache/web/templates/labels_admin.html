@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{# M5 Phase 5B — 라벨 관리 페이지.
+   axes: list[str], labels_by_axis: dict[str, list[LabelRow]], signature: str
+#}
+
+{% block title %}{{ _("Label management") }} — {{ _("AssetCacheMCP") }}{% endblock %}
+
+{% block content %}
+<div class="labels-admin-page">
+  <div class="labels-admin-header">
+    <h2 class="labels-admin-title">{{ _("Label management") }}</h2>
+    <p class="labels-admin-subtitle">
+      {{ _("You can add, edit, and disable label vocabulary per axis (24 axes).") }}
+      <small class="signature-hint">{{ _("Signature:") }} <code>{{ signature }}</code></small>
+    </p>
+  </div>
+
+  <div id="labels-admin-container">
+    {% include "_labels_admin_grid.html" %}
+  </div>
+</div>
+{% endblock %}

@@ -1,10 +1,10 @@
-"""M5 Phase 3D-1 — D 탭 프리셋 3버튼 + 슬라이더 6개 검증 (Task 3.12 / 3.13)."""
+﻿"""M5 Phase 3D-1 — D 탭 프리셋 3버튼 + 슬라이더 6개 검증 (Task 3.12 / 3.13)."""
 from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 # ── 공통 fixtures ──────────────────────────────────────────────────────
@@ -102,7 +102,7 @@ def test_api_preset_unknown_returns_404(client):
 
 def test_api_preset_updates_config(deps_fixture):
     """POST /api/preset/consistency 후 deps.config.weight_consistency 가 0.40 으로 갱신된다."""
-    from gah.web.app import build_app
+    from assetcache.web.app import build_app
 
     app = build_app(deps_fixture)
     with TestClient(app) as client:
@@ -225,7 +225,7 @@ def test_api_weights_allows_sum_not_one(client):
 
 def test_api_weights_updates_config(deps_fixture):
     """POST /api/weights 후 deps.config.weight_consistency 가 갱신된다."""
-    from gah.web.app import build_app
+    from assetcache.web.app import build_app
 
     app = build_app(deps_fixture)
     with TestClient(app) as client:

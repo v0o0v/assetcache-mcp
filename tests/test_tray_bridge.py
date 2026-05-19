@@ -1,4 +1,4 @@
-"""M5 Phase 4D — TrayBridge QObject 시그널 브리지 테스트.
+﻿"""M5 Phase 4D — TrayBridge QObject 시그널 브리지 테스트.
 
 Task 4.10: _TrayBridge QObject (Signal) + _notify_tray_pick_count 헬퍼.
 
@@ -22,13 +22,13 @@ import pytest
 
 
 def test_tray_bridge_import():
-    """TrayBridge 가 gah.web.tray_bridge 에서 import 가능해야 한다."""
-    from gah.web.tray_bridge import TrayBridge  # noqa: F401
+    """TrayBridge 가 assetcache.web.tray_bridge 에서 import 가능해야 한다."""
+    from assetcache.web.tray_bridge import TrayBridge  # noqa: F401
 
 
 def test_tray_bridge_has_signal(qapp):
     """TrayBridge 인스턴스가 pickCountChanged Signal 을 갖고 있어야 한다."""
-    from gah.web.tray_bridge import TrayBridge
+    from assetcache.web.tray_bridge import TrayBridge
 
     bridge = TrayBridge()
     assert hasattr(bridge, "pickCountChanged")
@@ -38,7 +38,7 @@ def test_tray_bridge_signal_connects(qapp):
     """pickCountChanged.connect(slot) 이 에러 없이 연결되어야 한다."""
     from PySide6.QtWidgets import QApplication
 
-    from gah.web.tray_bridge import TrayBridge
+    from assetcache.web.tray_bridge import TrayBridge
 
     received: list[int] = []
     bridge = TrayBridge()
@@ -59,7 +59,7 @@ def test_tray_bridge_emit_from_thread(qapp):
     """
     from PySide6.QtWidgets import QApplication
 
-    from gah.web.tray_bridge import TrayBridge
+    from assetcache.web.tray_bridge import TrayBridge
 
     received: list[int] = []
     bridge = TrayBridge()
@@ -83,7 +83,7 @@ def test_tray_bridge_emit_from_thread(qapp):
 
 def test_notify_tray_pick_count_no_op_when_bridge_none(deps_fixture):
     """tray_bridge=None 이면 _notify_tray_pick_count 가 에러 없이 no-op."""
-    from gah.web.routers.picks import _notify_tray_pick_count
+    from assetcache.web.routers.picks import _notify_tray_pick_count
 
     # deps_fixture.tray_bridge 는 기본 None — 에러 없이 통과해야 한다
     _notify_tray_pick_count(deps_fixture)  # must not raise
@@ -91,8 +91,8 @@ def test_notify_tray_pick_count_no_op_when_bridge_none(deps_fixture):
 
 def test_notify_tray_pick_count_emits_count(deps_fixture):
     """tray_bridge 가 mock 이면 pickCountChanged.emit(N) 이 호출되어야 한다."""
-    from gah.web.deps import WebDeps
-    from gah.web.routers.picks import _notify_tray_pick_count
+    from assetcache.web.deps import WebDeps
+    from assetcache.web.routers.picks import _notify_tray_pick_count
 
     mock_bridge = MagicMock()
     deps = WebDeps(
@@ -114,8 +114,8 @@ def test_notify_tray_pick_count_emits_count(deps_fixture):
 
 def test_notify_tray_pick_count_reflects_queue_size(deps_fixture):
     """pending 큐에 항목이 있을 때 emit(N) 이 올바른 N 을 전달해야 한다."""
-    from gah.web.deps import WebDeps
-    from gah.web.routers.picks import _notify_tray_pick_count
+    from assetcache.web.deps import WebDeps
+    from assetcache.web.routers.picks import _notify_tray_pick_count
 
     mock_bridge = MagicMock()
     deps = WebDeps(
@@ -154,8 +154,8 @@ async def test_internal_user_pick_calls_notify(deps_fixture):
     import httpx
     from httpx import ASGITransport
 
-    from gah.web.app import build_app
-    from gah.web.deps import WebDeps
+    from assetcache.web.app import build_app
+    from assetcache.web.deps import WebDeps
 
     mock_bridge = MagicMock()
     patched_deps = WebDeps(
@@ -201,8 +201,8 @@ async def test_api_user_pick_resolve_calls_notify(deps_fixture):
     import httpx
     from httpx import ASGITransport
 
-    from gah.web.app import build_app
-    from gah.web.deps import WebDeps
+    from assetcache.web.app import build_app
+    from assetcache.web.deps import WebDeps
 
     mock_bridge = MagicMock()
     patched_deps = WebDeps(
@@ -237,8 +237,8 @@ async def test_api_user_pick_cancel_calls_notify(deps_fixture):
     import httpx
     from httpx import ASGITransport
 
-    from gah.web.app import build_app
-    from gah.web.deps import WebDeps
+    from assetcache.web.app import build_app
+    from assetcache.web.deps import WebDeps
 
     mock_bridge = MagicMock()
     patched_deps = WebDeps(
@@ -276,7 +276,7 @@ def test_tray_bridge_integration_with_mock_tray(qapp):
     """
     from PySide6.QtWidgets import QApplication
 
-    from gah.web.tray_bridge import TrayBridge
+    from assetcache.web.tray_bridge import TrayBridge
 
     mock_tray = MagicMock()
     notify_calls: list[int] = []

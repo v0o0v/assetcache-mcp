@@ -26,7 +26,7 @@ def _spawn(tmp_path: Path) -> subprocess.Popen:
     # Force UTF-8 on both sides so multi-byte JSON payloads survive Windows cp949.
     env["PYTHONIOENCODING"] = "utf-8"
     return subprocess.Popen(
-        [sys.executable, "-m", "gah", "--mcp", "--data-dir", str(tmp_path)],
+        [sys.executable, "-m", "assetcache", "--mcp", "--data-dir", str(tmp_path)],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         env=env, text=True, encoding="utf-8", errors="replace", bufsize=1,
     )

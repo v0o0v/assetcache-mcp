@@ -1,4 +1,4 @@
-"""M3 — HybridSearcher (FTS + 코사인 + 라벨 매칭 + 통일성 가중합)."""
+﻿"""M3 — HybridSearcher (FTS + 코사인 + 라벨 매칭 + 통일성 가중합)."""
 
 from __future__ import annotations
 
@@ -7,11 +7,11 @@ import pytest
 
 @pytest.fixture
 def searcher(populated_store, fake_embedder):
-    from gah.config import Config
-    from gah.core.consistency import ConsistencyScorer
-    from gah.core.labels import LabelRegistry
-    from gah.core.search import HybridSearcher
-    from gah.core.usage_tracker import UsageTracker
+    from assetcache.config import Config
+    from assetcache.core.consistency import ConsistencyScorer
+    from assetcache.core.labels import LabelRegistry
+    from assetcache.core.search import HybridSearcher
+    from assetcache.core.usage_tracker import UsageTracker
 
     store, _ = populated_store
     config = Config()
@@ -22,13 +22,13 @@ def searcher(populated_store, fake_embedder):
 
 
 def _label_filter(axis: str, label: str):
-    from gah.core.search import LabelFilter
+    from assetcache.core.search import LabelFilter
 
     return LabelFilter(axis=axis, label=label)
 
 
 def _req(**kwargs):
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     base = dict(query="hero", count=5)
     base.update(kwargs)
@@ -260,11 +260,11 @@ def test_hybrid_works_with_real_embedding_encoder(populated_store):
     같은 메서드 갭이 있으면 silent fail. 진짜 EmbeddingEncoder + 가짜
     Ollama client 조합으로 한 번 끝까지 돌려야 인터페이스 일치를 보장.
     """
-    from gah.config import Config
-    from gah.core.consistency import ConsistencyScorer
-    from gah.core.embedding import EmbeddingEncoder
-    from gah.core.labels import LabelRegistry
-    from gah.core.search import HybridSearcher, SearchRequest
+    from assetcache.config import Config
+    from assetcache.core.consistency import ConsistencyScorer
+    from assetcache.core.embedding import EmbeddingEncoder
+    from assetcache.core.labels import LabelRegistry
+    from assetcache.core.search import HybridSearcher, SearchRequest
 
     store, _ = populated_store
 

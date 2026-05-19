@@ -1,4 +1,4 @@
-"""Tests for gah.core.pack_manager — pack ingestion end-to-end."""
+﻿"""Tests for assetcache.core.pack_manager — pack ingestion end-to-end."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def test_ingest_creates_pack_and_assets_from_manifest(store, library_root: Path, make_pack) -> None:
-    from gah.core.pack_manager import ingest_pack
+    from assetcache.core.pack_manager import ingest_pack
 
     pack_dir = make_pack(
         "kenney_demo",
@@ -44,7 +44,7 @@ def test_ingest_creates_pack_and_assets_from_manifest(store, library_root: Path,
 
 
 def test_ingest_without_manifest_uses_folder_heuristic(store, library_root: Path, make_pack) -> None:
-    from gah.core.pack_manager import ingest_pack
+    from assetcache.core.pack_manager import ingest_pack
 
     pack_dir = make_pack(
         "kenney_no_manifest",
@@ -58,7 +58,7 @@ def test_ingest_without_manifest_uses_folder_heuristic(store, library_root: Path
 
 
 def test_ingest_skips_unsupported_files(store, library_root: Path, make_pack) -> None:
-    from gah.core.pack_manager import ingest_pack
+    from assetcache.core.pack_manager import ingest_pack
 
     pack_dir = make_pack(
         "mix",
@@ -77,7 +77,7 @@ def test_ingest_skips_unsupported_files(store, library_root: Path, make_pack) ->
 
 
 def test_reingest_is_noop_when_unchanged(store, library_root: Path, make_pack) -> None:
-    from gah.core.pack_manager import ingest_pack
+    from assetcache.core.pack_manager import ingest_pack
 
     pack_dir = make_pack(
         "p",
@@ -98,7 +98,7 @@ def test_reingest_is_noop_when_unchanged(store, library_root: Path, make_pack) -
 
 
 def test_reingest_updates_hash_when_bytes_change(store, library_root: Path, make_pack) -> None:
-    from gah.core.pack_manager import ingest_pack
+    from assetcache.core.pack_manager import ingest_pack
 
     pack_dir = make_pack(
         "p",
@@ -121,7 +121,7 @@ def test_reingest_updates_hash_when_bytes_change(store, library_root: Path, make
 
 
 def test_reingest_removes_deleted_files(store, library_root: Path, make_pack) -> None:
-    from gah.core.pack_manager import ingest_pack
+    from assetcache.core.pack_manager import ingest_pack
 
     pack_dir = make_pack(
         "p",
@@ -137,7 +137,7 @@ def test_reingest_removes_deleted_files(store, library_root: Path, make_pack) ->
 
 
 def test_ingest_handles_empty_pack(store, library_root: Path, make_pack) -> None:
-    from gah.core.pack_manager import ingest_pack
+    from assetcache.core.pack_manager import ingest_pack
 
     pack_dir = make_pack("empty_pack", files={})
 
@@ -148,7 +148,7 @@ def test_ingest_handles_empty_pack(store, library_root: Path, make_pack) -> None
 
 
 def test_ingest_normalizes_relative_path_to_posix(store, library_root: Path, make_pack) -> None:
-    from gah.core.pack_manager import ingest_pack
+    from assetcache.core.pack_manager import ingest_pack
 
     pack_dir = make_pack(
         "p",

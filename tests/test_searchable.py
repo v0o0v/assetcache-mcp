@@ -1,9 +1,9 @@
-"""Tests for the searchable-text builder (FTS5 vs embedding split)."""
+﻿"""Tests for the searchable-text builder (FTS5 vs embedding split)."""
 
 from __future__ import annotations
 
-from gah.core.searchable import build_searchable
-from gah.core.store import LabelScore, SpriteMeta
+from assetcache.core.searchable import build_searchable
+from assetcache.core.store import LabelScore, SpriteMeta
 
 
 def _sample_inputs():

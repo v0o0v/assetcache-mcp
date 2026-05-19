@@ -1,4 +1,4 @@
-"""M5 — 자산 상세 모달 (/ui/asset-detail/{id}) 검증."""
+﻿"""M5 — 자산 상세 모달 (/ui/asset-detail/{id}) 검증."""
 from __future__ import annotations
 
 import json
@@ -7,7 +7,7 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 @pytest.fixture
@@ -45,7 +45,7 @@ def test_asset_detail_negative_id(client):
 
 def test_asset_detail_returns_html_for_existing_asset(populated_client):
     """populated_client 의 첫 asset → 200 + HTML 반환."""
-    from gah.core.store import Store
+    from assetcache.core.store import Store
 
     store: Store = populated_client.app.state.deps.store
     assets = store.list_assets(limit=1, offset=0)
@@ -59,7 +59,7 @@ def test_asset_detail_returns_html_for_existing_asset(populated_client):
 
 def test_asset_detail_includes_adopt_button(populated_client):
     """모달에 채택 버튼이 포함된다."""
-    from gah.core.store import Store
+    from assetcache.core.store import Store
 
     store: Store = populated_client.app.state.deps.store
     assets = store.list_assets(limit=1, offset=0)
@@ -71,7 +71,7 @@ def test_asset_detail_includes_adopt_button(populated_client):
 
 def test_asset_detail_includes_labels(populated_client):
     """라벨이 있는 asset 에서 라벨 정보가 노출된다."""
-    from gah.core.store import Store
+    from assetcache.core.store import Store
 
     store: Store = populated_client.app.state.deps.store
     assets = store.list_assets(limit=10, offset=0)
@@ -86,7 +86,7 @@ def test_asset_detail_includes_labels(populated_client):
 
 def test_asset_detail_sound_asset_no_img_tag(populated_client):
     """sound asset 상세 → <img> 없고 <audio> 관련 요소 있다."""
-    from gah.core.store import Store
+    from assetcache.core.store import Store
 
     store: Store = populated_client.app.state.deps.store
     assets = store.list_assets(limit=20, offset=0)

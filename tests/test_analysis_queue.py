@@ -1,4 +1,4 @@
-"""AnalysisQueue tests with FakeAnalyzer (no real Ollama / CLIP)."""
+﻿"""AnalysisQueue tests with FakeAnalyzer (no real Ollama / CLIP)."""
 
 from __future__ import annotations
 
@@ -7,10 +7,10 @@ from dataclasses import replace
 
 import pytest
 
-from gah.core.analysis_queue import AnalysisQueue
-from gah.core.analyzer.base import AnalyzerInput, AnalyzerResult, SearchableTexts
-from gah.core.manifest import PackManifest
-from gah.core.store import LabelScore, SoundMeta, SpriteMeta, Store
+from assetcache.core.analysis_queue import AnalysisQueue
+from assetcache.core.analyzer.base import AnalyzerInput, AnalyzerResult, SearchableTexts
+from assetcache.core.manifest import PackManifest
+from assetcache.core.store import LabelScore, SoundMeta, SpriteMeta, Store
 
 
 def _make_pack_with_assets(

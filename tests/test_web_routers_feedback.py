@@ -1,4 +1,4 @@
-"""M5 Phase 6A — /api/record-use + /api/feedback 엔드포인트 검증.
+﻿"""M5 Phase 6A — /api/record-use + /api/feedback 엔드포인트 검증.
 
 채택 버튼과 거부 버튼이 실제로 DB 에 기록되는지 확인한다.
 """
@@ -9,7 +9,7 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 @pytest.fixture
@@ -20,7 +20,7 @@ def client(populated_deps):
 
 def _first_asset_id(client: TestClient) -> int:
     """populated 라이브러리의 첫 asset id 를 반환."""
-    from gah.core.store import Store
+    from assetcache.core.store import Store
     store: Store = client.app.state.deps.store
     assets = store.list_assets(limit=1, offset=0)
     assert assets, "populated_deps 에 asset 이 없음"

@@ -1,4 +1,4 @@
-"""M3 — UsageTracker (explicit + implicit top-1 + summary)."""
+﻿"""M3 — UsageTracker (explicit + implicit top-1 + summary)."""
 
 from __future__ import annotations
 
@@ -9,16 +9,16 @@ import pytest
 
 @pytest.fixture
 def tracker(store):
-    from gah.config import Config
-    from gah.core.usage_tracker import UsageTracker
+    from assetcache.config import Config
+    from assetcache.core.usage_tracker import UsageTracker
 
     return UsageTracker(store, Config())
 
 
 @pytest.fixture
 def tracker_implicit_on(store):
-    from gah.config import Config
-    from gah.core.usage_tracker import UsageTracker
+    from assetcache.config import Config
+    from assetcache.core.usage_tracker import UsageTracker
 
     cfg = Config(implicit_top1_enabled=True)
     return UsageTracker(store, cfg)

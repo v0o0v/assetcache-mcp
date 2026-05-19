@@ -1,10 +1,10 @@
-"""M6 — 8칸 1행 합성 미리보기."""
+﻿"""M6 — 8칸 1행 합성 미리보기."""
 from __future__ import annotations
 
 from PIL import Image
 
-from gah.core.sheet.preview import make_preview_composite, sample_indices
-from gah.core.sheet.types import FrameSpec
+from assetcache.core.sheet.preview import make_preview_composite, sample_indices
+from assetcache.core.sheet.types import FrameSpec
 
 
 def _sheet_with_frames(frame_count: int, fw: int = 32, fh: int = 32) -> tuple[Image.Image, list[FrameSpec]]:

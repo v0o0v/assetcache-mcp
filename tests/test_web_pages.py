@@ -1,9 +1,9 @@
-"""M5 — HTML 페이지 라우트 검증 (/, /library)."""
+﻿"""M5 — HTML 페이지 라우트 검증 (/, /library)."""
 from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 @pytest.fixture
@@ -231,21 +231,21 @@ def test_resize_handle_has_mousedown(client):
 def test_side_panel_b_partial_exists():
     """_side_panel_b.html partial 파일이 존재한다."""
     from pathlib import Path
-    p = Path(__file__).parent.parent / "src/gah/web/templates/_side_panel_b.html"
+    p = Path(__file__).parent.parent / "src/assetcache/web/templates/_side_panel_b.html"
     assert p.exists(), f"{p} 파일이 없음"
 
 
 def test_side_panel_c_partial_exists():
     """_side_panel_c.html partial 파일이 존재한다."""
     from pathlib import Path
-    p = Path(__file__).parent.parent / "src/gah/web/templates/_side_panel_c.html"
+    p = Path(__file__).parent.parent / "src/assetcache/web/templates/_side_panel_c.html"
     assert p.exists(), f"{p} 파일이 없음"
 
 
 def test_side_panel_d_partial_exists():
     """_side_panel_d.html partial 파일이 존재한다."""
     from pathlib import Path
-    p = Path(__file__).parent.parent / "src/gah/web/templates/_side_panel_d.html"
+    p = Path(__file__).parent.parent / "src/assetcache/web/templates/_side_panel_d.html"
     assert p.exists(), f"{p} 파일이 없음"
 
 
@@ -323,9 +323,9 @@ def test_library_page_includes_app_js(client):
 
 
 def test_app_js_static_file_exists():
-    """src/gah/web/static/js/app.js 파일이 존재한다."""
+    """src/assetcache/web/static/js/app.js 파일이 존재한다."""
     from pathlib import Path
-    p = Path(__file__).parent.parent / "src/gah/web/static/js/app.js"
+    p = Path(__file__).parent.parent / "src/assetcache/web/static/js/app.js"
     assert p.exists(), f"{p} 파일이 없음"
 
 
@@ -336,7 +336,7 @@ def test_app_js_registers_user_pick_request_listener():
     로 직접 등록. app.js 안에 "user_pick_request" 이벤트 이름이 포함되어야 한다.
     """
     from pathlib import Path
-    app_js = Path(__file__).parent.parent / "src/gah/web/static/js/app.js"
+    app_js = Path(__file__).parent.parent / "src/assetcache/web/static/js/app.js"
     content = app_js.read_text(encoding="utf-8")
     assert "user_pick_request" in content
     assert "addEventListener" in content

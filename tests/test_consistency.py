@@ -1,4 +1,4 @@
-"""M3 — ConsistencyScorer (DESIGN §4.6 표를 코드로)."""
+﻿"""M3 — ConsistencyScorer (DESIGN §4.6 표를 코드로)."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ import pytest
 
 @pytest.fixture
 def scorer(store):
-    from gah.core.consistency import ConsistencyScorer
-    from gah.config import Config
+    from assetcache.core.consistency import ConsistencyScorer
+    from assetcache.config import Config
 
     return ConsistencyScorer(store, Config())
 
@@ -21,7 +21,7 @@ def _pack_aggregate(main_style: str = "pixel_art", palette: list[str] | None = N
 
 
 def _pack_row(pack_id: int = 1, vendor: str = "kenney"):
-    from gah.core.store import PackRow
+    from assetcache.core.store import PackRow
 
     return PackRow(
         id=pack_id,

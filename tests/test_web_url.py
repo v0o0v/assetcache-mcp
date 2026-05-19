@@ -1,10 +1,10 @@
-"""M5 — web.port 파일 R/W (MCP loopback URL 공유) 검증."""
+﻿"""M5 — web.port 파일 R/W (MCP loopback URL 공유) 검증."""
 from __future__ import annotations
 import logging
 import pytest
 from pathlib import Path
 
-from gah.web.url import read_web_port, write_web_port
+from assetcache.web.url import read_web_port, write_web_port
 
 
 def test_write_creates_file(tmp_path: Path) -> None:

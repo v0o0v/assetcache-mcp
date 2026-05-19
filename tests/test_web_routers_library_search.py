@@ -1,8 +1,8 @@
-"""M5 — /api/search POST (JSON 응답) + /ui/search-results HTML fragment 검증."""
+﻿"""M5 — /api/search POST (JSON 응답) + /ui/search-results HTML fragment 검증."""
 from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 @pytest.fixture

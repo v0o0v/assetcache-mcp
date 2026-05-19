@@ -1,4 +1,4 @@
-"""Tests for the CLI entrypoint in gah.__main__."""
+﻿"""Tests for the CLI entrypoint in assetcache.__main__."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ def _run(args: list[str], env_extra: dict | None = None) -> subprocess.Completed
     if env_extra:
         env.update(env_extra)
     return subprocess.run(
-        [sys.executable, "-m", "gah", *args],
+        [sys.executable, "-m", "assetcache", *args],
         capture_output=True,
         text=True,
         env=env,
@@ -26,22 +26,22 @@ def _run(args: list[str], env_extra: dict | None = None) -> subprocess.Completed
 def test_version_flag_prints_version_and_exits_zero() -> None:
     result = _run(["--version"])
     assert result.returncode == 0, result.stderr
-    from gah import __version__
+    from assetcache import __version__
 
     assert __version__ in (result.stdout + result.stderr)
 
 
 def test_mcp_flag_calls_run_stdio(monkeypatch, tmp_path: Path) -> None:
-    """M3: --mcp 가 gah.mcp.server.run_stdio 를 호출해야 한다 (stub 제거 확인)."""
-    import gah.__main__ as main_mod
+    """M3: --mcp 가 assetcache.mcp.server.run_stdio 를 호출해야 한다 (stub 제거 확인)."""
+    import assetcache.__main__ as main_mod
 
     called = {"n": 0}
 
     def _fake_run_stdio() -> None:
         called["n"] += 1
 
-    monkeypatch.setattr("gah.mcp.server.run_stdio", _fake_run_stdio, raising=True)
-    monkeypatch.setattr("sys.argv", ["gah", "--mcp", "--data-dir", str(tmp_path)])
+    monkeypatch.setattr("assetcache.mcp.server.run_stdio", _fake_run_stdio, raising=True)
+    monkeypatch.setattr("sys.argv", ["assetcache", "--mcp", "--data-dir", str(tmp_path)])
     rc = main_mod.main()
     assert rc == 0
     assert called["n"] == 1

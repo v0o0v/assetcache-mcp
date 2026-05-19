@@ -1,4 +1,4 @@
-"""M7 Phase 0 — unity_import.types 7 frozen dataclass 단위 테스트.
+﻿"""M7 Phase 0 — unity_import.types 7 frozen dataclass 단위 테스트.
 
 TDD red phase: types.py 구현 전 모두 실패해야 한다.
 """
@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 def test_unity_package_path_frozen():
-    from gah.core.unity_import.types import UnityPackagePath
+    from assetcache.core.unity_import.types import UnityPackagePath
 
     p = UnityPackagePath(
         abs_path=Path("/cache/Assets/hero.unitypackage"),
@@ -43,7 +43,7 @@ def test_unity_package_path_frozen():
 
 
 def test_unity_package_entry_kind_enum():
-    from gah.core.unity_import.types import UnityPackageEntry
+    from assetcache.core.unity_import.types import UnityPackageEntry
 
     img_entry = UnityPackageEntry(
         guid="abc123",
@@ -67,7 +67,7 @@ def test_unity_package_entry_kind_enum():
 
 
 def test_unity_package_preview_zero_default():
-    from gah.core.unity_import.types import UnityPackagePreview
+    from assetcache.core.unity_import.types import UnityPackagePreview
 
     preview = UnityPackagePreview(asset_count=0, image_count=0, sound_count=0)
     assert preview.sample_pathnames == ()
@@ -78,7 +78,7 @@ def test_unity_package_preview_zero_default():
 
 
 def test_unity_scan_result_sum_invariant():
-    from gah.core.unity_import.types import UnityScanResult
+    from assetcache.core.unity_import.types import UnityScanResult
 
     result = UnityScanResult(
         scanned=10,
@@ -95,7 +95,7 @@ def test_unity_scan_result_sum_invariant():
 
 
 def test_unity_import_result_states():
-    from gah.core.unity_import.types import UnityImportResult
+    from assetcache.core.unity_import.types import UnityImportResult
 
     ok = UnityImportResult(pack_id=1, pack_name="Kenney", asset_count=5, state="imported")
     fail = UnityImportResult(
@@ -111,7 +111,7 @@ def test_unity_import_result_states():
 
 
 def test_extract_result_counts():
-    from gah.core.unity_import.types import ExtractResult
+    from assetcache.core.unity_import.types import ExtractResult
 
     r = ExtractResult(files_extracted=7, bytes_written=204800)
     assert r.files_extracted == 7
@@ -122,7 +122,7 @@ def test_extract_result_counts():
 
 
 def test_unity_import_record_mirrors_db():
-    from gah.core.unity_import.types import UnityImportRecord
+    from assetcache.core.unity_import.types import UnityImportRecord
 
     rec = UnityImportRecord(
         id=1,

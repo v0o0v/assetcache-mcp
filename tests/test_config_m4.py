@@ -1,4 +1,4 @@
-"""M4 — Config 신규 필드 + 가중치 재배분.
+﻿"""M4 — Config 신규 필드 + 가중치 재배분.
 
 M3 가 5채널 합 1.0 (semantic 0.40 / keyword 0.15 / label 0.20 / cons 0.20 /
 recency 0.05) 였다. M4 는 6 채널로 확장하고 기본값 재배분:
@@ -13,14 +13,14 @@ import pytest
 
 
 def test_weight_feedback_default_is_010():
-    from gah.config import Config
+    from assetcache.config import Config
 
     config = Config()
     assert config.weight_feedback == pytest.approx(0.10, abs=1e-9)
 
 
 def test_six_channel_weights_sum_equals_one_within_tolerance():
-    from gah.config import Config
+    from assetcache.config import Config
 
     config = Config()
     total = (
@@ -35,14 +35,14 @@ def test_six_channel_weights_sum_equals_one_within_tolerance():
 
 
 def test_diversity_default_is_none():
-    from gah.config import Config
+    from assetcache.config import Config
 
     config = Config()
     assert config.diversity_default == "none"
 
 
 def test_diversity_mmr_lambda_default_is_07():
-    from gah.config import Config
+    from assetcache.config import Config
 
     config = Config()
     assert config.diversity_mmr_lambda == pytest.approx(0.7, abs=1e-9)
@@ -50,7 +50,7 @@ def test_diversity_mmr_lambda_default_is_07():
 
 def test_feedback_weights_have_expected_signs():
     """negative < 0, positive > 0, irrelevant < 0 — 부호 검증."""
-    from gah.config import Config
+    from assetcache.config import Config
 
     config = Config()
     assert config.feedback_negative_weight < 0
@@ -65,7 +65,7 @@ def test_feedback_weights_have_expected_signs():
 
 def test_toml_roundtrip_preserves_all_m4_fields(tmp_path):
     """save_config → load_config 로 모든 M4 필드가 보존되는지."""
-    from gah.config import Config, load_config, save_config
+    from assetcache.config import Config, load_config, save_config
 
     config = Config(
         weight_semantic=0.30,

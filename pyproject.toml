@@ -3,13 +3,27 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "game-asset-helper"
-version = "0.0.1"
-description = "MCP server + tray app that catalogs game assets and serves them to Unity workflows via Claude Code"
+name = "assetcache-mcp"
+version = "0.1.0"
+description = "MCP server + tray app for indexing and retrieving 2D sprites, sheets, sounds, and Unity packages via natural language."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
-authors = [{ name = "Game Asset Helper Authors" }]
+license = { file = "LICENSE" }
+authors = [{ name = "v0o0v", email = "v0o0v2@gmail.com" }]
+keywords = ["mcp", "unity", "asset", "game-development", "claude"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Environment :: Win32 (MS Windows)",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Multimedia :: Graphics",
+  "Topic :: Software Development :: Libraries",
+]
 dependencies = [
   "PySide6>=6.6",
   "portalocker>=2.8",
@@ -50,20 +64,41 @@ dev = [
   "pytest-playwright>=0.4",
   # M8: PyInstaller 단일 exe 빌드 (사용자 dev only)
   "pyinstaller>=6",
+  # M10: PyPI 빌드 + 업로드
+  "build",
+  "twine",
 ]
 
 [project.scripts]
-game-asset-helper = "gah.__main__:main"
+assetcache = "assetcache.__main__:main"
+assetcache-mcp = "assetcache.__main__:main_mcp"
+
+[project.urls]
+Homepage = "https://github.com/v0o0v/assetcache-mcp"
+Issues = "https://github.com/v0o0v/assetcache-mcp/issues"
+Documentation = "https://github.com/v0o0v/assetcache-mcp/blob/main/README.md"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+namespaces = false
+
+[tool.setuptools.package-data]
+"assetcache.web" = [
+  "templates/**/*.html",
+  "static/**/*",
+  "locale/**/*.mo",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
 addopts = "-ra -m 'not clip_integration and not mcp_integration and not e2e'"
 markers = [
   "clip_integration: 실제 CLIP 모델 다운로드(~600 MB) 필요. 기본 실행에서 제외 — `pytest -m clip_integration` 으로 옵트인.",
-  "mcp_integration: 실제 MCP stdio subprocess 기동 필요(`python -m gah --mcp`). 기본 실행에서 제외 — `pytest -m mcp_integration` 으로 옵트인.",
+  "mcp_integration: 실제 MCP stdio subprocess 기동 필요(`python -m assetcache --mcp`). 기본 실행에서 제외 — `pytest -m mcp_integration` 으로 옵트인.",
   "e2e: Playwright 헤드리스 Chromium 필요. 기본 실행에서 제외 — `pytest -m e2e` 으로 옵트인.",
 ]
 filterwarnings = [

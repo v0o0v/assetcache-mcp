@@ -1,4 +1,4 @@
-"""M3 — MCP 서버 빌더 (in-process inspection, no subprocess)."""
+﻿"""M3 — MCP 서버 빌더 (in-process inspection, no subprocess)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import pytest
 
 @pytest.fixture
 def server_and_deps(mcp_tool_deps):
-    from gah.mcp.server import build_server
+    from assetcache.mcp.server import build_server
 
     deps = mcp_tool_deps()
     server = build_server(
@@ -55,7 +55,7 @@ async def test_each_tool_has_description(server_and_deps):
 
 def test_run_stdio_graceful_on_keyboardinterrupt(monkeypatch):
     """run_stdio() 가 KeyboardInterrupt 를 잡고 정상 종료 (return None)."""
-    from gah.mcp import server as server_mod
+    from assetcache.mcp import server as server_mod
 
     def _raise_interrupt(self, *args, **kwargs):
         raise KeyboardInterrupt
@@ -67,8 +67,8 @@ def test_run_stdio_graceful_on_keyboardinterrupt(monkeypatch):
 
 def test_get_asset_tool_returns_typed_error_on_missing_id(server_and_deps):
     """register_all_tools 가 McpToolError 를 MCP 표준 에러 응답으로 매핑하는지."""
-    from gah.mcp.models import GetAssetRequest
-    from gah.mcp.tools import McpToolError, tool_get_asset
+    from assetcache.mcp.models import GetAssetRequest
+    from assetcache.mcp.tools import McpToolError, tool_get_asset
 
     _, deps = server_and_deps
     with pytest.raises(McpToolError) as exc_info:

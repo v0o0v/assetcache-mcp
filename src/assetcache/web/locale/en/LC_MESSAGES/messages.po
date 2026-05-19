@@ -1,0 +1,843 @@
+# English translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-05-19 03:18+0900\n"
+"PO-Revision-Date: 2026-05-19 02:42+0900\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: src/assetcache/web/templates/_header_project_dropdown.html:8
+msgid "Current project"
+msgstr "Current project"
+
+#: src/assetcache/web/templates/_header_project_dropdown.html:11
+msgid "Select project"
+msgstr "Select project"
+
+#: src/assetcache/web/templates/_header_project_dropdown.html:25
+msgid "No projects"
+msgstr "No projects"
+
+#: src/assetcache/web/templates/_header_project_dropdown.html:28
+msgid "+ New project"
+msgstr "+ New project"
+
+#: src/assetcache/web/templates/_header_project_dropdown.html:29
+msgid "Deselect"
+msgstr "Deselect"
+
+#: src/assetcache/web/templates/_label_row.html:35
+#: src/assetcache/web/templates/_pack_card.html:17
+msgid "Active"
+msgstr "Active"
+
+#: src/assetcache/web/templates/_label_row.html:35
+#: src/assetcache/web/templates/_pack_card.html:17
+msgid "Inactive"
+msgstr "Inactive"
+
+#: src/assetcache/web/templates/_label_row.html:41
+msgid "Are you sure you want to delete this?"
+msgstr "Are you sure you want to delete this?"
+
+#: src/assetcache/web/templates/_label_row.html:44
+#: src/assetcache/web/templates/_side_panel_d.html:96
+msgid "Delete"
+msgstr "Delete"
+
+#: src/assetcache/web/templates/_labels_admin_grid.html:38
+msgid "Label token (lowercase + digits + _)"
+msgstr "Label token (lowercase + digits + _)"
+
+#: src/assetcache/web/templates/_labels_admin_grid.html:44
+msgid "Description (optional)"
+msgstr "Description (optional)"
+
+#: src/assetcache/web/templates/_labels_admin_grid.html:46
+msgid "Add"
+msgstr "Add"
+
+#: src/assetcache/web/templates/_labels_admin_grid.html:54
+#: src/assetcache/web/templates/_side_panel_c.html:58
+#: src/assetcache/web/templates/asset_detail.html:45
+msgid "Label"
+msgstr "Label"
+
+#: src/assetcache/web/templates/_labels_admin_grid.html:55
+msgid "Description"
+msgstr "Description"
+
+#: src/assetcache/web/templates/_labels_admin_grid.html:56
+msgid "Source"
+msgstr "Source"
+
+#: src/assetcache/web/templates/_labels_admin_grid.html:57
+#: src/assetcache/web/templates/_side_panel_b.html:125
+msgid "Status"
+msgstr "Status"
+
+#: src/assetcache/web/templates/_labels_admin_grid.html:58
+#: src/assetcache/web/templates/unity_asset_store.html:39
+msgid "Actions"
+msgstr "Actions"
+
+#: src/assetcache/web/templates/_labels_admin_grid.html:76
+msgid "Export (JSON)"
+msgstr "Export (JSON)"
+
+#: src/assetcache/web/templates/_labels_admin_grid.html:85
+msgid "Import (JSON)"
+msgstr "Import (JSON)"
+
+#: src/assetcache/web/templates/_modal_new_project.html:4
+msgid "New project"
+msgstr "New project"
+
+#: src/assetcache/web/templates/_modal_new_project.html:6
+msgid "Project folder path"
+msgstr "Project folder path"
+
+#: src/assetcache/web/templates/_modal_new_project.html:10
+msgid "Display name (optional)"
+msgstr "Display name (optional)"
+
+#: src/assetcache/web/templates/_modal_new_project.html:14
+msgid "Cancel"
+msgstr "Cancel"
+
+#: src/assetcache/web/templates/_modal_new_project.html:15
+msgid "Create"
+msgstr "Create"
+
+#: src/assetcache/web/templates/_modal_usage.html:7
+#: src/assetcache/web/templates/asset_detail.html:7
+#: src/assetcache/web/templates/library.html:68
+msgid "Close"
+msgstr "Close"
+
+#: src/assetcache/web/templates/_modal_usage.html:9
+msgid "Consistency / penalty details"
+msgstr "Consistency / penalty details"
+
+#: src/assetcache/web/templates/_modal_usage.html:11
+msgid "Last"
+msgstr "Last"
+
+#: src/assetcache/web/templates/_modal_usage.html:11
+msgid "day usage summary"
+msgstr "day usage summary"
+
+#: src/assetcache/web/templates/_modal_usage.html:15
+#: src/assetcache/web/templates/_side_panel_d.html:121
+msgid "Top adopted packs"
+msgstr "Top adopted packs"
+
+#: src/assetcache/web/templates/_modal_usage.html:20
+msgid "times"
+msgstr "times"
+
+#: src/assetcache/web/templates/_modal_usage.html:25
+msgid "No packs adopted yet."
+msgstr "No packs adopted yet."
+
+#: src/assetcache/web/templates/_modal_usage.html:29
+#: src/assetcache/web/templates/_side_panel_d.html:123
+msgid "Rejections"
+msgstr "Rejections"
+
+#: src/assetcache/web/templates/_nav.html:6 src/assetcache/web/templates/base.html:6
+#: src/assetcache/web/templates/base.html:73 src/assetcache/web/templates/error.html:2
+#: src/assetcache/web/templates/labels_admin.html:6
+#: src/assetcache/web/templates/library.html:2 src/assetcache/web/templates/packs.html:6
+#: src/assetcache/web/templates/project_detail.html:7
+#: src/assetcache/web/templates/projects_list.html:4
+#: src/assetcache/web/templates/settings.html:4
+msgid "AssetCacheMCP"
+msgstr "AssetCacheMCP"
+
+#: src/assetcache/web/templates/_nav.html:9 src/assetcache/web/templates/library.html:2
+msgid "Library"
+msgstr "Library"
+
+#: src/assetcache/web/templates/_nav.html:10
+#: src/assetcache/web/templates/_preference_panel.html:19
+#: src/assetcache/web/templates/_side_panel_b.html:74
+#: src/assetcache/web/templates/_side_panel_c.html:62
+#: src/assetcache/web/templates/project_detail.html:38
+msgid "Packs"
+msgstr "Packs"
+
+#: src/assetcache/web/templates/_nav.html:11 src/assetcache/web/templates/labels_admin.html:6
+#: src/assetcache/web/templates/labels_admin.html:11
+msgid "Label management"
+msgstr "Label management"
+
+#: src/assetcache/web/templates/_nav.html:13
+#: src/assetcache/web/templates/projects_list.html:4
+#: src/assetcache/web/templates/projects_list.html:9
+msgid "Projects"
+msgstr "Projects"
+
+#: src/assetcache/web/templates/_nav.html:14
+#: src/assetcache/web/templates/unity_asset_store.html:7
+msgid "Unity Asset Store"
+msgstr "Unity Asset Store"
+
+#: src/assetcache/web/templates/_nav.html:16 src/assetcache/web/templates/settings.html:4
+#: src/assetcache/web/templates/settings.html:8
+msgid "Settings"
+msgstr "Settings"
+
+#: src/assetcache/web/templates/_nav.html:27 src/assetcache/web/templates/settings.html:31
+msgid "Theme"
+msgstr "Theme"
+
+#: src/assetcache/web/templates/_nav.html:28
+msgid "Toggle theme"
+msgstr "Toggle theme"
+
+#: src/assetcache/web/templates/_nav.html:31 src/assetcache/web/templates/_pick_card.html:13
+msgid "Claude request"
+msgstr "Claude request"
+
+#: src/assetcache/web/templates/_pack_card.html:21
+msgid "Unknown"
+msgstr "Unknown"
+
+#: src/assetcache/web/templates/_pack_card.html:28
+#: src/assetcache/web/templates/_side_panel_d.html:122
+msgid "items"
+msgstr "items"
+
+#: src/assetcache/web/templates/_packs_grid.html:11
+msgid "No packs registered."
+msgstr "No packs registered."
+
+#: src/assetcache/web/templates/_pick_card.html:14
+msgid "Pick from candidates"
+msgstr "Pick from candidates"
+
+#: src/assetcache/web/templates/_pick_card.html:19
+#: src/assetcache/web/templates/asset_detail.html:66
+msgid "Reject"
+msgstr "Reject"
+
+#: src/assetcache/web/templates/_pick_card.html:65
+#: src/assetcache/web/templates/asset_detail.html:60
+msgid "Adopt"
+msgstr "Adopt"
+
+#: src/assetcache/web/templates/_preference_panel.html:3
+msgid "Asset preferences"
+msgstr "Asset preferences"
+
+#: src/assetcache/web/templates/_preference_panel.html:6
+msgid "Highest preference first"
+msgstr "Highest preference first"
+
+#: src/assetcache/web/templates/_preference_panel.html:7
+msgid "Lowest preference first"
+msgstr "Lowest preference first"
+
+#: src/assetcache/web/templates/_preference_panel.html:8
+msgid "Most adopted first"
+msgstr "Most adopted first"
+
+#: src/assetcache/web/templates/_preference_panel.html:9
+msgid "Most recent activity first"
+msgstr "Most recent activity first"
+
+#: src/assetcache/web/templates/_preference_panel.html:12
+msgid "Search assets"
+msgstr "Search assets"
+
+#: src/assetcache/web/templates/_preference_panel.html:18
+#: src/assetcache/web/templates/project_detail.html:37
+msgid "Asset"
+msgstr "Asset"
+
+#: src/assetcache/web/templates/_preference_panel.html:20
+msgid "Preference"
+msgstr "Preference"
+
+#: src/assetcache/web/templates/_preference_panel.html:21
+msgid "feedback"
+msgstr "feedback"
+
+#: src/assetcache/web/templates/_preference_panel.html:22
+msgid "Uses"
+msgstr "Uses"
+
+#: src/assetcache/web/templates/_preference_panel.html:23
+#: src/assetcache/web/templates/projects_list.html:20
+msgid "Last activity"
+msgstr "Last activity"
+
+#: src/assetcache/web/templates/_preference_panel.html:51
+msgid "No preference data available."
+msgstr "No preference data available."
+
+#: src/assetcache/web/templates/_preference_panel.html:54
+msgid "◀"
+msgstr "◀"
+
+#: src/assetcache/web/templates/_preference_panel.html:56
+msgid "▶"
+msgstr "▶"
+
+#: src/assetcache/web/templates/_results_cards_only.html:31
+msgid "Load more"
+msgstr "Load more"
+
+#: src/assetcache/web/templates/_results_grid.html:13
+#: src/assetcache/web/templates/_results_grid.html:14
+#: src/assetcache/web/templates/_side_panel_c.html:10
+msgid "Grid"
+msgstr "Grid"
+
+#: src/assetcache/web/templates/_results_grid.html:20
+#: src/assetcache/web/templates/_results_grid.html:21
+#: src/assetcache/web/templates/_side_panel_c.html:15
+msgid "List"
+msgstr "List"
+
+#: src/assetcache/web/templates/_results_grid.html:38
+#: src/assetcache/web/templates/_side_panel_c.html:38
+msgid "Sort"
+msgstr "Sort"
+
+#: src/assetcache/web/templates/_results_grid.html:42
+#: src/assetcache/web/templates/_side_panel_c.html:42
+msgid "Score↓"
+msgstr "Score↓"
+
+#: src/assetcache/web/templates/_results_grid.html:43
+#: src/assetcache/web/templates/_side_panel_c.html:43
+msgid "Added↓"
+msgstr "Added↓"
+
+#: src/assetcache/web/templates/_results_grid.html:44
+#: src/assetcache/web/templates/_side_panel_c.html:44
+msgid "Added↑"
+msgstr "Added↑"
+
+#: src/assetcache/web/templates/_results_grid.html:45
+#: src/assetcache/web/templates/_side_panel_c.html:45
+msgid "Name↑"
+msgstr "Name↑"
+
+#: src/assetcache/web/templates/_results_grid.html:46
+#: src/assetcache/web/templates/_side_panel_c.html:46
+msgid "Name↓"
+msgstr "Name↓"
+
+#: src/assetcache/web/templates/_results_grid.html:47
+#: src/assetcache/web/templates/_side_panel_c.html:47
+msgid "Size↓"
+msgstr "Size↓"
+
+#: src/assetcache/web/templates/_results_grid.html:48
+#: src/assetcache/web/templates/_side_panel_c.html:48
+msgid "Size↑"
+msgstr "Size↑"
+
+#: src/assetcache/web/templates/_results_grid.html:53
+msgid "Assets"
+msgstr "Assets"
+
+#: src/assetcache/web/templates/_search_error.html:4
+msgid "Search service unavailable"
+msgstr "Search service unavailable"
+
+#: src/assetcache/web/templates/_search_error.html:6
+msgid ""
+"The search service (Ollama) is not available. Please check that the "
+"Ollama server is running."
+msgstr ""
+"The search service (Ollama) is not available. Please check that the "
+"Ollama server is running."
+
+#: src/assetcache/web/templates/_search_error.html:9
+msgid ""
+"After starting Ollama, try searching again, or clear the search bar to "
+"browse the full library."
+msgstr ""
+"After starting Ollama, try searching again, or clear the search bar to "
+"browse the full library."
+
+#: src/assetcache/web/templates/_side_panel_b.html:7
+#: src/assetcache/web/templates/library.html:73
+msgid "B Filters"
+msgstr "B Filters"
+
+#: src/assetcache/web/templates/_side_panel_b.html:11
+msgid "Matching mode"
+msgstr "Matching mode"
+
+#: src/assetcache/web/templates/_side_panel_b.html:16
+msgid "AND"
+msgstr "AND"
+
+#: src/assetcache/web/templates/_side_panel_b.html:22
+msgid "OR"
+msgstr "OR"
+
+#: src/assetcache/web/templates/_side_panel_b.html:28
+msgid "NOT"
+msgstr "NOT"
+
+#: src/assetcache/web/templates/_side_panel_b.html:37
+msgid "🔍 Search labels…"
+msgstr "🔍 Search labels…"
+
+#: src/assetcache/web/templates/_side_panel_b.html:45
+msgid "Sprite"
+msgstr "Sprite"
+
+#: src/assetcache/web/templates/_side_panel_b.html:50
+msgid "Sheet"
+msgstr "Sheet"
+
+#: src/assetcache/web/templates/_side_panel_b.html:55
+msgid "Sound"
+msgstr "Sound"
+
+#: src/assetcache/web/templates/_side_panel_b.html:85
+msgid "No packs"
+msgstr "No packs"
+
+#: src/assetcache/web/templates/_side_panel_b.html:91
+msgid "Vendor"
+msgstr "Vendor"
+
+#: src/assetcache/web/templates/_side_panel_b.html:102
+msgid "No vendors"
+msgstr "No vendors"
+
+#: src/assetcache/web/templates/_side_panel_b.html:108
+msgid "License"
+msgstr "License"
+
+#: src/assetcache/web/templates/_side_panel_b.html:119
+msgid "No licenses"
+msgstr "No licenses"
+
+#: src/assetcache/web/templates/_side_panel_b.html:131
+msgid "All"
+msgstr "All"
+
+#: src/assetcache/web/templates/_side_panel_b.html:137
+msgid "Done"
+msgstr "Done"
+
+#: src/assetcache/web/templates/_side_panel_b.html:143
+msgid "Pending"
+msgstr "Pending"
+
+#: src/assetcache/web/templates/_side_panel_b.html:149
+msgid "Failed"
+msgstr "Failed"
+
+#: src/assetcache/web/templates/_side_panel_c.html:5
+msgid "Result display format"
+msgstr "Result display format"
+
+#: src/assetcache/web/templates/_side_panel_c.html:22
+msgid "Card size"
+msgstr "Card size"
+
+#: src/assetcache/web/templates/_side_panel_c.html:54
+msgid "Card display info"
+msgstr "Card display info"
+
+#: src/assetcache/web/templates/_side_panel_c.html:66
+msgid "Score"
+msgstr "Score"
+
+#: src/assetcache/web/templates/_side_panel_c.html:70
+#: src/assetcache/web/templates/unity_asset_store.html:35
+msgid "Size"
+msgstr "Size"
+
+#: src/assetcache/web/templates/_side_panel_d.html:6
+msgid "Weight presets"
+msgstr "Weight presets"
+
+#: src/assetcache/web/templates/_side_panel_d.html:12
+msgid "Balanced"
+msgstr "Balanced"
+
+#: src/assetcache/web/templates/_side_panel_d.html:18
+msgid "Consistency first"
+msgstr "Consistency first"
+
+#: src/assetcache/web/templates/_side_panel_d.html:24
+msgid "Novelty"
+msgstr "Novelty"
+
+#: src/assetcache/web/templates/_side_panel_d.html:32
+msgid "▶ Adjust sliders manually…"
+msgstr "▶ Adjust sliders manually…"
+
+#: src/assetcache/web/templates/_side_panel_d.html:36
+msgid "Semantic"
+msgstr "Semantic"
+
+#: src/assetcache/web/templates/_side_panel_d.html:44
+msgid "Keyword"
+msgstr "Keyword"
+
+#: src/assetcache/web/templates/_side_panel_d.html:52
+msgid "Label weight"
+msgstr "Label weight"
+
+#: src/assetcache/web/templates/_side_panel_d.html:60
+msgid "Consistency"
+msgstr "Consistency"
+
+#: src/assetcache/web/templates/_side_panel_d.html:68
+msgid "Recency"
+msgstr "Recency"
+
+#: src/assetcache/web/templates/_side_panel_d.html:76
+msgid "Feedback"
+msgstr "Feedback"
+
+#: src/assetcache/web/templates/_side_panel_d.html:88
+msgid "Saved searches"
+msgstr "Saved searches"
+
+#: src/assetcache/web/templates/_side_panel_d.html:100
+msgid "No saved searches yet."
+msgstr "No saved searches yet."
+
+#: src/assetcache/web/templates/_side_panel_d.html:107
+msgid "New search name…"
+msgstr "New search name…"
+
+#: src/assetcache/web/templates/_side_panel_d.html:112
+msgid "+ Save current search"
+msgstr "+ Save current search"
+
+#: src/assetcache/web/templates/_side_panel_d.html:119
+msgid "Consistency / penalty"
+msgstr "Consistency / penalty"
+
+#: src/assetcache/web/templates/_side_panel_d.html:130
+msgid "View details"
+msgstr "View details"
+
+#: src/assetcache/web/templates/_unity_package_row.html:23
+msgid "Import"
+msgstr "Import"
+
+#: src/assetcache/web/templates/_unity_package_row.html:26
+msgid "Skip"
+msgstr "Skip"
+
+#: src/assetcache/web/templates/_unity_package_row.html:29
+msgid "Restore"
+msgstr "Restore"
+
+#: src/assetcache/web/templates/asset_detail.html:30
+msgid "Pack"
+msgstr "Pack"
+
+#: src/assetcache/web/templates/asset_detail.html:33
+msgid "Resolution"
+msgstr "Resolution"
+
+#: src/assetcache/web/templates/asset_detail.html:36
+msgid "File size"
+msgstr "File size"
+
+#: src/assetcache/web/templates/asset_detail.html:39
+#: src/assetcache/web/templates/projects_list.html:18
+msgid "Path"
+msgstr "Path"
+
+#: src/assetcache/web/templates/error.html:7
+#: src/assetcache/web/templates/error_fragment.html:5
+msgid "Back to library"
+msgstr "Back to library"
+
+#: src/assetcache/web/templates/labels_admin.html:13
+msgid "You can add, edit, and disable label vocabulary per axis (24 axes)."
+msgstr "You can add, edit, and disable label vocabulary per axis (24 axes)."
+
+#: src/assetcache/web/templates/labels_admin.html:14
+msgid "Signature:"
+msgstr "Signature:"
+
+#: src/assetcache/web/templates/library.html:15
+msgid "Natural language search…  (Enter or 🔍 button)"
+msgstr "Natural language search…  (Enter or 🔍 button)"
+
+#: src/assetcache/web/templates/library.html:27 src/assetcache/web/templates/library.html:28
+msgid "Search"
+msgstr "Search"
+
+#: src/assetcache/web/templates/library.html:34 src/assetcache/web/templates/library.html:35
+msgid "Advanced"
+msgstr "Advanced"
+
+#: src/assetcache/web/templates/library.html:75
+msgid "C Display"
+msgstr "C Display"
+
+#: src/assetcache/web/templates/library.html:77
+msgid "D Adjust"
+msgstr "D Adjust"
+
+#: src/assetcache/web/templates/packs.html:6 src/assetcache/web/templates/packs.html:11
+msgid "Pack management"
+msgstr "Pack management"
+
+#: src/assetcache/web/templates/packs.html:12
+msgid ""
+"You can toggle active/inactive status for asset packs registered in the "
+"library."
+msgstr ""
+"You can toggle active/inactive status for asset packs registered in the "
+"library."
+
+#: src/assetcache/web/templates/project_detail.html:15
+msgid "Currently active"
+msgstr "Currently active"
+
+#: src/assetcache/web/templates/project_detail.html:18
+msgid "Back to list"
+msgstr "Back to list"
+
+#: src/assetcache/web/templates/project_detail.html:25
+msgid "Set as active project"
+msgstr "Set as active project"
+
+#: src/assetcache/web/templates/project_detail.html:32
+msgid "Asset usage history"
+msgstr "Asset usage history"
+
+#: src/assetcache/web/templates/project_detail.html:39
+msgid "source"
+msgstr "source"
+
+#: src/assetcache/web/templates/project_detail.html:40
+msgid "Used at"
+msgstr "Used at"
+
+#: src/assetcache/web/templates/project_detail.html:41
+msgid "context"
+msgstr "context"
+
+#: src/assetcache/web/templates/project_detail.html:57
+msgid "No assets adopted yet."
+msgstr "No assets adopted yet."
+
+#: src/assetcache/web/templates/project_detail.html:62
+msgid "Adopted pack distribution"
+msgstr "Adopted pack distribution"
+
+#: src/assetcache/web/templates/project_detail.html:79
+msgid "No pack distribution data."
+msgstr "No pack distribution data."
+
+#: src/assetcache/web/templates/projects_list.html:10
+msgid "➕ New project"
+msgstr "➕ New project"
+
+#: src/assetcache/web/templates/projects_list.html:17
+msgid "Display name"
+msgstr "Display name"
+
+#: src/assetcache/web/templates/projects_list.html:19
+msgid "First seen"
+msgstr "First seen"
+
+#: src/assetcache/web/templates/projects_list.html:21
+msgid "Adopted assets"
+msgstr "Adopted assets"
+
+#: src/assetcache/web/templates/projects_list.html:22
+msgid "Primary pack"
+msgstr "Primary pack"
+
+#: src/assetcache/web/templates/projects_list.html:23
+msgid "Pin/block"
+msgstr "Pin/block"
+
+#: src/assetcache/web/templates/projects_list.html:40
+msgid "Details"
+msgstr "Details"
+
+#: src/assetcache/web/templates/projects_list.html:46
+msgid ""
+"No projects registered. Create a new project or adopt assets from a Unity"
+" project to register one automatically."
+msgstr ""
+"No projects registered. Create a new project or adopt assets from a Unity"
+" project to register one automatically."
+
+#: src/assetcache/web/templates/settings.html:12
+msgid "Language"
+msgstr "Language"
+
+#: src/assetcache/web/templates/settings.html:16
+msgid "Korean"
+msgstr "Korean"
+
+#: src/assetcache/web/templates/settings.html:21
+msgid "English"
+msgstr "English"
+
+#: src/assetcache/web/templates/settings.html:26
+msgid "Auto-detect"
+msgstr "Auto-detect"
+
+#: src/assetcache/web/templates/settings.html:35
+msgid "Auto (system)"
+msgstr "Auto (system)"
+
+#: src/assetcache/web/templates/settings.html:40
+msgid "Light"
+msgstr "Light"
+
+#: src/assetcache/web/templates/settings.html:45
+msgid "Dark"
+msgstr "Dark"
+
+#: src/assetcache/web/templates/settings.html:50
+msgid "Startup"
+msgstr "Startup"
+
+#: src/assetcache/web/templates/settings.html:53
+msgid "Start with Windows"
+msgstr "Start with Windows"
+
+#: src/assetcache/web/templates/settings.html:55
+msgid "Only available on Windows"
+msgstr "Only available on Windows"
+
+#: src/assetcache/web/templates/settings.html:59
+msgid "Save"
+msgstr "Save"
+
+#: src/assetcache/web/templates/settings.html:60
+msgid "Saving..."
+msgstr "Saving..."
+
+#: src/assetcache/web/templates/unity_asset_store.html:10
+msgid "Cache path"
+msgstr "Cache path"
+
+#: src/assetcache/web/templates/unity_asset_store.html:13
+msgid ""
+"The cache path is empty. Please enter the Unity Asset Store cache path in"
+" settings."
+msgstr ""
+"The cache path is empty. Please enter the Unity Asset Store cache path in"
+" settings."
+
+#: src/assetcache/web/templates/unity_asset_store.html:16
+msgid "Scan cache"
+msgstr "Scan cache"
+
+#: src/assetcache/web/templates/unity_asset_store.html:17
+msgid "Scanning…"
+msgstr "Scanning…"
+
+#: src/assetcache/web/templates/unity_asset_store.html:32
+msgid "Publisher"
+msgstr "Publisher"
+
+#: src/assetcache/web/templates/unity_asset_store.html:33
+msgid "Category"
+msgstr "Category"
+
+#: src/assetcache/web/templates/unity_asset_store.html:34
+msgid "Asset name"
+msgstr "Asset name"
+
+#: src/assetcache/web/templates/unity_asset_store.html:36
+msgid "State"
+msgstr "State"
+
+#: src/assetcache/web/templates/unity_asset_store.html:37
+msgid "Preview"
+msgstr "Preview"
+
+#: src/assetcache/web/templates/unity_asset_store.html:38
+msgid "Added at"
+msgstr "Added at"
+
+#: src/assetcache/web/templates/unity_asset_store.html:49
+msgid "No scanned packages. Click 'Scan cache' to search for packages."
+msgstr "No scanned packages. Click 'Scan cache' to search for packages."
+
+#: src/assetcache/web/templates/_migration_banner.html:66
+msgid "v0.0.1 data detected"
+msgstr "v0.0.1 data detected"
+
+#: src/assetcache/web/templates/_migration_banner.html:68
+msgid "files"
+msgstr "files"
+
+#: src/assetcache/web/templates/_migration_banner.html:70
+msgid "Migrate to AssetCacheMCP."
+msgstr "Migrate to AssetCacheMCP."
+
+#: src/assetcache/web/templates/_migration_banner.html:72
+msgid "Copy"
+msgstr "Copy"
+
+#: src/assetcache/web/templates/_migration_banner.html:73
+msgid "Move"
+msgstr "Move"
+
+#: src/assetcache/web/templates/_migration_banner.html:74
+msgid "Later"
+msgstr "Later"
+
+#: src/assetcache/web/templates/_migration_banner.html:79
+msgid "Migrating..."
+msgstr "Migrating..."
+
+#: src/assetcache/web/templates/_migration_banner.html:84
+msgid "Migration complete. Reloading the new data folder."
+msgstr "Migration complete. Reloading the new data folder."
+
+#: src/assetcache/web/templates/_migration_banner.html:88
+msgid "Migration failed:"
+msgstr "Migration failed:"
+
+#: src/assetcache/web/templates/_migration_banner.html:89
+msgid "Retry"
+msgstr "Retry"
+
+#: src/assetcache/web/templates/_pypi_update_banner.html:34
+msgid "available"
+msgstr "available"
+
+#: src/assetcache/web/templates/_pypi_update_banner.html:37
+msgid "Release notes"
+msgstr "Release notes"
+
+#: src/assetcache/tray.py:320
+msgid "v{version} update available →"
+msgstr "v{version} update available →"
+
+#: src/assetcache/tray.py:332
+msgid "Upgrade command copied to clipboard"
+msgstr "Upgrade command copied to clipboard"
+

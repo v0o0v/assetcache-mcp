@@ -1,4 +1,4 @@
-"""M4 — `SearchRequest.diversity` 옵션 (none / mmr / round_robin).
+﻿"""M4 — `SearchRequest.diversity` 옵션 (none / mmr / round_robin).
 
 - `none` (M3 호환 default) — pure top-N
 - `mmr` — `mmr_i = λ·score_i - (1-λ)·max_sim_to_picked`, sim = 1 if same_pack else 0
@@ -20,10 +20,10 @@ import pytest
 
 def _build_searcher(populated_store, fake_embedder, *, config_overrides=None):
     """HybridSearcher 인스턴스 빌드 (분석 외부 의존 없이 deterministic fake 사용)."""
-    from gah.config import Config
-    from gah.core.consistency import ConsistencyScorer
-    from gah.core.labels import LabelRegistry
-    from gah.core.search import HybridSearcher
+    from assetcache.config import Config
+    from assetcache.core.consistency import ConsistencyScorer
+    from assetcache.core.labels import LabelRegistry
+    from assetcache.core.search import HybridSearcher
 
     store, _ = populated_store
     config = Config(**(config_overrides or {}))
@@ -41,7 +41,7 @@ def _pack_ids_of(results) -> list[int]:
 
 
 def test_diversity_none_preserves_m3_order(populated_store, fake_embedder) -> None:
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(populated_store, fake_embedder)
     res_none = searcher.hybrid(SearchRequest(query="hero sprite", count=5,
@@ -56,7 +56,7 @@ def test_diversity_none_preserves_m3_order(populated_store, fake_embedder) -> No
 
 def test_mmr_lambda_1_equals_pure_score_order(populated_store, fake_embedder) -> None:
     """λ=1.0 → 다양성 0 → score 순서 그대로 (none 과 동일)."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(populated_store, fake_embedder)
     res_none = searcher.hybrid(SearchRequest(query="hero", count=4, diversity="none"))
@@ -67,7 +67,7 @@ def test_mmr_lambda_1_equals_pure_score_order(populated_store, fake_embedder) ->
 
 def test_mmr_lambda_0_forces_different_packs(populated_store, fake_embedder) -> None:
     """λ=0.0 → 다양성만 → 가능하면 매 픽이 새 팩이어야 한다."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(populated_store, fake_embedder)
     res = searcher.hybrid(SearchRequest(query="hero", count=4,
@@ -82,7 +82,7 @@ def test_mmr_lambda_07_balances_score_and_diversity(
     populated_store, fake_embedder
 ) -> None:
     """λ=0.7 → 상위 4 결과가 두 팩에서 모두 등장하는지."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(populated_store, fake_embedder)
     res = searcher.hybrid(SearchRequest(query="character", count=4,
@@ -97,7 +97,7 @@ def test_mmr_lambda_07_balances_score_and_diversity(
 
 def test_round_robin_alternates_packs(populated_store, fake_embedder) -> None:
     """round_robin 4 결과 — pack_a, pack_b, pack_a, pack_b 같은 교대 패턴."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(populated_store, fake_embedder)
     res = searcher.hybrid(SearchRequest(query="background ui", count=4,
@@ -115,7 +115,7 @@ def test_round_robin_single_pack_falls_back_to_score(
     populated_store, fake_embedder
 ) -> None:
     """후보가 한 팩에 몰려 있으면 round_robin 도 score 순서로 폴백."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, store = _build_searcher(populated_store, fake_embedder)
     # force_pack_id 로 pack_a 만 스코프 — 후보 단일 팩.
@@ -135,7 +135,7 @@ def test_candidates_below_count_returns_all_regardless_of_diversity(
     populated_store, fake_embedder
 ) -> None:
     """후보 <= count 시 diversity 무관하게 모두 반환."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(populated_store, fake_embedder)
     # count=100 — 후보 6 자산 전부 통과.
@@ -150,7 +150,7 @@ def test_candidates_below_count_returns_all_regardless_of_diversity(
 
 def test_mmr_does_not_alter_score_breakdown(populated_store, fake_embedder) -> None:
     """다양성은 순위만 — `score_breakdown` 채널 값은 변경 없음."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(populated_store, fake_embedder)
     res_none = searcher.hybrid(SearchRequest(query="hero", count=4, diversity="none"))
@@ -172,7 +172,7 @@ def test_diversity_lambda_none_uses_config_default(
     populated_store, fake_embedder
 ) -> None:
     """`diversity_lambda=None` 시 Config.diversity_mmr_lambda 적용."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher_a, _ = _build_searcher(populated_store, fake_embedder,
                                      config_overrides={"diversity_mmr_lambda": 1.0})

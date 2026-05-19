@@ -24,12 +24,12 @@ def test_babel_cfg_exists():
 
 def test_pot_has_known_msgids(tmp_path):
     """Task 6 후: 영어 msgid 들이 .pot 에 들어 있어야 한다."""
-    pot = REPO_ROOT / "src" / "gah" / "web" / "locale" / "messages.pot"
+    pot = REPO_ROOT / "src" / "assetcache" / "web" / "locale" / "messages.pot"
     if not pot.exists():
         pytest.skip(".pot 미생성 — pybabel extract 실행 필요")
     body = pot.read_text(encoding="utf-8")
     # Task 6 후: 영어 msgid 들이 들어 있어야 한다.
-    for expected in ("Library", "Packs", "Projects", "Game Asset Helper"):
+    for expected in ("Library", "Packs", "Projects", "AssetCacheMCP"):
         assert expected in body, f"msgid 누락: {expected}"
     # 한국어 msgid 가 남아 있으면 Task 6 미완.
     import re

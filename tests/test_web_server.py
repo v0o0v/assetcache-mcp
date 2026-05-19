@@ -1,11 +1,11 @@
-"""M5 — WebServer (uvicorn 별 스레드) 검증."""
+﻿"""M5 — WebServer (uvicorn 별 스레드) 검증."""
 from __future__ import annotations
 import socket
 import time
 import pytest
 import httpx
 
-from gah.web.server import WebServer
+from assetcache.web.server import WebServer
 
 
 def test_actual_port_set_after_start(deps_fixture):

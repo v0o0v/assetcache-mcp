@@ -1,4 +1,4 @@
-"""Tests for gah.tray — icon contents and activation handler.
+﻿"""Tests for assetcache.tray — icon contents and activation handler.
 
 Visual quality of the tray icon is a manual check; here we only verify
 that the pixmap is no longer fully transparent (i.e. we actually drew
@@ -19,7 +19,7 @@ def test_build_app_icon_is_non_empty() -> None:
     _make_qapplication()
     from PySide6.QtGui import QIcon
 
-    from gah.tray import _build_app_icon
+    from assetcache.tray import _build_app_icon
 
     icon = _build_app_icon()
     assert isinstance(icon, QIcon)
@@ -46,7 +46,7 @@ def test_double_click_invokes_on_open_main() -> None:
     _make_qapplication()
     from PySide6.QtWidgets import QSystemTrayIcon
 
-    from gah.tray import _handle_tray_activation
+    from assetcache.tray import _handle_tray_activation
 
     calls: list[None] = []
     _handle_tray_activation(QSystemTrayIcon.DoubleClick, lambda: calls.append(None))
@@ -57,7 +57,7 @@ def test_single_click_and_context_do_not_invoke_on_open_main() -> None:
     _make_qapplication()
     from PySide6.QtWidgets import QSystemTrayIcon
 
-    from gah.tray import _handle_tray_activation
+    from assetcache.tray import _handle_tray_activation
 
     calls: list[None] = []
     cb = lambda: calls.append(None)  # noqa: E731 — short test helper
@@ -77,7 +77,7 @@ def test_handler_tolerates_none_callback() -> None:
     _make_qapplication()
     from PySide6.QtWidgets import QSystemTrayIcon
 
-    from gah.tray import _handle_tray_activation
+    from assetcache.tray import _handle_tray_activation
 
     # Should not raise when no callback is registered (tests / headless paths).
     _handle_tray_activation(QSystemTrayIcon.DoubleClick, None)

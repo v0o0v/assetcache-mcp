@@ -1,4 +1,4 @@
-"""M3 — MCP 12 도구의 동작 검증 (in-process)."""
+﻿"""M3 — MCP 12 도구의 동작 검증 (in-process)."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import pytest
 
 
 def _find(deps, **kwargs):
-    from gah.mcp.models import FindAssetRequest
-    from gah.mcp.tools import tool_find_asset
+    from assetcache.mcp.models import FindAssetRequest
+    from assetcache.mcp.tools import tool_find_asset
 
     return tool_find_asset(deps, FindAssetRequest(**kwargs))
 
@@ -42,8 +42,8 @@ def test_find_asset_propagates_labels_filter_to_searcher(mcp_tool_deps, populate
 
 
 def test_get_asset_by_id(mcp_tool_deps, populated_store):
-    from gah.mcp.models import GetAssetRequest
-    from gah.mcp.tools import tool_get_asset
+    from assetcache.mcp.models import GetAssetRequest
+    from assetcache.mcp.tools import tool_get_asset
 
     _, ids = populated_store
     deps = mcp_tool_deps()
@@ -53,8 +53,8 @@ def test_get_asset_by_id(mcp_tool_deps, populated_store):
 
 
 def test_get_asset_by_path(mcp_tool_deps, populated_store):
-    from gah.mcp.models import GetAssetRequest
-    from gah.mcp.tools import tool_get_asset
+    from assetcache.mcp.models import GetAssetRequest
+    from assetcache.mcp.tools import tool_get_asset
 
     _, ids = populated_store
     deps = mcp_tool_deps()
@@ -63,8 +63,8 @@ def test_get_asset_by_path(mcp_tool_deps, populated_store):
 
 
 def test_get_asset_404_when_missing(mcp_tool_deps):
-    from gah.mcp.models import GetAssetRequest
-    from gah.mcp.tools import McpToolError, tool_get_asset
+    from assetcache.mcp.models import GetAssetRequest
+    from assetcache.mcp.tools import McpToolError, tool_get_asset
 
     deps = mcp_tool_deps()
     with pytest.raises(McpToolError) as exc_info:
@@ -73,8 +73,8 @@ def test_get_asset_404_when_missing(mcp_tool_deps):
 
 
 def test_list_assets_pagination(mcp_tool_deps):
-    from gah.mcp.models import ListAssetsRequest
-    from gah.mcp.tools import tool_list_assets
+    from assetcache.mcp.models import ListAssetsRequest
+    from assetcache.mcp.tools import tool_list_assets
 
     deps = mcp_tool_deps()
     page1 = tool_list_assets(deps, ListAssetsRequest(page=1, page_size=2))
@@ -86,7 +86,7 @@ def test_list_assets_pagination(mcp_tool_deps):
 
 
 def test_list_packs_includes_asset_counts(mcp_tool_deps):
-    from gah.mcp.tools import tool_list_packs
+    from assetcache.mcp.tools import tool_list_packs
 
     deps = mcp_tool_deps()
     res = tool_list_packs(deps)
@@ -96,8 +96,8 @@ def test_list_packs_includes_asset_counts(mcp_tool_deps):
 
 
 def test_suggest_packs_returns_pack_score_breakdown(mcp_tool_deps):
-    from gah.mcp.models import SuggestPacksRequest
-    from gah.mcp.tools import tool_suggest_packs
+    from assetcache.mcp.models import SuggestPacksRequest
+    from assetcache.mcp.tools import tool_suggest_packs
 
     deps = mcp_tool_deps()
     res = tool_suggest_packs(deps, SuggestPacksRequest(query="character"))
@@ -108,8 +108,8 @@ def test_suggest_packs_returns_pack_score_breakdown(mcp_tool_deps):
 
 
 def test_suggest_packs_groups_by_pack(mcp_tool_deps, populated_store):
-    from gah.mcp.models import SuggestPacksRequest
-    from gah.mcp.tools import tool_suggest_packs
+    from assetcache.mcp.models import SuggestPacksRequest
+    from assetcache.mcp.tools import tool_suggest_packs
 
     _, ids = populated_store
     deps = mcp_tool_deps()
@@ -120,8 +120,8 @@ def test_suggest_packs_groups_by_pack(mcp_tool_deps, populated_store):
 
 
 def test_record_asset_use_persists(mcp_tool_deps, populated_store):
-    from gah.mcp.models import RecordAssetUseRequest
-    from gah.mcp.tools import tool_record_asset_use
+    from assetcache.mcp.models import RecordAssetUseRequest
+    from assetcache.mcp.tools import tool_record_asset_use
 
     store, ids = populated_store
     deps = mcp_tool_deps()
@@ -138,8 +138,8 @@ def test_record_asset_use_persists(mcp_tool_deps, populated_store):
 
 def test_record_asset_use_default_source_is_manual(mcp_tool_deps, populated_store):
     """MCP 경로의 디폴트 source 는 'manual' (M5 plan §4.4 Task 4.8 — auto-record 와 구분)."""
-    from gah.mcp.models import RecordAssetUseRequest
-    from gah.mcp.tools import tool_record_asset_use
+    from assetcache.mcp.models import RecordAssetUseRequest
+    from assetcache.mcp.tools import tool_record_asset_use
 
     store, ids = populated_store
     deps = mcp_tool_deps()
@@ -153,8 +153,8 @@ def test_record_asset_use_default_source_is_manual(mcp_tool_deps, populated_stor
 
 
 def test_record_asset_use_affects_next_consistency(mcp_tool_deps, populated_store):
-    from gah.mcp.models import RecordAssetUseRequest
-    from gah.mcp.tools import tool_record_asset_use
+    from assetcache.mcp.models import RecordAssetUseRequest
+    from assetcache.mcp.tools import tool_record_asset_use
 
     _, ids = populated_store
     deps = mcp_tool_deps()
@@ -175,8 +175,8 @@ def test_record_asset_use_affects_next_consistency(mcp_tool_deps, populated_stor
 
 
 def test_set_project_pin_persists(mcp_tool_deps):
-    from gah.mcp.models import SetProjectPinRequest
-    from gah.mcp.tools import tool_set_project_pin
+    from assetcache.mcp.models import SetProjectPinRequest
+    from assetcache.mcp.tools import tool_set_project_pin
 
     deps = mcp_tool_deps()
     res = tool_set_project_pin(deps, SetProjectPinRequest(
@@ -186,8 +186,8 @@ def test_set_project_pin_persists(mcp_tool_deps):
 
 
 def test_set_project_pin_makes_pack_first_in_next_search(mcp_tool_deps, populated_store):
-    from gah.mcp.models import SetProjectPinRequest
-    from gah.mcp.tools import tool_set_project_pin
+    from assetcache.mcp.models import SetProjectPinRequest
+    from assetcache.mcp.tools import tool_set_project_pin
 
     _, ids = populated_store
     deps = mcp_tool_deps()
@@ -200,8 +200,8 @@ def test_set_project_pin_makes_pack_first_in_next_search(mcp_tool_deps, populate
 
 
 def test_request_rescan_pack_enqueues_via_queue(mcp_tool_deps, populated_store):
-    from gah.mcp.models import RequestRescanRequest
-    from gah.mcp.tools import tool_request_rescan
+    from assetcache.mcp.models import RequestRescanRequest
+    from assetcache.mcp.tools import tool_request_rescan
 
     _, ids = populated_store
 
@@ -223,8 +223,8 @@ def test_request_rescan_pack_enqueues_via_queue(mcp_tool_deps, populated_store):
 
 
 def test_request_rescan_without_queue_returns_warning(mcp_tool_deps, populated_store):
-    from gah.mcp.models import RequestRescanRequest
-    from gah.mcp.tools import tool_request_rescan
+    from assetcache.mcp.models import RequestRescanRequest
+    from assetcache.mcp.tools import tool_request_rescan
 
     _, ids = populated_store
     deps = mcp_tool_deps(queue=None)
@@ -234,8 +234,8 @@ def test_request_rescan_without_queue_returns_warning(mcp_tool_deps, populated_s
 
 
 def test_report_feedback_logs_and_returns_ok(mcp_tool_deps, populated_store):
-    from gah.mcp.models import ReportFeedbackRequest
-    from gah.mcp.tools import tool_report_feedback
+    from assetcache.mcp.models import ReportFeedbackRequest
+    from assetcache.mcp.tools import tool_report_feedback
 
     store, ids = populated_store
     deps = mcp_tool_deps()
@@ -249,7 +249,7 @@ def test_report_feedback_logs_and_returns_ok(mcp_tool_deps, populated_store):
 
 
 def test_list_label_axes_returns_24(mcp_tool_deps):
-    from gah.mcp.tools import tool_list_label_axes
+    from assetcache.mcp.tools import tool_list_label_axes
 
     deps = mcp_tool_deps()
     res = tool_list_label_axes(deps)
@@ -257,8 +257,8 @@ def test_list_label_axes_returns_24(mcp_tool_deps):
 
 
 def test_list_labels_includes_signature(mcp_tool_deps):
-    from gah.mcp.models import ListLabelsRequest
-    from gah.mcp.tools import tool_list_labels
+    from assetcache.mcp.models import ListLabelsRequest
+    from assetcache.mcp.tools import tool_list_labels
 
     deps = mcp_tool_deps()
     res = tool_list_labels(deps, ListLabelsRequest(axis="style"))
@@ -267,8 +267,8 @@ def test_list_labels_includes_signature(mcp_tool_deps):
 
 
 def test_list_labels_signature_changes_after_add(mcp_tool_deps):
-    from gah.mcp.models import ListLabelsRequest
-    from gah.mcp.tools import tool_list_labels
+    from assetcache.mcp.models import ListLabelsRequest
+    from assetcache.mcp.tools import tool_list_labels
 
     deps = mcp_tool_deps()
     sig_before = tool_list_labels(deps, ListLabelsRequest()).signature
@@ -278,8 +278,8 @@ def test_list_labels_signature_changes_after_add(mcp_tool_deps):
 
 
 def test_describe_label_returns_top3_samples(mcp_tool_deps):
-    from gah.mcp.models import DescribeLabelRequest
-    from gah.mcp.tools import tool_describe_label
+    from assetcache.mcp.models import DescribeLabelRequest
+    from assetcache.mcp.tools import tool_describe_label
 
     deps = mcp_tool_deps()
     res = tool_describe_label(deps, DescribeLabelRequest(axis="category", label="character"))
@@ -291,8 +291,8 @@ def test_describe_label_returns_top3_samples(mcp_tool_deps):
 
 def test_write_tools_acquire_store_write_lock(mcp_tool_deps, populated_store):
     """write 도구가 store.write_lock 안에서 동작하는지 spy."""
-    from gah.mcp.models import RecordAssetUseRequest
-    from gah.mcp.tools import tool_record_asset_use
+    from assetcache.mcp.models import RecordAssetUseRequest
+    from assetcache.mcp.tools import tool_record_asset_use
 
     store, ids = populated_store
     original_lock = store.write_lock

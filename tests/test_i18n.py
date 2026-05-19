@@ -1,11 +1,11 @@
-"""M8 — `_t()` gettext 위임 + 폴백 체인 단위 테스트."""
+﻿"""M8 — `_t()` gettext 위임 + 폴백 체인 단위 테스트."""
 from __future__ import annotations
 import struct
 from pathlib import Path
 
 import pytest
 
-from gah.web import i18n
+from assetcache.web import i18n
 
 
 def _write_mo(path: Path, entries: dict[str, str]) -> None:

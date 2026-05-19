@@ -1,4 +1,4 @@
-"""M4 — `suggest_packs.samples` 풍부화 (`thumbnail_path` + `preview_blurb`).
+﻿"""M4 — `suggest_packs.samples` 풍부화 (`thumbnail_path` + `preview_blurb`).
 
 v1 정책 (M5+ 가 description 통합 시 갱신):
 - sprite sample → `thumbnail_path` = lazy 256×256 PNG 캐시
@@ -24,7 +24,7 @@ def _enrich(populated_store, tmp_thumbnail_cache,
     sprite_file_on_disk fixture 가 asset.path 를 절대경로로 업데이트하므로
     library_root / absolute_path → absolute_path (pathlib Windows 동작).
     """
-    from gah.core.suggest_packs import enrich_sample
+    from assetcache.core.suggest_packs import enrich_sample
 
     store, ids = populated_store
     aid = ids["hero"] if sprite else ids["bgm_loop"]
@@ -103,7 +103,7 @@ def test_blurb_format_is_axis_equals_label_separator(
     populated_store, tmp_thumbnail_cache
 ) -> None:
     """단일 라벨만 있는 자산 — blurb = `axis=label` 한 쌍."""
-    from gah.core.suggest_packs import enrich_sample
+    from assetcache.core.suggest_packs import enrich_sample
 
     store, ids = populated_store
     # jump 자산은 sound_category=sfx 1 라벨 — 단일 페어 케이스.

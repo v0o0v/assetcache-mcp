@@ -1,4 +1,4 @@
-"""Tests for gah.core.store — SQLite schema + pack/asset CRUD."""
+﻿"""Tests for assetcache.core.store — SQLite schema + pack/asset CRUD."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ def test_pragma_journal_mode_is_wal(store) -> None:
 
 
 def test_initialize_is_idempotent(tmp_appdata: Path) -> None:
-    from gah.core.store import Store
+    from assetcache.core.store import Store
 
     s = Store(tmp_appdata / "x.db")
     s.initialize()
@@ -39,7 +39,7 @@ def test_initialize_is_idempotent(tmp_appdata: Path) -> None:
 
 
 def test_upsert_pack_inserts_then_updates(store) -> None:
-    from gah.core.manifest import PackManifest
+    from assetcache.core.manifest import PackManifest
 
     m1 = PackManifest(display_name="Demo", vendor="kenney", source_url=None, license="CC0", description=None)
     pid = store.upsert_pack("kenney_demo", m1, scanned_at=100)
@@ -59,7 +59,7 @@ def test_upsert_pack_inserts_then_updates(store) -> None:
 
 
 def test_upsert_pack_returns_stable_id(store) -> None:
-    from gah.core.manifest import PackManifest
+    from assetcache.core.manifest import PackManifest
 
     m = PackManifest(None, None, None, None, None)
     pid_a = store.upsert_pack("alpha", m, scanned_at=0)
@@ -70,7 +70,7 @@ def test_upsert_pack_returns_stable_id(store) -> None:
 
 
 def test_delete_pack_cascades_assets(store) -> None:
-    from gah.core.manifest import PackManifest
+    from assetcache.core.manifest import PackManifest
 
     pid = store.upsert_pack("p", PackManifest(None, None, None, None, None), scanned_at=0)
     store.upsert_asset(pid, "p/a.png", "sprite", "h1", 10, added_at=0)
@@ -82,7 +82,7 @@ def test_delete_pack_cascades_assets(store) -> None:
 
 
 def test_upsert_asset_sets_pending_state(store) -> None:
-    from gah.core.manifest import PackManifest
+    from assetcache.core.manifest import PackManifest
 
     pid = store.upsert_pack("p", PackManifest(None, None, None, None, None), scanned_at=0)
     aid = store.upsert_asset(pid, "p/a.png", "sprite", "deadbeef", 100, added_at=0)
@@ -95,7 +95,7 @@ def test_upsert_asset_sets_pending_state(store) -> None:
 
 
 def test_upsert_asset_with_same_hash_is_noop(store) -> None:
-    from gah.core.manifest import PackManifest
+    from assetcache.core.manifest import PackManifest
 
     pid = store.upsert_pack("p", PackManifest(None, None, None, None, None), scanned_at=0)
     aid = store.upsert_asset(pid, "p/a.png", "sprite", "hash-A", 100, added_at=0)
@@ -115,7 +115,7 @@ def test_upsert_asset_with_same_hash_is_noop(store) -> None:
 
 
 def test_upsert_asset_with_changed_hash_resets_analysis(store) -> None:
-    from gah.core.manifest import PackManifest
+    from assetcache.core.manifest import PackManifest
 
     pid = store.upsert_pack("p", PackManifest(None, None, None, None, None), scanned_at=0)
     aid = store.upsert_asset(pid, "p/a.png", "sprite", "hash-A", 100, added_at=0)
@@ -134,7 +134,7 @@ def test_upsert_asset_with_changed_hash_resets_analysis(store) -> None:
 
 
 def test_delete_assets_outside_removes_missing_only(store) -> None:
-    from gah.core.manifest import PackManifest
+    from assetcache.core.manifest import PackManifest
 
     pid = store.upsert_pack("p", PackManifest(None, None, None, None, None), scanned_at=0)
     store.upsert_asset(pid, "p/keep.png", "sprite", "h1", 1, added_at=0)
@@ -148,8 +148,8 @@ def test_delete_assets_outside_removes_missing_only(store) -> None:
 
 
 def test_list_packs_returns_dataclasses(store) -> None:
-    from gah.core.manifest import PackManifest
-    from gah.core.store import PackRow
+    from assetcache.core.manifest import PackManifest
+    from assetcache.core.store import PackRow
 
     store.upsert_pack(
         "p1",
@@ -164,7 +164,7 @@ def test_list_packs_returns_dataclasses(store) -> None:
 
 
 def test_assets_for_pack_returns_in_path_order(store) -> None:
-    from gah.core.manifest import PackManifest
+    from assetcache.core.manifest import PackManifest
 
     pid = store.upsert_pack("p", PackManifest(None, None, None, None, None), scanned_at=0)
     for rel in ("p/zeta.png", "p/alpha.png", "p/mu.wav"):
@@ -179,8 +179,8 @@ def test_assets_for_pack_returns_in_path_order(store) -> None:
 
 def test_get_pack_by_id_returns_pack_row(store) -> None:
     """존재하는 pack_id → PackRow 반환."""
-    from gah.core.manifest import PackManifest
-    from gah.core.store import PackRow
+    from assetcache.core.manifest import PackManifest
+    from assetcache.core.store import PackRow
 
     pid = store.upsert_pack(
         "kenney_demo",
@@ -206,7 +206,7 @@ def test_get_pack_by_id_returns_none_for_missing(store) -> None:
 def test_get_saved_search_by_id_returns_row(store) -> None:
     """존재하는 saved_search id → SavedSearchRow 반환."""
     import json
-    from gah.core.store import SavedSearchRow
+    from assetcache.core.store import SavedSearchRow
 
     store.upsert_saved_search(
         project_id=None,

@@ -4,13 +4,16 @@
 
 ## 1. 프로젝트 한 줄 소개
 
-**Game Asset Helper (GAH)** — Unity 게임 개발 중 Claude Code가 보유 에셋(2D 스프라이트, 스프라이트 시트, 사운드)을 자연어로 요청하면 가장 적합한 후보를 돌려주는 **MCP 서버 + 윈도우즈 트레이 상주 앱**.
+**AssetCacheMCP (`assetcache-mcp`)** — Unity 게임 개발 중 Claude Code가 보유 에셋(2D 스프라이트, 스프라이트 시트, 사운드)을 자연어로 요청하면 가장 적합한 후보를 돌려주는 **MCP 서버 + 윈도우즈 트레이 상주 앱**.
 
 핵심 아이디어
 - 사용자가 `library/<pack>/...` 형태로 에셋 팩을 드롭하면 자동 인덱싱.
 - Ollama로 도는 Gemma 4(`gemma4:e4b`)가 이미지·오디오를 직접 보고 의미 라벨을 만든다.
 - 한 프로젝트에서 한 번 채택한 팩을 이후 검색에서 우선시해 통일성을 유지.
 - Unity Asset Store 로컬 캐시(`.unitypackage`)도 자동 임포트.
+- **PyPI 1차 배포** — `pipx install assetcache-mcp` / `uv tool install assetcache-mcp` (Windows + Mac + Linux 동시 지원). 단일 `.exe` 는 2차 옵션.
+
+> 이 프로젝트는 M10 에서 **`Game Asset Helper` / `gah` → `AssetCacheMCP` / `assetcache-mcp`** 로 리네임되었다. v0.0.1 사용자는 자동 마이그레이션 배너 또는 `assetcache --migrate=copy` 사용.
 
 자세한 아키텍처는 [`DESIGN.md`](./DESIGN.md).
 
@@ -28,6 +31,7 @@
 | M6 — 시트 분석 + 애니메이션 | ✅ 완료 ([PR #7](https://github.com/v0o0v/game-asset-helper/pull/7) main 머지) + 후속 patch 8건 | sheet 4 모듈 + SpritesheetAnalyzer + `suggest_animation_frames` MCP 18번째 + 와이드/리스트 카드 🎞 배지 + Ollama cold-start retry. 신규 의존성 0. **91 신규 테스트** (M6 spec +84, 후속 patch +7, 총 887). spec: [`docs/superpowers/specs/2026-05-18-m6-sheet-and-animation-design.md`](./docs/superpowers/specs/2026-05-18-m6-sheet-and-animation-design.md) |
 | **M7 — Unity Asset Store 임포트 (1주)** | **✅ 완료** ([PR #8](https://github.com/v0o0v/game-asset-helper/pull/8) main 머지) + 후속 patch 19건 | `.unitypackage` 파서·캐시 스캐너·임포터 + 활성 프로젝트 + 프로젝트 페이지 + 자산별 선호도 + 20 MCP 도구. 신규 의존성 0. **+124 신규 테스트** (총 1002). spec: [`docs/superpowers/specs/2026-05-18-m7-unity-asset-store-import.md`](./docs/superpowers/specs/2026-05-18-m7-unity-asset-store-import.md), plan: [`milestones/M7_plan.md`](./milestones/M7_plan.md) |
 | **M8 — 패키징 + i18n (1주)** | **✅ 완료** ([PR #9](https://github.com/v0o0v/game-asset-helper/pull/9) + [PR #10](https://github.com/v0o0v/game-asset-helper/pull/10) main 머지 + 후속 fix 2건 main 직접 누적, 수동 검증 통과) | PyInstaller `--onefile` + Babel gettext (ko/en) + 다크모드 토글 + Windows autostart. 신규 의존성 2 (Babel>=2.14, pyinstaller>=6 dev). **+44 신규 테스트** (총 1046). `dist/GameAssetHelper.exe` 308MB 부팅 검증 통과. spec: [`docs/superpowers/specs/2026-05-19-m8-packaging-and-i18n-design.md`](./docs/superpowers/specs/2026-05-19-m8-packaging-and-i18n-design.md), plan: [`milestones/M8_plan.md`](./milestones/M8_plan.md) |
+| **M10 — PyPI 배포 + AssetCacheMCP rename + 마이그레이션 (1.5~2주)** | **🚧 in-flight** (`claude/brave-tesla-80fb0e` 브랜치, Phase 0~2 + 3 완료) | rename (`gah` → `assetcache`) + 마이그레이션 helper (`%APPDATA%\GameAssetHelper\` → `%APPDATA%\AssetCacheMCP\`) + M9 cherry-pick (PyPI 알림 배너 + tray Signal) + docs 일괄 갱신 + verification. plan: [`docs/superpowers/plans/2026-05-19-m10-pypi-and-rename.md`](./docs/superpowers/plans/2026-05-19-m10-pypi-and-rename.md) |
 
 각 마일스톤의 상세 계획·체크리스트·검증 결과는 `milestones/M{N}_plan.md`, `M{N}_todo.md`, `M{N}_verification.md`.
 
@@ -68,8 +72,8 @@
 - 설계 문서/코드에 모델명·버전 같은 고정값을 박기 전에 반드시 검증.
 
 ### 4.5 작업 폴더와 분리
-- 코드/문서 변경: `D:\ClaudeCowork\game-asset-helper\game-asset-helper\` (이 저장소 안)
-- venv·런타임 데이터: 저장소 바깥. venv는 `%USERPROFILE%\.venvs\gah\`, GAH 런타임 데이터는 `%APPDATA%\GameAssetHelper\`.
+- 코드/문서 변경: `D:\ClaudeCowork\game-asset-helper\game-asset-helper\` (이 저장소 안). M10 진행 중에는 worktree `D:\ClaudeCowork\game-asset-helper\game-asset-helper\.claude\worktrees\brave-tesla-80fb0e\` 에서 작업
+- venv·런타임 데이터: 저장소 바깥. venv는 `%USERPROFILE%\.venvs\gah\` (이름은 그대로 유지), AssetCacheMCP 런타임 데이터는 `%APPDATA%\AssetCacheMCP\` (M10 이전 v0.0.1 사용자는 `%APPDATA%\GameAssetHelper\` 가 잔존).
 
 ## 5. 디렉터리 구조
 
@@ -86,15 +90,22 @@ game-asset-helper/
 │   ├── M1_plan.md / M1_todo.md / M1_verification.md
 │   └── M{N}_*.md             # 각 마일스톤별 3종 세트
 ├── src/
-│   └── gah/
+│   └── assetcache/           # M10 에서 src/gah/ → src/assetcache/ rename
 │       ├── __init__.py
-│       ├── __main__.py       # CLI 엔트리(--tray / --mcp / --version / --data-dir)
+│       ├── __main__.py       # CLI 엔트리(--tray / --mcp / --version / --data-dir / --migrate)
 │       ├── config.py         # AppPaths / Config / load_config / save_config
 │       ├── logging_setup.py  # 회전 파일 + stderr 핸들러
 │       ├── platform/
 │       │   └── single_instance.py
 │       ├── app.py            # QApplication 부트 (지연 import) + 워처/스토어 연결
-│       ├── tray.py           # 트레이 아이콘 + "메인 창 열기" 액션
+│       ├── tray.py           # 트레이 아이콘 + "메인 창 열기" 액션 + PyPI 업데이트 메뉴
+│       ├── updater/          # M10 Phase 2 — PyPI 알림
+│       │   ├── version.py        # 현재 설치 버전 조회
+│       │   ├── checker.py        # PyPI JSON API + 캐시
+│       │   └── pip_command.py    # 환경 (pipx/uv/pip) 분기 → upgrade 명령 문자열
+│       ├── migration/        # M10 Phase 1 — v0.0.1 → AssetCacheMCP
+│       │   ├── detect.py         # %APPDATA%\GameAssetHelper\ 후보 탐지
+│       │   └── migrate.py        # copy/move + .migrated_from_v001 마커
 │       ├── core/             # M1 도메인 로직
 │       │   ├── asset_kind.py     # 확장자→sprite/sound
 │       │   ├── manifest.py       # pack.json/pack.toml + 벤더 휴리스틱
@@ -103,7 +114,7 @@ game-asset-helper/
 │       │   ├── scanner.py        # 부팅 풀스캔 화해
 │       │   └── watcher.py        # watchdog 어댑터 + PackDebouncer
 │       ├── web/              # M5 FastAPI 웹 서버 (app/server/routers/templates/static)
-│       └── ui/               # M5 Phase 5C 에서 완전 삭제됨 (src/gah/ui/ 디렉터리 없음)
+│       └── ui/               # M5 Phase 5C 에서 완전 삭제됨 (src/assetcache/ui/ 디렉터리 없음)
 └── tests/
     ├── conftest.py
     ├── test_config.py / test_logging.py / test_single_instance.py / test_entrypoint.py / test_imports.py  # M0
@@ -135,7 +146,7 @@ cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
 pytest -q
 ```
 
-`pytest -q`가 **1046 passed + 1 skipped + 40 deselected** 로 떨어지면 준비 완료 (M0~M4 의 452 baseline + M5 Phase 0~6 의 +344 + M6 +91 + M7 +115 + M8 +44). `pytest -m mcp_integration` 으로 옵트인 2 케이스 (실 `python -m gah --mcp` subprocess + JSON-RPC, **20 도구** 응답) 추가 검증 가능. M5 최종 검증 결과는 [`milestones/M5_verification.md`](./milestones/M5_verification.md). M6 최종 검증 결과는 [`milestones/M6_verification.md`](./milestones/M6_verification.md). M7 최종 검증 결과는 [`milestones/M7_verification.md`](./milestones/M7_verification.md). M8 최종 검증 결과는 [`milestones/M8_verification.md`](./milestones/M8_verification.md). **M4 + M5 + M6 + M7 + M8 모두 main 머지 완료** ([PR #5](https://github.com/v0o0v/game-asset-helper/pull/5), [PR #6](https://github.com/v0o0v/game-asset-helper/pull/6), [PR #7](https://github.com/v0o0v/game-asset-helper/pull/7), [PR #8](https://github.com/v0o0v/game-asset-helper/pull/8), [PR #9](https://github.com/v0o0v/game-asset-helper/pull/9) + [PR #10](https://github.com/v0o0v/game-asset-helper/pull/10) + 후속 fix 2건 main 직접). **수동 검증 통과** — `dist/GameAssetHelper.exe` 308MB 부팅 + i18n/다크모드/autostart/포트 9874 모두 정상. **현재 브랜치 = `main`**.
+`pytest -q`가 **1103 passed + 1 skipped + 40 deselected** 로 떨어지면 준비 완료 (M0~M8 의 1046 baseline + M10 Phase 0~2 의 +47 + Phase 3 의 +10). `pytest -m mcp_integration` 으로 옵트인 2 케이스 (실 `python -m assetcache --mcp` subprocess + JSON-RPC, **20 도구** 응답) 추가 검증 가능. 마일스톤별 최종 검증 결과는 `milestones/M{N}_verification.md`. **M4 + M5 + M6 + M7 + M8 모두 main 머지 완료** ([PR #5](https://github.com/v0o0v/game-asset-helper/pull/5), [PR #6](https://github.com/v0o0v/game-asset-helper/pull/6), [PR #7](https://github.com/v0o0v/game-asset-helper/pull/7), [PR #8](https://github.com/v0o0v/game-asset-helper/pull/8), [PR #9](https://github.com/v0o0v/game-asset-helper/pull/9) + [PR #10](https://github.com/v0o0v/game-asset-helper/pull/10) + 후속 fix 2건 main 직접). **수동 검증 통과** — `dist/GameAssetHelper.exe` 308MB 부팅 + i18n/다크모드/autostart/포트 9874 모두 정상. **현재 브랜치 = `claude/brave-tesla-80fb0e`** (M10 in-flight, main 위 31 commits + Phase 3).
 
 ## 7. 자주 쓰는 명령
 
@@ -154,31 +165,50 @@ pytest tests/test_config.py -v
 트레이 모드 실행:
 
 ```powershell
-python -m gah --tray
+python -m assetcache --tray
 ```
 
 버전 확인:
 
 ```powershell
-python -m gah --version
+python -m assetcache --version
 ```
 
-## 8. 다음 작업 (v2 — PyPI 배포 + AssetCacheMCP rename)
+MCP stdio 서버 모드:
+
+```powershell
+python -m assetcache --mcp
+```
+
+마이그레이션 (v0.0.1 → AssetCacheMCP, 헤드리스):
+
+```powershell
+python -m assetcache --migrate=copy
+```
+
+또는 이동:
+
+```powershell
+python -m assetcache --migrate=move
+```
+
+## 8. 다음 작업 (M10 Phase 4 — PyPI 빌드 + 배포)
 
 v1 (M0~M8) ✅ 완료 + [v0.0.1 GitHub release published](https://github.com/v0o0v/game-asset-helper/releases/tag/v0.0.1) (`GameAssetHelper.exe` 323MB). M9 (코드 서명 + 자동 업데이트) implementation 완료 (`feat/m9-code-signing-and-auto-update` 21 commits, 1111 tests) — 단 **path pivot: PyPI 1순위 결정** 으로 main 머지 보류.
 
-**v2 결정 사항** (2026-05-19):
+**M10 결정 사항** (2026-05-19):
 
 1. **PyPI 1순위 배포** — `pipx install assetcache-mcp` 또는 `uv tool install assetcache-mcp` 로 Windows + Mac + Linux 동시 지원. SmartScreen 우회 불필요, 비용 $0
 2. **앱 rename** — `Game Asset Helper` / `gah` → **`AssetCacheMCP`** / `assetcache-mcp` (PyPI 패키지) / `assetcache` (CLI). 패키지 디렉터리 `src/gah/` → `src/assetcache/`
-3. **M9 보류** — Installer / swap / `--complete-update` 는 PyPI 흐름에서 불필요 (`pip install -U` 가 대체). UpdateChecker / version / web banner / tray Signal 등 cross-platform 모듈은 재사용 가능
+3. **M9 cherry-pick** — Installer / swap / `--complete-update` drop. UpdateChecker / version / web banner / tray Signal 은 재사용 (Phase 2 에서 완료)
 4. **SignPath** — Option B 로 보류. 신청 docs (`docs/SIGNPATH_APPLICATION.md` + `docs/CODE_SIGNING_POLICY.md`) 는 `feat/m9` 에 보존
 
 ### 8.1 현재 상태
 
-- **main 브랜치** — 마지막 commit `9069e55` (M9 plan + cover). M9 이후 모든 변경은 `feat/m9` 위에만
-- **feat/m9-code-signing-and-auto-update** — 21 commits, **1111 passed + 1 skipped + 40 deselected**, push 안 됨, main 머지 보류
-- MCP **20 도구** (M9 신규 0)
+- **worktree** — `D:\ClaudeCowork\game-asset-helper\game-asset-helper\.claude\worktrees\brave-tesla-80fb0e\` 에서 작업
+- **claude/brave-tesla-80fb0e** — main 위 31 commits (M10 Phase 0~3 완료), **1103 passed + 1 skipped + 40 deselected**, push 안 됨
+- M10 Phase 진행: Phase 0 (rename mechanical) ✅ + Phase 1 (마이그레이션 helper) ✅ + Phase 2 (PyPI 알림) ✅ + Phase 3 (docs + i18n catalog + verification) ✅
+- MCP **20 도구** (M10 신규 0)
 - v1 release: [v0.0.1 published](https://github.com/v0o0v/game-asset-helper/releases/tag/v0.0.1) (서명 X, SmartScreen 차단 해제 안내 release notes 포함)
 
 ### 8.2 다음 세션 진입 시 첫 작업
@@ -188,31 +218,24 @@ v1 (M0~M8) ✅ 완료 + [v0.0.1 GitHub release published](https://github.com/v0o
    & "$env:USERPROFILE\.venvs\gah\Scripts\Activate.ps1"
    ```
    ```powershell
-   cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
+   cd D:\ClaudeCowork\game-asset-helper\game-asset-helper\.claude\worktrees\brave-tesla-80fb0e
    ```
 
-2. **main 으로 체크아웃** (M9 보존):
-   ```powershell
-   git checkout main
-   ```
-
-3. **회귀 검증**:
+2. **회귀 검증**:
    ```powershell
    pytest -q
    ```
-   → `1046 passed, 1 skipped, 40 deselected` (main 기준, M9 의 +65 는 feat/m9 에만).
+   → `1103 passed, 1 skipped, 40 deselected` (Phase 0~3 누적).
 
-4. **PyPI 점유 확인**:
-   - https://pypi.org/project/assetcache-mcp/ 가 404 면 점유 가능. 점유 시 변형 (`assetcachemcp`, `asset-cache-mcp`, etc.) 검토
+3. **Phase 4 진행** — `docs/superpowers/plans/2026-05-19-m10-pypi-and-rename.md §Phase 4`:
+   - `pyproject.toml` 최종 확정 (name, version, entry_points, classifiers, deps)
+   - `assetcache-mcp` console_script entry point 추가
+   - `python -m build` 로 sdist + wheel 생성
+   - TestPyPI 업로드 → `pipx install --index-url ...` 검증
+   - 정식 PyPI 업로드 (`twine upload dist/*`)
+   - GitHub Actions workflow (`.github/workflows/publish.yml`)
 
-5. **새 spec 시작** — `superpowers:brainstorming` 으로 v2 마일스톤 범위 합의:
-   - PyPI 패키지 + entry point 셋업
-   - rename 작업 (~1~2일 mechanical)
-   - v0.0.1 사용자 데이터 마이그레이션 helper (`%APPDATA%\GameAssetHelper\` → `%APPDATA%\AssetCacheMCP\`)
-   - M9 모듈 cherry-pick / refactor / drop 범위
-   - Mac/Linux 지원 범위 (v2 포함 vs 별도 마일스톤)
-
-자세한 결정 사항 + 마이그레이션 + M9 retain/drop 표는 [`HANDOFF.md`](./HANDOFF.md) + [memory 3건](file://memory/).
+자세한 결정 사항 + 마이그레이션 + M9 retain/drop 표는 [`HANDOFF.md`](./HANDOFF.md) + [memory 다수](file://memory/).
 
 ### 8.3 마일스톤 정렬
 
@@ -220,7 +243,8 @@ v1 (M0~M8) ✅ 완료 + [v0.0.1 GitHub release published](https://github.com/v0o
 |---:|---|---|
 | M0~M8 | v1 (뼈대 ~ 패키징 + i18n) | ✅ 완료 (main 머지) |
 | M9 | 코드 서명 + 자동 업데이트 | ⚠️ implementation 완료 / **머지 보류** (PyPI 채택으로 path pivot) |
-| **다음** | **v2 — PyPI + AssetCacheMCP rename** | 📋 spec 작성 대기 |
+| M10 | **PyPI + AssetCacheMCP rename** | 🚧 Phase 0~3 완료, Phase 4 (배포) 대기 |
+| M11+ | Mac/Linux 검증 + 추후 | 📋 미정 |
 
 참고 DESIGN: §3 (아키텍처), §4.9 (Unity Asset Store Importer — M7), §4.10 (활성 프로젝트/프로젝트 페이지 — M7), §4.5 (MCP — 20 도구), §4.8 (트레이 + 웹 UI), §11 (로드맵).
 

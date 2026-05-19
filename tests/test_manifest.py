@@ -1,4 +1,4 @@
-"""Tests for gah.core.manifest — pack manifest parsing + vendor heuristics."""
+﻿"""Tests for assetcache.core.manifest — pack manifest parsing + vendor heuristics."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import tomli_w
 
 
 def test_pack_json_is_parsed_fully(tmp_path: Path) -> None:
-    from gah.core.manifest import load_manifest
+    from assetcache.core.manifest import load_manifest
 
     pack_dir = tmp_path / "demo_pack"
     pack_dir.mkdir()
@@ -31,7 +31,7 @@ def test_pack_json_is_parsed_fully(tmp_path: Path) -> None:
 
 
 def test_pack_toml_is_parsed_fully(tmp_path: Path) -> None:
-    from gah.core.manifest import load_manifest
+    from assetcache.core.manifest import load_manifest
 
     pack_dir = tmp_path / "demo_toml_pack"
     pack_dir.mkdir()
@@ -51,7 +51,7 @@ def test_pack_toml_is_parsed_fully(tmp_path: Path) -> None:
 
 
 def test_pack_json_preferred_when_both_present(tmp_path: Path) -> None:
-    from gah.core.manifest import load_manifest
+    from assetcache.core.manifest import load_manifest
 
     pack_dir = tmp_path / "demo_dual"
     pack_dir.mkdir()
@@ -69,7 +69,7 @@ def test_pack_json_preferred_when_both_present(tmp_path: Path) -> None:
 
 
 def test_missing_manifest_uses_heuristic_kenney_prefix(tmp_path: Path) -> None:
-    from gah.core.manifest import load_manifest
+    from assetcache.core.manifest import load_manifest
 
     pack_dir = tmp_path / "kenney_platformer_redux"
     pack_dir.mkdir()
@@ -81,7 +81,7 @@ def test_missing_manifest_uses_heuristic_kenney_prefix(tmp_path: Path) -> None:
 
 
 def test_missing_manifest_uses_heuristic_kaykit_prefix(tmp_path: Path) -> None:
-    from gah.core.manifest import load_manifest
+    from assetcache.core.manifest import load_manifest
 
     pack_dir = tmp_path / "kaykit_dungeon_remastered"
     pack_dir.mkdir()
@@ -91,7 +91,7 @@ def test_missing_manifest_uses_heuristic_kaykit_prefix(tmp_path: Path) -> None:
 
 
 def test_missing_manifest_unknown_prefix_returns_none_vendor(tmp_path: Path) -> None:
-    from gah.core.manifest import load_manifest
+    from assetcache.core.manifest import load_manifest
 
     pack_dir = tmp_path / "my_custom_sfx"
     pack_dir.mkdir()
@@ -102,7 +102,7 @@ def test_missing_manifest_unknown_prefix_returns_none_vendor(tmp_path: Path) -> 
 
 
 def test_malformed_pack_json_falls_back_to_heuristic(tmp_path: Path) -> None:
-    from gah.core.manifest import load_manifest
+    from assetcache.core.manifest import load_manifest
 
     pack_dir = tmp_path / "craftpix_broken"
     pack_dir.mkdir()
@@ -115,7 +115,7 @@ def test_malformed_pack_json_falls_back_to_heuristic(tmp_path: Path) -> None:
 
 
 def test_unknown_keys_are_ignored(tmp_path: Path) -> None:
-    from gah.core.manifest import load_manifest
+    from assetcache.core.manifest import load_manifest
 
     pack_dir = tmp_path / "ignored_keys_pack"
     pack_dir.mkdir()

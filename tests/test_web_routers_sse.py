@@ -1,4 +1,4 @@
-"""M5 Phase 4A — /sse/notifications SSE 엔드포인트 검증.
+﻿"""M5 Phase 4A — /sse/notifications SSE 엔드포인트 검증.
 
 Task 4.3: /sse/notifications (sse-starlette + subscribe/unsubscribe + ping-on-connect).
 
@@ -19,8 +19,8 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
-from gah.web import sse_bus as _sse_bus
+from assetcache.web.app import build_app
+from assetcache.web import sse_bus as _sse_bus
 
 
 # ─── 라우트 등록 확인 ─────────────────────────────────────────────────────────

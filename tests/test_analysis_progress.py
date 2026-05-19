@@ -1,4 +1,4 @@
-"""AnalysisProgress + ETA tests.
+﻿"""AnalysisProgress + ETA tests.
 
 The pure helper :func:`AnalysisQueue._build_progress` is the seam the
 unit tests target — it takes plain values (no Qt, no DB) and returns a
@@ -11,7 +11,7 @@ import time
 
 import pytest
 
-from gah.core.analysis_queue import (
+from assetcache.core.analysis_queue import (
     AnalysisProgress,
     AnalysisQueue,
     _format_duration_kor,
@@ -75,7 +75,7 @@ class TestInFlight:
 
 class TestPendingAndSignal:
     def test_progress_pending_count_combines_queue_and_db(self, store) -> None:
-        from gah.core.manifest import PackManifest
+        from assetcache.core.manifest import PackManifest
 
         pack_id = store.upsert_pack(
             "p", PackManifest(None, None, None, None, None),

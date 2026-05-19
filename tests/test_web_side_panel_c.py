@@ -1,9 +1,9 @@
-"""M5 Phase 3C — C 탭 사이드 패널 검증 (Task 3.10 / 3.11)."""
+﻿"""M5 Phase 3C — C 탭 사이드 패널 검증 (Task 3.10 / 3.11)."""
 from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 # ── 공통 fixtures ──────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ def test_main_css_has_opt_group():
     from pathlib import Path
     css = (
         Path(__file__).parent.parent
-        / "src/gah/web/static/css/main.css"
+        / "src/assetcache/web/static/css/main.css"
     ).read_text(encoding="utf-8")
     assert ".opt-group" in css
 
@@ -95,7 +95,7 @@ def test_main_css_opt_group_uses_var():
     from pathlib import Path
     css = (
         Path(__file__).parent.parent
-        / "src/gah/web/static/css/main.css"
+        / "src/assetcache/web/static/css/main.css"
     ).read_text(encoding="utf-8")
     # 전체 CSS 에 var(--*) 이 있는지 (이미 있으므로 통과)
     assert "var(--" in css

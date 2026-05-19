@@ -1,4 +1,4 @@
-"""M4 — `HybridSearcher` 6채널 가중합 + label_query free_text 분리 + diversity 통합.
+﻿"""M4 — `HybridSearcher` 6채널 가중합 + label_query free_text 분리 + diversity 통합.
 
 M3 의 5채널을 6채널로 확장. `score_breakdown.feedback` 키 항상 노출.
 `weight_feedback_override` per-call 노출. 6채널 합 = score (±1e-4).
@@ -11,10 +11,10 @@ import pytest
 
 
 def _build_searcher(populated_store, fake_embedder, *, config_overrides=None):
-    from gah.config import Config
-    from gah.core.consistency import ConsistencyScorer
-    from gah.core.labels import LabelRegistry
-    from gah.core.search import HybridSearcher
+    from assetcache.config import Config
+    from assetcache.core.consistency import ConsistencyScorer
+    from assetcache.core.labels import LabelRegistry
+    from assetcache.core.search import HybridSearcher
 
     store, _ = populated_store
     config = Config(**(config_overrides or {}))
@@ -30,7 +30,7 @@ def _build_searcher(populated_store, fake_embedder, *, config_overrides=None):
 def test_six_channel_score_breakdown_sums_to_score_within_tolerance(
     populated_store, fake_embedder
 ) -> None:
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(populated_store, fake_embedder)
     res = searcher.hybrid(SearchRequest(query="hero", count=5))
@@ -50,7 +50,7 @@ def test_six_channel_score_breakdown_sums_to_score_within_tolerance(
 
 def test_weight_feedback_override_applied(populated_store, fake_embedder) -> None:
     """per-call `weight_feedback_override` 가 Config.weight_feedback 보다 우선."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, store = _build_searcher(populated_store, fake_embedder)
     _, ids = populated_store
@@ -73,7 +73,7 @@ def test_feedback_channel_zero_when_no_feedback_records(
     populated_store, fake_embedder
 ) -> None:
     """feedback 기록 0건 → `score_breakdown.feedback` 키 존재 + 값 0."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(populated_store, fake_embedder)
     res = searcher.hybrid(SearchRequest(query="hero", project_id="proj_empty",
@@ -94,7 +94,7 @@ def test_label_query_free_text_appended_to_semantic_query(
     SearchRequest.label_query 가 파서를 거쳐 labels_* + free_text 로 분해되고,
     free_text 는 req.query 와 합쳐서 임베딩 빌더로 들어간다.
     """
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(populated_store, fake_embedder)
     # 미지 토큰 'zelda_quest' 가 free_text 로 가서 임베딩에 추가.
@@ -115,7 +115,7 @@ def test_apply_diversity_mmr_picks_different_packs(
     populated_store, fake_embedder
 ) -> None:
     """HybridSearcher 가 diversity=mmr 을 단계 7 에 적용 — 다른 팩 선호."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(populated_store, fake_embedder)
     res = searcher.hybrid(SearchRequest(query="character", count=4,
@@ -127,7 +127,7 @@ def test_apply_diversity_mmr_picks_different_packs(
 def test_apply_diversity_round_robin_balances_packs(
     populated_store, fake_embedder
 ) -> None:
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(populated_store, fake_embedder)
     res = searcher.hybrid(SearchRequest(query="character", count=4,
@@ -145,7 +145,7 @@ def test_six_channel_does_not_break_m3_baseline_search(
     populated_store, fake_embedder
 ) -> None:
     """M3 의 검색 (label/diversity/feedback 무관) 이 그대로 동작."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(populated_store, fake_embedder)
     # M3 호환 호출 — diversity/label_query/feedback override 없음.
@@ -163,7 +163,7 @@ def test_weight_feedback_zero_keeps_breakdown_key_with_value_zero(
     populated_store, fake_embedder
 ) -> None:
     """Config.weight_feedback=0 시 breakdown 키 보존 + 값 0."""
-    from gah.core.search import SearchRequest
+    from assetcache.core.search import SearchRequest
 
     searcher, _ = _build_searcher(
         populated_store, fake_embedder,

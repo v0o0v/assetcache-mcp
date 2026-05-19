@@ -1,4 +1,4 @@
-"""Tests for gah.core.watcher — pure debouncer behavior.
+﻿"""Tests for assetcache.core.watcher — pure debouncer behavior.
 
 The watchdog Observer adapter (LibraryWatcher) is only smoke-checked at
 import time; its real correctness shows up in M1 manual verification.
@@ -23,7 +23,7 @@ class FakeClock:
 
 
 def test_debouncer_fires_after_window() -> None:
-    from gah.core.watcher import PackDebouncer
+    from assetcache.core.watcher import PackDebouncer
 
     clock = FakeClock()
     fired: List[str] = []
@@ -40,7 +40,7 @@ def test_debouncer_fires_after_window() -> None:
 
 
 def test_debouncer_coalesces_within_window() -> None:
-    from gah.core.watcher import PackDebouncer
+    from assetcache.core.watcher import PackDebouncer
 
     clock = FakeClock()
     fired: List[str] = []
@@ -60,7 +60,7 @@ def test_debouncer_coalesces_within_window() -> None:
 
 
 def test_debouncer_resets_window_on_new_event() -> None:
-    from gah.core.watcher import PackDebouncer
+    from assetcache.core.watcher import PackDebouncer
 
     clock = FakeClock()
     fired: List[str] = []
@@ -79,7 +79,7 @@ def test_debouncer_resets_window_on_new_event() -> None:
 
 
 def test_debouncer_handles_multiple_packs_independently() -> None:
-    from gah.core.watcher import PackDebouncer
+    from assetcache.core.watcher import PackDebouncer
 
     clock = FakeClock()
     fired: List[str] = []
@@ -102,7 +102,7 @@ def test_debouncer_handles_multiple_packs_independently() -> None:
 
 def test_debouncer_uses_injected_clock() -> None:
     """Sanity-check that nothing in the debouncer falls back to wall-clock time."""
-    from gah.core.watcher import PackDebouncer
+    from assetcache.core.watcher import PackDebouncer
 
     clock = FakeClock(start=1_000_000.0)
     fired: List[str] = []

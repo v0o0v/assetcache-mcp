@@ -1,4 +1,4 @@
-"""SpriteAnalyzer integration tests with mocked Ollama and Fake CLIP."""
+﻿"""SpriteAnalyzer integration tests with mocked Ollama and Fake CLIP."""
 
 from __future__ import annotations
 
@@ -9,11 +9,11 @@ import json
 import httpx
 import pytest
 
-from gah.core.analyzer.sprite import SpriteAnalyzer
-from gah.core.clip_labeler import ClipLabeler, FakeBackend
-from gah.core.embedding import EmbeddingEncoder
-from gah.core.labels import LabelRegistry
-from gah.core.ollama_client import OllamaClient
+from assetcache.core.analyzer.sprite import SpriteAnalyzer
+from assetcache.core.clip_labeler import ClipLabeler, FakeBackend
+from assetcache.core.embedding import EmbeddingEncoder
+from assetcache.core.labels import LabelRegistry
+from assetcache.core.ollama_client import OllamaClient
 
 
 class _FakeEmbedOllama:

@@ -1,10 +1,10 @@
-"""M5 Phase 3D-2 — 반응형 (≤768px 사이드 패널 자동 닫힘) 검증 (Task 3.16)."""
+﻿"""M5 Phase 3D-2 — 반응형 (≤768px 사이드 패널 자동 닫힘) 검증 (Task 3.16)."""
 from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
 
-from gah.web.app import build_app
+from assetcache.web.app import build_app
 
 
 @pytest.fixture
@@ -19,7 +19,7 @@ def client(deps_fixture):
 def test_main_css_has_768px_media_query():
     """main.css 에 @media (max-width: 768px) 블록이 있다."""
     from pathlib import Path
-    css_path = Path(__file__).parent.parent / "src" / "gah" / "web" / "static" / "css" / "main.css"
+    css_path = Path(__file__).parent.parent / "src" / "assetcache" / "web" / "static" / "css" / "main.css"
     content = css_path.read_text(encoding="utf-8")
     assert "@media (max-width: 768px)" in content
 
@@ -27,7 +27,7 @@ def test_main_css_has_768px_media_query():
 def test_main_css_768_block_has_position_fixed():
     """768px 미디어 쿼리 블록에 side-panel position: fixed 가 있다."""
     from pathlib import Path
-    css_path = Path(__file__).parent.parent / "src" / "gah" / "web" / "static" / "css" / "main.css"
+    css_path = Path(__file__).parent.parent / "src" / "assetcache" / "web" / "static" / "css" / "main.css"
     content = css_path.read_text(encoding="utf-8")
     assert "position: fixed" in content
 
@@ -35,7 +35,7 @@ def test_main_css_768_block_has_position_fixed():
 def test_main_css_768_block_has_transform():
     """768px 미디어 쿼리 블록에 transform: translateX 슬라이드 효과가 있다."""
     from pathlib import Path
-    css_path = Path(__file__).parent.parent / "src" / "gah" / "web" / "static" / "css" / "main.css"
+    css_path = Path(__file__).parent.parent / "src" / "assetcache" / "web" / "static" / "css" / "main.css"
     content = css_path.read_text(encoding="utf-8")
     assert "translateX" in content
 
@@ -43,7 +43,7 @@ def test_main_css_768_block_has_transform():
 def test_main_css_768_block_has_transition():
     """768px 미디어 쿼리 블록에 transition 이 있다."""
     from pathlib import Path
-    css_path = Path(__file__).parent.parent / "src" / "gah" / "web" / "static" / "css" / "main.css"
+    css_path = Path(__file__).parent.parent / "src" / "assetcache" / "web" / "static" / "css" / "main.css"
     content = css_path.read_text(encoding="utf-8")
     assert "transition" in content
 
