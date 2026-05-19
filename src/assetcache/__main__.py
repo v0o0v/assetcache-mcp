@@ -41,7 +41,7 @@ EXIT_USAGE = 64
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="game-asset-helper")
+    parser = argparse.ArgumentParser(prog="assetcache")
     parser.add_argument("--version", action="store_true", help="버전 출력 후 종료")
     parser.add_argument("--tray", action="store_true", help="트레이 모드 (기본)")
     parser.add_argument(
@@ -137,7 +137,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     config = load_config(paths.config_path)
 
     if args.version:
-        print(f"game-asset-helper {__version__}")
+        print(f"assetcache-mcp {__version__}")
         return EXIT_OK
 
     if args.migrate:
