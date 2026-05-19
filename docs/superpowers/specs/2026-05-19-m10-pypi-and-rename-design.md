@@ -520,3 +520,7 @@ release notes 에 위 비교 명시. 자동 마이그레이션 안 함 (Claude D
 - v0.0.1 release: [v0.0.1 on GitHub](https://github.com/v0o0v/game-asset-helper/releases/tag/v0.0.1)
 - PyPI JSON API 명세: <https://warehouse.pypa.io/api-reference/json.html>
 - GitHub Actions `pypa/gh-action-pypi-publish`: <https://github.com/marketplace/actions/pypi-publish>
+
+---
+
+**2026-05-20 후기**: M10 Phase 1 의 v0.0.1 (GameAssetHelper) 데이터 폴더 마이그레이션 helper 는 v0.1.1 (`chore/v011-yagni-clean`) 에서 yagni-clean 됐다. v0.0.1 외부 사용자·다운로드 0 확인 후, 관련 코드 + 테스트 21건 + i18n msgid 3건 + 문서 안내 일괄 제거. 본 문서의 Phase 1 본문은 historical record 로 보존.

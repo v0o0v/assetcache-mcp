@@ -3348,3 +3348,7 @@ Plan complete and saved to `docs/superpowers/plans/2026-05-19-m10-pypi-and-renam
 1. **Subagent-Driven (recommended)** - 각 task 마다 fresh subagent dispatch + two-stage review. Phase 0/3 = haiku, Phase 1/2 = sonnet, Phase 4 = 사용자 직접.
 
 2. **Inline Execution** - 현재 세션에서 executing-plans 로 batch 진행, checkpoint 마다 사용자 리뷰.
+
+---
+
+**2026-05-20 후기**: M10 Phase 1 의 v0.0.1 (GameAssetHelper) 데이터 폴더 마이그레이션 helper 는 v0.1.1 (`chore/v011-yagni-clean`) 에서 yagni-clean 됐다. v0.0.1 외부 사용자·다운로드 0 확인 후, 관련 코드 + 테스트 21건 + i18n msgid 3건 + 문서 안내 일괄 제거. 본 문서의 Phase 1 본문은 historical record 로 보존.
