@@ -28,15 +28,19 @@
 - [x] Task 1.2 fix — ensure_dirs 가 만든 빈 target 과 충돌하던 copytree/move (b949632)
 - [x] Task 1.1 fix — detect 가 ensure_dirs scaffolding 을 데이터로 오인하던 결함 (52bb928)
 
-## Phase 2 — M9 cherry-pick (~1.5일, +15 tests)
+## Phase 2 — M9 cherry-pick (~1.5일, +24 tests 실제 = +15 plan + 2 Version 확장 + 4 tray + 미스 3 보정)
 
-- [ ] Task 2.1 — feat/m9 에서 `core/updater/__init__.py` + `version.py` + `test_updater_version.py` cherry-pick + import path 갱신 + 9 tests pass
-- [ ] Task 2.2 — `core/updater/checker.py` PyPI JSON API + ETag 캐시 + PollingLoop + 6 tests
-- [ ] Task 2.3 — `core/updater/pip_command.py` 환경 분기 (pipx/uv/pip) + 3 tests
-- [ ] Task 2.4 — `web/routers/updates.py` 단순화 (/api/updates/check 만) + 2 tests
-- [ ] Task 2.5 — `_pypi_update_banner.html` 단순화 + base.html + CSS
-- [ ] Task 2.6 — `tray.py` 동적 메뉴 + Qt Signal cross-thread + 4 tests
-- [ ] Task 2.7 — PyPI 알림 i18n msgid 4건 ko/en + `.mo` 재컴파일
+- [x] Task 2.1 — feat/m9 에서 `core/updater/__init__.py` + `version.py` + `test_updater_version.py` cherry-pick + import path 갱신 + 9 tests pass (`2702ce3`, 1067 → 1076)
+- [x] Task 2.2 — `core/updater/checker.py` PyPI JSON API + ETag 캐시 + PollingLoop + 6 tests (`dd2eeee` + 사전 `0b39460` Version.parse classmethod + ordering dunders + 2 tests, 1076 → 1084)
+- [x] Task 2.3 — `core/updater/pip_command.py` 환경 분기 (pipx/uv/pip) + 3 tests (`09f9c61`, 1084 → 1087)
+- [x] Task 2.4 — `web/routers/updates.py` 단순화 (/api/updates/check 만) + 2 tests + Version.__str__ 4 라인 (`15f9cd8`, 1087 → 1089)
+- [x] Task 2.5 — `_pypi_update_banner.html` (영어 msgid) + base.html include + main.css (`bc4b3fd`, 1089 유지)
+- [x] Task 2.6 — `tray.py` 동적 메뉴 + Qt Signal cross-thread (`_TrayBridge`) + 4 tests (`c7359f6`, 1089 → 1093)
+- [x] Task 2.7 — PyPI 알림 i18n msgid 4건 (`"available"` / `"Release notes"` / `"v{version} update available →"` / `"Upgrade command copied to clipboard"`) ko/en + `.mo` 재컴파일 (`d694bdf`, 1093 유지)
+
+### Phase 2 후속 fix (history 누적)
+
+- [x] babel.cfg path 갱신 — `src/gah/` → `src/assetcache/` (Phase 0 rename 누락, `b5d24b0`)
 
 ## Phase 3 — 문서 + verification (~1일, +5 tests)
 
