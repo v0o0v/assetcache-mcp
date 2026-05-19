@@ -72,7 +72,7 @@ def test_b_tab_label_filter_xmodel(client):
 
 
 def test_b_tab_label_filter_placeholder(client):
-    """라벨 검색 input 에 placeholder 가 있다."""
+    """라벨 검색 input 에 placeholder 가 있다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
     assert "라벨 검색" in r.text
 
@@ -108,19 +108,19 @@ def test_b_tab_has_kind_tabs_nav(client):
 
 
 def test_b_tab_kind_tab_sprite(client):
-    """종류 탭에 스프라이트 버튼이 존재한다."""
+    """종류 탭에 스프라이트 버튼이 존재한다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
     assert "스프라이트" in r.text
 
 
 def test_b_tab_kind_tab_sheet(client):
-    """종류 탭에 시트 버튼이 존재한다."""
+    """종류 탭에 시트 버튼이 존재한다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
     assert "시트" in r.text
 
 
 def test_b_tab_kind_tab_sound(client):
-    """종류 탭에 사운드 버튼이 존재한다."""
+    """종류 탭에 사운드 버튼이 존재한다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
     assert "사운드" in r.text
 

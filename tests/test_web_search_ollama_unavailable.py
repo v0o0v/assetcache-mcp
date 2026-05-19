@@ -78,4 +78,4 @@ def test_empty_query_still_works_when_ollama_down(
     assert r.status_code == 200
     # 정상 그리드 — 결과 toolbar 포함, 에러 fragment 아님
     assert "results-toolbar" in r.text
-    assert "검색 서비스를 사용할 수 없습니다" not in r.text
+    assert "Search service unavailable" not in r.text

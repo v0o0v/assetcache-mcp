@@ -9,6 +9,8 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Callable, Optional
 
+from gah.platform.autostart import is_autostart_enabled, set_autostart
+
 if TYPE_CHECKING:  # pragma: no cover
     from PySide6.QtGui import QIcon
     from PySide6.QtWidgets import QApplication, QSystemTrayIcon
@@ -148,6 +150,24 @@ def make_tray_icon(
 
     unity_scan_action.triggered.connect(_on_unity_scan)
     menu.addAction(unity_scan_action)
+    menu.addSeparator()
+
+    # M8: 자동 시작 토글 체크박스
+    autostart_action = QAction(_tr("자동 시작 (Windows)"), menu)
+    autostart_action.setCheckable(True)
+    autostart_action.setChecked(is_autostart_enabled())
+
+    def _toggle_autostart(checked: bool) -> None:
+        """자동 시작 레지스트리 키를 토글. OSError 시 롤백."""
+        try:
+            set_autostart(checked)
+        except OSError as e:
+            log.warning("자동 시작 토글 실패: %s", e)
+            # 레지스트리 실제 상태로 체크박스 롤백 (무한 루프 방지: setChecked 는 toggled 재발사 안 함)
+            autostart_action.setChecked(is_autostart_enabled())
+
+    autostart_action.toggled.connect(_toggle_autostart)
+    menu.addAction(autostart_action)
     menu.addSeparator()
 
     quit_action = QAction(_tr("종료"), menu)

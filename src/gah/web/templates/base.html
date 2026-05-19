@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="{{ request.state.locale if request and request.state.locale is defined else 'ko' }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +9,16 @@
   <script src="/static/vendor/htmx.min.js" defer></script>
   <script src="/static/vendor/htmx-json-enc.js" defer></script>
   <script src="/static/vendor/alpine.min.js" defer></script>
+  <script>
+    // M8 anti-flash — localStorage 값이 있으면 페이지 파싱 직후 즉시 적용.
+    (function () {
+        var t = localStorage.getItem('gah_theme');
+        if (t === 'light' || t === 'dark') {
+            document.documentElement.setAttribute('data-theme', t);
+        }
+    })();
+  </script>
+  <script src="/static/js/theme.js" defer></script>
   <script>
     // M5 — Alpine 글로벌 stores 초기화 (모든 페이지 공통).
     document.addEventListener("alpine:init", () => {

@@ -26,8 +26,8 @@
 | M4 — 검색 UX 풍부화 | ✅ 완료 (main 머지됨, [PR #5](https://github.com/v0o0v/game-asset-helper/pull/5)) | label_query 파서 AND/OR/NOT + axis:label + bare 자동매칭, HybridSearcher 6채널 0.35/0.10/0.20/0.20/0.05/0.10 feedback, diversity none/mmr/round_robin, saved_searches 4 신규 MCP 도구 (12→16), feedback_records signed weight 페널티 학습, suggest_packs samples 풍부화. Qt UI 위젯 4개는 M5 가 폐기 예정 |
 | **M5 — 웹 GUI 전환 + 라이브러리 리디자인 + Claude pick 인터랙션** (~5.5주) | **✅ 완료** (`feat/m5-web-gui` 브랜치, main 머지 대기) | 웹 GUI 전환 완료 + 라이브러리/팩/라벨 리디자인 + Claude pick + 17 MCP 도구 + Qt UI 폐기. Phase 0~6 완료 — **796 passed + 1 skipped**. spec: [`docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md`](./docs/superpowers/specs/2026-05-17-m5-web-gui-and-library-redesign.md), plan: [`milestones/M5_plan.md`](./milestones/M5_plan.md) |
 | M6 — 시트 분석 + 애니메이션 | ✅ 완료 ([PR #7](https://github.com/v0o0v/game-asset-helper/pull/7) main 머지) + 후속 patch 8건 | sheet 4 모듈 + SpritesheetAnalyzer + `suggest_animation_frames` MCP 18번째 + 와이드/리스트 카드 🎞 배지 + Ollama cold-start retry. 신규 의존성 0. **91 신규 테스트** (M6 spec +84, 후속 patch +7, 총 887). spec: [`docs/superpowers/specs/2026-05-18-m6-sheet-and-animation-design.md`](./docs/superpowers/specs/2026-05-18-m6-sheet-and-animation-design.md) |
-| **M7 — Unity Asset Store 임포트 (1주)** | **✅ 완료** (feat/m7-unity-asset-store-import 브랜치, PR 대기) | `.unitypackage` 파서·캐시 스캐너·임포터 + 활성 프로젝트 + 프로젝트 페이지 + 자산별 선호도 + 20 MCP 도구. 신규 의존성 0. **+124 신규 테스트** (총 1011). spec: [`docs/superpowers/specs/2026-05-18-m7-unity-asset-store-import.md`](./docs/superpowers/specs/2026-05-18-m7-unity-asset-store-import.md), plan: [`milestones/M7_plan.md`](./milestones/M7_plan.md) |
-| **M8 — 패키징 + i18n (1주)** | **대기 (다음)** | PyInstaller/Tauri 빌드, gettext / Jinja i18n |
+| **M7 — Unity Asset Store 임포트 (1주)** | **✅ 완료** ([PR #8](https://github.com/v0o0v/game-asset-helper/pull/8) main 머지) + 후속 patch 19건 | `.unitypackage` 파서·캐시 스캐너·임포터 + 활성 프로젝트 + 프로젝트 페이지 + 자산별 선호도 + 20 MCP 도구. 신규 의존성 0. **+124 신규 테스트** (총 1002). spec: [`docs/superpowers/specs/2026-05-18-m7-unity-asset-store-import.md`](./docs/superpowers/specs/2026-05-18-m7-unity-asset-store-import.md), plan: [`milestones/M7_plan.md`](./milestones/M7_plan.md) |
+| **M8 — 패키징 + i18n (1주)** | **✅ 완료** (`feat/m8-packaging-and-i18n` 브랜치, PR 대기) | PyInstaller `--onefile` + Babel gettext (ko/en) + 다크모드 토글 + Windows autostart. 신규 의존성 2 (Babel>=2.14, pyinstaller>=6 dev). **+44 신규 테스트** (총 1046). spec: [`docs/superpowers/specs/2026-05-19-m8-packaging-and-i18n-design.md`](./docs/superpowers/specs/2026-05-19-m8-packaging-and-i18n-design.md), plan: [`milestones/M8_plan.md`](./milestones/M8_plan.md) |
 
 각 마일스톤의 상세 계획·체크리스트·검증 결과는 `milestones/M{N}_plan.md`, `M{N}_todo.md`, `M{N}_verification.md`.
 
@@ -135,7 +135,7 @@ cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
 pytest -q
 ```
 
-`pytest -q`가 **1011 passed + 1 skipped + 40 deselected** 로 떨어지면 준비 완료 (M0~M4 의 452 baseline + M5 Phase 0~6 의 +344 + M6 Phase 0~5 spec +84 + M6 후속 patch +7 + M7 +124). `pytest -m mcp_integration` 으로 옵트인 2 케이스 (실 `python -m gah --mcp` subprocess + JSON-RPC, **20 도구** 응답) 추가 검증 가능. M5 최종 검증 결과는 [`milestones/M5_verification.md`](./milestones/M5_verification.md). M6 최종 검증 결과는 [`milestones/M6_verification.md`](./milestones/M6_verification.md). M7 최종 검증 결과는 [`milestones/M7_verification.md`](./milestones/M7_verification.md). **M4 + M5 + M6 모두 main 머지 완료** ([PR #5](https://github.com/v0o0v/game-asset-helper/pull/5), [PR #6](https://github.com/v0o0v/game-asset-helper/pull/6), [PR #7](https://github.com/v0o0v/game-asset-helper/pull/7)). **M7 PR 대기** (`feat/m7-unity-asset-store-import` 브랜치). **현재 브랜치 = `feat/m7-unity-asset-store-import`**.
+`pytest -q`가 **1046 passed + 1 skipped + 40 deselected** 로 떨어지면 준비 완료 (M0~M4 의 452 baseline + M5 Phase 0~6 의 +344 + M6 +91 + M7 +115 + M8 +44). `pytest -m mcp_integration` 으로 옵트인 2 케이스 (실 `python -m gah --mcp` subprocess + JSON-RPC, **20 도구** 응답) 추가 검증 가능. M5 최종 검증 결과는 [`milestones/M5_verification.md`](./milestones/M5_verification.md). M6 최종 검증 결과는 [`milestones/M6_verification.md`](./milestones/M6_verification.md). M7 최종 검증 결과는 [`milestones/M7_verification.md`](./milestones/M7_verification.md). M8 최종 검증 결과는 [`milestones/M8_verification.md`](./milestones/M8_verification.md). **M4 + M5 + M6 + M7 모두 main 머지 완료** ([PR #5](https://github.com/v0o0v/game-asset-helper/pull/5), [PR #6](https://github.com/v0o0v/game-asset-helper/pull/6), [PR #7](https://github.com/v0o0v/game-asset-helper/pull/7), [PR #8](https://github.com/v0o0v/game-asset-helper/pull/8)). **M8 PR 대기** (`feat/m8-packaging-and-i18n` 브랜치). **현재 브랜치 = `feat/m8-packaging-and-i18n`**.
 
 ## 7. 자주 쓰는 명령
 
@@ -163,32 +163,34 @@ python -m gah --tray
 python -m gah --version
 ```
 
-## 8. 다음 작업 (M8 — 패키징 + i18n)
+## 8. 다음 작업 (v1 release 또는 v2)
 
-M7 이 **✅ 완료**됐다 (Phase 0~7 완료, `feat/m7-unity-asset-store-import` 브랜치, 1011 passed). 다음 마일스톤은 **M8 — 패키징 + i18n** (~1주).
+M8 가 **✅ 완료**됐다 — v1 모든 마일스톤 종료 (M0~M8). 다음 작업은 사용자 결정:
 
-### 8.1 현재 상태 (M7 완료)
+1. **v1 release** — GitHub release 페이지에 `GameAssetHelper.exe` 업로드 + SmartScreen 경고 안내
+2. **v2 brainstorming** — Pack/프로젝트 풍부 UX, E2E, 추가 언어, 인스톨러 등 v2 미룸 항목으로 `superpowers:brainstorming`
 
-- 브랜치 `feat/m7-unity-asset-store-import` (PR 대기).
-- **1011 passed + 1 skipped + 40 deselected**. 회귀 0.
-- M7 완료된 인프라 요약:
-  - **Phase 0** — 7 frozen dataclass + `.unitypackage` fixture + asset_factory (+7 테스트)
-  - **Phase 1A~1D** — cache_paths 4단계 + unitypackage 파서 + scanner + importer + remote_optin (+39 테스트)
-  - **Phase 2A~2B** — Store unity_imports/projects/preferences + Config 5 필드 + 트레이 + 자동 스캔 (+29 테스트)
-  - **Phase 3A~3B** — MCP 4 Pydantic + 2 도구 (scan/list) + INSTRUCTIONS + 20 도구 통합 (+10 테스트)
-  - **Phase 4A~4B** — Unity 라우터 6 endpoint + HTML/CSS 페이지 (+8 테스트)
-  - **Phase 5** — 활성 프로젝트 + SSE + 글로벌 헤더 + 채택 버튼 (+13 테스트)
-  - **Phase 6A~6C** — /projects 목록 + /projects/\<id\> 사용/분포 + 선호도 패널 (+13 테스트)
-  - **Phase 7** — I-1~I-5 격리 invariant 회귀 + 문서 + verification (+5 테스트)
-- MCP **20 도구** (18 → +2: `scan_unity_asset_store_cache`, `list_unity_packages`).
+### 8.1 현재 상태 (M8 완료)
+
+- 브랜치 `feat/m8-packaging-and-i18n` (PR 대기).
+- **1046 passed + 1 skipped + 40 deselected**. 회귀 0.
+- M8 완료된 인프라 요약:
+  - **Phase 0** — Config 신규 필드 (ui_language/ui_theme) + autostart 스켈레톤 (+5 테스트)
+  - **Phase 1** — `_t()` gettext + LocaleMiddleware 5단계 + app.py 통합 (+14 테스트)
+  - **Phase 2** — babel.cfg + 159건 msgid 영어화 + ko.po + en.po + .mo 컴파일 (+2 테스트)
+  - **Phase 3** — /settings 페이지 + 다크모드 토글 (Alpine + localStorage + data-theme) (+9 테스트)
+  - **Phase 4** — autostart.py (winreg HKCU\\...\\Run) + 트레이 메뉴 (+9~10 테스트)
+  - **Phase 5** — generate_tray_ico.py + tray.ico + gah.spec + smoke + README (+4 테스트)
+  - **Phase 6** — verification + 문서 마감 + DRY 정리 (SUPPORTED 통합) (0 테스트)
+- MCP **20 도구** (M7 그대로).
+- 신규 의존성: Babel>=2.14 (런타임), pyinstaller>=6 (dev).
 
 ### 8.2 다음 세션 진입 시 첫 작업
 
-1. **M7 PR 머지 확인**:
+1. **M8 PR 머지 확인**:
    ```powershell
    git status
    ```
-   → `feat/m7-unity-asset-store-import` 브랜치, PR 상태 확인.
 
 2. **환경 복원**:
    ```powershell
@@ -202,26 +204,18 @@ M7 이 **✅ 완료**됐다 (Phase 0~7 완료, `feat/m7-unity-asset-store-import
    ```powershell
    pytest -q
    ```
-   → `1011 passed, 1 skipped, 40 deselected`.
+   → `1046 passed, 1 skipped, 40 deselected`.
 
-4. **M8 시작**: `superpowers:brainstorming` 으로 옵션 비교 → `superpowers:writing-plans` 로 `milestones/M8_plan.md` 작성.
+4. **v1 release 또는 v2 결정** — [`HANDOFF.md`](./HANDOFF.md) §5.2 참고.
 
-M8 핵심 (DESIGN.md §11 Milestone 8):
-- 웹 UI i18n — Jinja2 + `babel`, `Config.ui_language` (`"ko"`/`"en"`/`"auto"`)
-- Pack/프로젝트 탭 풍부 UX (메타 수정, manual_override, 프로젝트 pin/block, 사용 분포 차트)
-- 다크/라이트 모드 토글 UI
-- PyInstaller 단일 exe (CLIP 모델 가중치 포함 또는 첫 실행 시 다운로드), 자동 시작 토글
-
-상세 진행 상태 + 알려진 한계는 [`HANDOFF.md`](./HANDOFF.md).
-
-### 8.3 마일스톤 재정렬 (M7 완료)
+### 8.3 마일스톤 정렬 (v1 완료)
 
 | # | 이름 | 일정 | 상태 |
 |---:|---|---:|---|
 | M5 | 웹 GUI 전환 + 리디자인 + Claude pick | 5.5주 | ✅ 완료 |
 | M6 | 시트 분석 + 애니메이션 | 1주 | ✅ 완료 |
 | M7 | Unity Asset Store 임포트 | 1주 | ✅ 완료 |
-| **M8** | **패키징 + i18n** | **1주** | **대기** |
+| **M8** | **패키징 + i18n** | **1주** | **✅ 완료** |
 
 참고 DESIGN: §3 (아키텍처), §4.9 (Unity Asset Store Importer — M7), §4.10 (활성 프로젝트/프로젝트 페이지 — M7), §4.5 (MCP — 20 도구), §4.8 (트레이 + 웹 UI), §11 (로드맵).
 

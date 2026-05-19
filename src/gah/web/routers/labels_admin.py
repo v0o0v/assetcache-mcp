@@ -122,7 +122,7 @@ def api_post_label(body: LabelCreateBody, request: Request) -> Response:
     if body.axis not in _VALID_AXES:
         raise HTTPException(
             status_code=400,
-            detail=f"알 수 없는 axis: {body.axis!r}. 유효한 axis: {sorted(_VALID_AXES)}",
+            detail=f"Unknown axis: {body.axis!r}. Valid axes: {sorted(_VALID_AXES)}",
         )
     deps = request.app.state.deps
     try:
@@ -137,7 +137,7 @@ def api_post_label(body: LabelCreateBody, request: Request) -> Response:
 
     row = deps.store.get_label_by_id(label_id)
     if row is None:  # pragma: no cover — add_label 직후라 발생 불가
-        raise HTTPException(status_code=500, detail="라벨 조회 실패")
+        raise HTTPException(status_code=500, detail="Label lookup failed")
 
     _broadcast_signature(deps.registry)
     return _label_row_response(request, _label_row_to_dict(row), status_code=201)
@@ -156,10 +156,10 @@ def api_patch_label(label_id: int, body: LabelUpdateBody, request: Request) -> R
     deps = request.app.state.deps
     existing = deps.store.get_label_by_id(label_id)
     if existing is None:
-        raise HTTPException(status_code=404, detail="라벨을 찾을 수 없습니다")
+        raise HTTPException(status_code=404, detail="Label not found")
 
     if body.description is None and body.enabled is None:
-        raise HTTPException(status_code=400, detail="description 또는 enabled 중 하나 이상 필요")
+        raise HTTPException(status_code=400, detail="At least one of description or enabled is required")
 
     deps.store.update_label(
         label_id,
@@ -173,7 +173,7 @@ def api_patch_label(label_id: int, body: LabelUpdateBody, request: Request) -> R
 
     row = deps.store.get_label_by_id(label_id)
     if row is None:  # pragma: no cover
-        raise HTTPException(status_code=500, detail="라벨 갱신 후 조회 실패")
+        raise HTTPException(status_code=500, detail="Label lookup failed after update")
 
     _broadcast_signature(deps.registry)
     return _label_row_response(request, _label_row_to_dict(row))
@@ -194,13 +194,13 @@ def api_delete_label(label_id: int, request: Request) -> Response:
     deps = request.app.state.deps
     existing = deps.store.get_label_by_id(label_id)
     if existing is None:
-        raise HTTPException(status_code=404, detail="라벨을 찾을 수 없습니다")
+        raise HTTPException(status_code=404, detail="Label not found")
 
     in_use = deps.store.count_asset_labels_for_label_id(label_id)
     if in_use > 0:
         raise HTTPException(
             status_code=400,
-            detail=f"라벨이 {in_use}개 에셋에서 사용 중입니다. 삭제할 수 없습니다.",
+            detail=f"Label is in use by {in_use} asset(s) and cannot be deleted.",
         )
 
     deps.store.delete_label(label_id)
@@ -267,7 +267,7 @@ async def api_import_labels(
         raw = await file.read()
         body = json.loads(raw)
         if not isinstance(body, list):
-            raise ValueError("최상위 레벨이 JSON 배열이어야 합니다")
+            raise ValueError("Top level must be a JSON array")
     except (json.JSONDecodeError, ValueError) as exc:
         raise HTTPException(
             status_code=400,
@@ -286,7 +286,7 @@ async def api_import_labels(
         enabled = item.get("enabled", True)
 
         if axis not in _VALID_AXES:
-            errors.append(f"알 수 없는 axis: {axis!r}")
+            errors.append(f"Unknown axis: {axis!r}")
             skipped += 1
             continue
 

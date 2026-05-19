@@ -25,10 +25,10 @@ def test_c_tab_has_opt_group(client):
 
 
 def test_c_tab_has_view_mode_toggle(client):
-    """C 탭에 그리드/리스트 뷰 모드 토글 버튼이 존재한다."""
+    """C 탭에 그리드/목록 뷰 모드 토글 버튼이 존재한다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
     assert "그리드" in r.text
-    assert "리스트" in r.text
+    assert "목록" in r.text
 
 
 def test_c_tab_view_mode_binds_store(client):
@@ -38,7 +38,7 @@ def test_c_tab_view_mode_binds_store(client):
 
 
 def test_c_tab_has_card_size_buttons(client):
-    """C 탭에 카드 크기 S/M/L 버튼이 존재한다."""
+    """C 탭에 카드 크기 S/M/L 버튼이 존재한다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
     assert "카드 크기" in r.text
 
@@ -62,7 +62,7 @@ def test_c_tab_sort_xmodel(client):
 
 
 def test_c_tab_sort_has_options(client):
-    """C 탭 정렬 select 에 추가일↓/이름↑ 등 옵션이 존재한다."""
+    """C 탭 정렬 select 에 추가일↓/이름↑ 등 옵션이 존재한다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
     assert "추가일" in r.text
     assert "이름" in r.text
@@ -105,9 +105,9 @@ def test_main_css_opt_group_uses_var():
 
 
 def test_c_tab_has_card_meta_section(client):
-    """C 탭에 카드에 표시할 정보 섹션이 존재한다."""
+    """C 탭에 카드 표시 정보 섹션이 존재한다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
-    assert "카드에 표시할 정보" in r.text
+    assert "카드 표시 정보" in r.text
 
 
 def test_c_tab_card_meta_has_labels_checkbox(client):
@@ -148,7 +148,7 @@ def test_c_tab_card_meta_xmodel_binding(client):
 
 
 def test_c_tab_card_meta_label_text(client):
-    """C 탭 카드 메타에 '라벨', '팩', '점수', '크기' 텍스트가 존재한다."""
+    """C 탭 카드 메타에 '라벨', '팩', '점수', '크기' 텍스트가 존재한다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
     assert "라벨" in r.text
     assert "팩" in r.text

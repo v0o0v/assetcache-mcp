@@ -19,17 +19,17 @@ def client(deps_fixture):
 
 
 def test_d_tab_has_preset_section(client):
-    """D 탭에 가중치 프리셋 섹션이 존재한다."""
+    """D 탭에 가중치 프리셋 섹션이 존재한다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
     assert r.status_code == 200
-    assert "프리셋" in r.text
+    assert "가중치 프리셋" in r.text
 
 
 def test_d_tab_has_three_preset_buttons(client):
-    """D 탭에 균형/통일성 우선/참신성 버튼이 존재한다."""
+    """D 탭에 균형/일관성 우선/참신성 버튼이 존재한다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
     assert "균형" in r.text
-    assert "통일성 우선" in r.text
+    assert "일관성 우선" in r.text
     assert "참신성" in r.text
 
 
@@ -118,10 +118,10 @@ def test_api_preset_updates_config(deps_fixture):
 
 
 def test_d_tab_has_sliders_section(client):
-    """D 탭에 슬라이더 직접 조정 섹션이 존재한다."""
+    """D 탭에 슬라이더 직접 조정 섹션이 존재한다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
     assert r.status_code == 200
-    assert "슬라이더" in r.text
+    assert "슬라이더 직접 조정" in r.text
 
 
 def test_d_tab_sliders_are_in_details_element(client):
@@ -132,13 +132,13 @@ def test_d_tab_sliders_are_in_details_element(client):
 
 
 def test_d_tab_has_six_slider_labels(client):
-    """D 탭 슬라이더에 6개 가중치 레이블 (semantic/keyword/label/consistency/recency/feedback) 이 있다."""
+    """D 탭 슬라이더에 6개 가중치 레이블 (의미 유사도/키워드/라벨/일관성/최신성/피드백) 이 있다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
-    assert "의미" in r.text
+    assert "의미 유사도" in r.text
     assert "키워드" in r.text
     assert "라벨" in r.text
-    # "통일성" 은 프리셋 탭에도 있으므로 슬라이더 섹션 내 존재를 간접 확인
-    assert "신선도" in r.text or "recency" in r.text.lower()
+    # 최신성/피드백 — 한국어로 체크
+    assert "최신성" in r.text
     assert "피드백" in r.text
 
 
@@ -248,10 +248,10 @@ def test_api_weights_updates_config(deps_fixture):
 
 
 def test_d_tab_has_saved_and_usage_sections(client):
-    """D 탭에 Phase 3D-2 실 구현 (저장된 검색 + 통일성/페널티) 섹션이 있다."""
+    """D 탭에 Phase 3D-2 실 구현 (저장된 검색 + 일관성/페널티) 섹션이 있다 (ko 카탈로그 → 한국어)."""
     r = client.get("/library")
     assert "저장된 검색" in r.text
-    assert "통일성 / 페널티" in r.text
+    assert "일관성 / 페널티" in r.text
 
 
 # ── Alpine.store 초기화 확인 ────────────────────────────────────────────

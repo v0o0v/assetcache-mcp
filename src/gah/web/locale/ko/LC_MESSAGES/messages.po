@@ -1,0 +1,777 @@
+# Korean translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-05-19 03:18+0900\n"
+"PO-Revision-Date: 2026-05-19 02:42+0900\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ko\n"
+"Language-Team: ko <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: src/gah/web/templates/_header_project_dropdown.html:8
+msgid "Current project"
+msgstr "현재 프로젝트"
+
+#: src/gah/web/templates/_header_project_dropdown.html:11
+msgid "Select project"
+msgstr "프로젝트 선택"
+
+#: src/gah/web/templates/_header_project_dropdown.html:25
+msgid "No projects"
+msgstr "프로젝트 없음"
+
+#: src/gah/web/templates/_header_project_dropdown.html:28
+msgid "+ New project"
+msgstr "+ 새 프로젝트"
+
+#: src/gah/web/templates/_header_project_dropdown.html:29
+msgid "Deselect"
+msgstr "선택 해제"
+
+#: src/gah/web/templates/_label_row.html:35
+#: src/gah/web/templates/_pack_card.html:17
+msgid "Active"
+msgstr "활성"
+
+#: src/gah/web/templates/_label_row.html:35
+#: src/gah/web/templates/_pack_card.html:17
+msgid "Inactive"
+msgstr "비활성"
+
+#: src/gah/web/templates/_label_row.html:41
+msgid "Are you sure you want to delete this?"
+msgstr "정말 삭제하시겠습니까?"
+
+#: src/gah/web/templates/_label_row.html:44
+#: src/gah/web/templates/_side_panel_d.html:96
+msgid "Delete"
+msgstr "삭제"
+
+#: src/gah/web/templates/_labels_admin_grid.html:38
+msgid "Label token (lowercase + digits + _)"
+msgstr "라벨 토큰 (소문자 + 숫자 + _)"
+
+#: src/gah/web/templates/_labels_admin_grid.html:44
+msgid "Description (optional)"
+msgstr "설명 (선택 사항)"
+
+#: src/gah/web/templates/_labels_admin_grid.html:46
+msgid "Add"
+msgstr "추가"
+
+#: src/gah/web/templates/_labels_admin_grid.html:54
+#: src/gah/web/templates/_side_panel_c.html:58
+#: src/gah/web/templates/asset_detail.html:45
+msgid "Label"
+msgstr "라벨"
+
+#: src/gah/web/templates/_labels_admin_grid.html:55
+msgid "Description"
+msgstr "설명"
+
+#: src/gah/web/templates/_labels_admin_grid.html:56
+msgid "Source"
+msgstr "출처"
+
+#: src/gah/web/templates/_labels_admin_grid.html:57
+#: src/gah/web/templates/_side_panel_b.html:125
+msgid "Status"
+msgstr "상태"
+
+#: src/gah/web/templates/_labels_admin_grid.html:58
+#: src/gah/web/templates/unity_asset_store.html:39
+msgid "Actions"
+msgstr "작업"
+
+#: src/gah/web/templates/_labels_admin_grid.html:76
+msgid "Export (JSON)"
+msgstr "내보내기 (JSON)"
+
+#: src/gah/web/templates/_labels_admin_grid.html:85
+msgid "Import (JSON)"
+msgstr "가져오기 (JSON)"
+
+#: src/gah/web/templates/_modal_new_project.html:4
+msgid "New project"
+msgstr "새 프로젝트"
+
+#: src/gah/web/templates/_modal_new_project.html:6
+msgid "Project folder path"
+msgstr "프로젝트 폴더 경로"
+
+#: src/gah/web/templates/_modal_new_project.html:10
+msgid "Display name (optional)"
+msgstr "표시 이름 (선택 사항)"
+
+#: src/gah/web/templates/_modal_new_project.html:14
+msgid "Cancel"
+msgstr "취소"
+
+#: src/gah/web/templates/_modal_new_project.html:15
+msgid "Create"
+msgstr "생성"
+
+#: src/gah/web/templates/_modal_usage.html:7
+#: src/gah/web/templates/asset_detail.html:7
+#: src/gah/web/templates/library.html:68
+msgid "Close"
+msgstr "닫기"
+
+#: src/gah/web/templates/_modal_usage.html:9
+msgid "Consistency / penalty details"
+msgstr "일관성 / 페널티 상세"
+
+#: src/gah/web/templates/_modal_usage.html:11
+msgid "Last"
+msgstr "최근"
+
+#: src/gah/web/templates/_modal_usage.html:11
+msgid "day usage summary"
+msgstr "일 사용 요약"
+
+#: src/gah/web/templates/_modal_usage.html:15
+#: src/gah/web/templates/_side_panel_d.html:121
+msgid "Top adopted packs"
+msgstr "가장 많이 채택된 팩"
+
+#: src/gah/web/templates/_modal_usage.html:20
+msgid "times"
+msgstr "회"
+
+#: src/gah/web/templates/_modal_usage.html:25
+msgid "No packs adopted yet."
+msgstr "아직 채택된 팩이 없습니다."
+
+#: src/gah/web/templates/_modal_usage.html:29
+#: src/gah/web/templates/_side_panel_d.html:123
+msgid "Rejections"
+msgstr "거부 횟수"
+
+#: src/gah/web/templates/_nav.html:6 src/gah/web/templates/base.html:6
+#: src/gah/web/templates/base.html:73 src/gah/web/templates/error.html:2
+#: src/gah/web/templates/labels_admin.html:6
+#: src/gah/web/templates/library.html:2 src/gah/web/templates/packs.html:6
+#: src/gah/web/templates/project_detail.html:7
+#: src/gah/web/templates/projects_list.html:4
+#: src/gah/web/templates/settings.html:4
+msgid "Game Asset Helper"
+msgstr "Game Asset Helper"
+
+#: src/gah/web/templates/_nav.html:9 src/gah/web/templates/library.html:2
+msgid "Library"
+msgstr "라이브러리"
+
+#: src/gah/web/templates/_nav.html:10
+#: src/gah/web/templates/_preference_panel.html:19
+#: src/gah/web/templates/_side_panel_b.html:74
+#: src/gah/web/templates/_side_panel_c.html:62
+#: src/gah/web/templates/project_detail.html:38
+msgid "Packs"
+msgstr "팩"
+
+#: src/gah/web/templates/_nav.html:11 src/gah/web/templates/labels_admin.html:6
+#: src/gah/web/templates/labels_admin.html:11
+msgid "Label management"
+msgstr "라벨 관리"
+
+#: src/gah/web/templates/_nav.html:13
+#: src/gah/web/templates/projects_list.html:4
+#: src/gah/web/templates/projects_list.html:9
+msgid "Projects"
+msgstr "프로젝트"
+
+#: src/gah/web/templates/_nav.html:14
+#: src/gah/web/templates/unity_asset_store.html:7
+msgid "Unity Asset Store"
+msgstr "Unity Asset Store"
+
+#: src/gah/web/templates/_nav.html:16 src/gah/web/templates/settings.html:4
+#: src/gah/web/templates/settings.html:8
+msgid "Settings"
+msgstr "설정"
+
+#: src/gah/web/templates/_nav.html:27 src/gah/web/templates/settings.html:31
+msgid "Theme"
+msgstr "테마"
+
+#: src/gah/web/templates/_nav.html:28
+msgid "Toggle theme"
+msgstr "테마 전환"
+
+#: src/gah/web/templates/_nav.html:31 src/gah/web/templates/_pick_card.html:13
+msgid "Claude request"
+msgstr "Claude 요청"
+
+#: src/gah/web/templates/_pack_card.html:21
+msgid "Unknown"
+msgstr "알 수 없음"
+
+#: src/gah/web/templates/_pack_card.html:28
+#: src/gah/web/templates/_side_panel_d.html:122
+msgid "items"
+msgstr "항목"
+
+#: src/gah/web/templates/_packs_grid.html:11
+msgid "No packs registered."
+msgstr "등록된 팩이 없습니다."
+
+#: src/gah/web/templates/_pick_card.html:14
+msgid "Pick from candidates"
+msgstr "후보에서 선택"
+
+#: src/gah/web/templates/_pick_card.html:19
+#: src/gah/web/templates/asset_detail.html:66
+msgid "Reject"
+msgstr "거부"
+
+#: src/gah/web/templates/_pick_card.html:65
+#: src/gah/web/templates/asset_detail.html:60
+msgid "Adopt"
+msgstr "채택"
+
+#: src/gah/web/templates/_preference_panel.html:3
+msgid "Asset preferences"
+msgstr "자산 선호도"
+
+#: src/gah/web/templates/_preference_panel.html:6
+msgid "Highest preference first"
+msgstr "선호도 높은 순"
+
+#: src/gah/web/templates/_preference_panel.html:7
+msgid "Lowest preference first"
+msgstr "선호도 낮은 순"
+
+#: src/gah/web/templates/_preference_panel.html:8
+msgid "Most adopted first"
+msgstr "채택 많은 순"
+
+#: src/gah/web/templates/_preference_panel.html:9
+msgid "Most recent activity first"
+msgstr "최근 활동 순"
+
+#: src/gah/web/templates/_preference_panel.html:12
+msgid "Search assets"
+msgstr "자산 검색"
+
+#: src/gah/web/templates/_preference_panel.html:18
+#: src/gah/web/templates/project_detail.html:37
+msgid "Asset"
+msgstr "자산"
+
+#: src/gah/web/templates/_preference_panel.html:20
+msgid "Preference"
+msgstr "선호도"
+
+#: src/gah/web/templates/_preference_panel.html:21
+msgid "feedback"
+msgstr "피드백"
+
+#: src/gah/web/templates/_preference_panel.html:22
+msgid "Uses"
+msgstr "사용 횟수"
+
+#: src/gah/web/templates/_preference_panel.html:23
+#: src/gah/web/templates/projects_list.html:20
+msgid "Last activity"
+msgstr "마지막 활동"
+
+#: src/gah/web/templates/_preference_panel.html:51
+msgid "No preference data available."
+msgstr "선호도 데이터가 없습니다."
+
+#: src/gah/web/templates/_preference_panel.html:54
+msgid "◀"
+msgstr "◀"
+
+#: src/gah/web/templates/_preference_panel.html:56
+msgid "▶"
+msgstr "▶"
+
+#: src/gah/web/templates/_results_cards_only.html:31
+msgid "Load more"
+msgstr "더 불러오기"
+
+#: src/gah/web/templates/_results_grid.html:13
+#: src/gah/web/templates/_results_grid.html:14
+#: src/gah/web/templates/_side_panel_c.html:10
+msgid "Grid"
+msgstr "그리드"
+
+#: src/gah/web/templates/_results_grid.html:20
+#: src/gah/web/templates/_results_grid.html:21
+#: src/gah/web/templates/_side_panel_c.html:15
+msgid "List"
+msgstr "목록"
+
+#: src/gah/web/templates/_results_grid.html:38
+#: src/gah/web/templates/_side_panel_c.html:38
+msgid "Sort"
+msgstr "정렬"
+
+#: src/gah/web/templates/_results_grid.html:42
+#: src/gah/web/templates/_side_panel_c.html:42
+msgid "Score↓"
+msgstr "점수↓"
+
+#: src/gah/web/templates/_results_grid.html:43
+#: src/gah/web/templates/_side_panel_c.html:43
+msgid "Added↓"
+msgstr "추가일↓"
+
+#: src/gah/web/templates/_results_grid.html:44
+#: src/gah/web/templates/_side_panel_c.html:44
+msgid "Added↑"
+msgstr "추가일↑"
+
+#: src/gah/web/templates/_results_grid.html:45
+#: src/gah/web/templates/_side_panel_c.html:45
+msgid "Name↑"
+msgstr "이름↑"
+
+#: src/gah/web/templates/_results_grid.html:46
+#: src/gah/web/templates/_side_panel_c.html:46
+msgid "Name↓"
+msgstr "이름↓"
+
+#: src/gah/web/templates/_results_grid.html:47
+#: src/gah/web/templates/_side_panel_c.html:47
+msgid "Size↓"
+msgstr "크기↓"
+
+#: src/gah/web/templates/_results_grid.html:48
+#: src/gah/web/templates/_side_panel_c.html:48
+msgid "Size↑"
+msgstr "크기↑"
+
+#: src/gah/web/templates/_results_grid.html:53
+msgid "Assets"
+msgstr "자산"
+
+#: src/gah/web/templates/_search_error.html:4
+msgid "Search service unavailable"
+msgstr "검색 서비스를 사용할 수 없습니다"
+
+#: src/gah/web/templates/_search_error.html:6
+msgid ""
+"The search service (Ollama) is not available. Please check that the "
+"Ollama server is running."
+msgstr "검색 서비스(Ollama)를 사용할 수 없습니다. Ollama 서버가 실행 중인지 확인하세요."
+
+#: src/gah/web/templates/_search_error.html:9
+msgid ""
+"After starting Ollama, try searching again, or clear the search bar to "
+"browse the full library."
+msgstr "Ollama를 시작한 후 다시 검색하거나, 검색창을 지워 전체 라이브러리를 탐색하세요."
+
+#: src/gah/web/templates/_side_panel_b.html:7
+#: src/gah/web/templates/library.html:73
+msgid "B Filters"
+msgstr "B 필터"
+
+#: src/gah/web/templates/_side_panel_b.html:11
+msgid "Matching mode"
+msgstr "매칭 모드"
+
+#: src/gah/web/templates/_side_panel_b.html:16
+msgid "AND"
+msgstr "AND"
+
+#: src/gah/web/templates/_side_panel_b.html:22
+msgid "OR"
+msgstr "OR"
+
+#: src/gah/web/templates/_side_panel_b.html:28
+msgid "NOT"
+msgstr "NOT"
+
+#: src/gah/web/templates/_side_panel_b.html:37
+msgid "🔍 Search labels…"
+msgstr "🔍 라벨 검색…"
+
+#: src/gah/web/templates/_side_panel_b.html:45
+msgid "Sprite"
+msgstr "스프라이트"
+
+#: src/gah/web/templates/_side_panel_b.html:50
+msgid "Sheet"
+msgstr "시트"
+
+#: src/gah/web/templates/_side_panel_b.html:55
+msgid "Sound"
+msgstr "사운드"
+
+#: src/gah/web/templates/_side_panel_b.html:85
+msgid "No packs"
+msgstr "팩 없음"
+
+#: src/gah/web/templates/_side_panel_b.html:91
+msgid "Vendor"
+msgstr "제조사"
+
+#: src/gah/web/templates/_side_panel_b.html:102
+msgid "No vendors"
+msgstr "제조사 없음"
+
+#: src/gah/web/templates/_side_panel_b.html:108
+msgid "License"
+msgstr "라이선스"
+
+#: src/gah/web/templates/_side_panel_b.html:119
+msgid "No licenses"
+msgstr "라이선스 없음"
+
+#: src/gah/web/templates/_side_panel_b.html:131
+msgid "All"
+msgstr "전체"
+
+#: src/gah/web/templates/_side_panel_b.html:137
+msgid "Done"
+msgstr "완료"
+
+#: src/gah/web/templates/_side_panel_b.html:143
+msgid "Pending"
+msgstr "대기 중"
+
+#: src/gah/web/templates/_side_panel_b.html:149
+msgid "Failed"
+msgstr "실패"
+
+#: src/gah/web/templates/_side_panel_c.html:5
+msgid "Result display format"
+msgstr "결과 표시 형식"
+
+#: src/gah/web/templates/_side_panel_c.html:22
+msgid "Card size"
+msgstr "카드 크기"
+
+#: src/gah/web/templates/_side_panel_c.html:54
+msgid "Card display info"
+msgstr "카드 표시 정보"
+
+#: src/gah/web/templates/_side_panel_c.html:66
+msgid "Score"
+msgstr "점수"
+
+#: src/gah/web/templates/_side_panel_c.html:70
+#: src/gah/web/templates/unity_asset_store.html:35
+msgid "Size"
+msgstr "크기"
+
+#: src/gah/web/templates/_side_panel_d.html:6
+msgid "Weight presets"
+msgstr "가중치 프리셋"
+
+#: src/gah/web/templates/_side_panel_d.html:12
+msgid "Balanced"
+msgstr "균형"
+
+#: src/gah/web/templates/_side_panel_d.html:18
+msgid "Consistency first"
+msgstr "일관성 우선"
+
+#: src/gah/web/templates/_side_panel_d.html:24
+msgid "Novelty"
+msgstr "참신성"
+
+#: src/gah/web/templates/_side_panel_d.html:32
+msgid "▶ Adjust sliders manually…"
+msgstr "▶ 슬라이더 직접 조정…"
+
+#: src/gah/web/templates/_side_panel_d.html:36
+msgid "Semantic"
+msgstr "의미 유사도"
+
+#: src/gah/web/templates/_side_panel_d.html:44
+msgid "Keyword"
+msgstr "키워드"
+
+#: src/gah/web/templates/_side_panel_d.html:52
+msgid "Label weight"
+msgstr "라벨 가중치"
+
+#: src/gah/web/templates/_side_panel_d.html:60
+msgid "Consistency"
+msgstr "일관성"
+
+#: src/gah/web/templates/_side_panel_d.html:68
+msgid "Recency"
+msgstr "최신성"
+
+#: src/gah/web/templates/_side_panel_d.html:76
+msgid "Feedback"
+msgstr "피드백"
+
+#: src/gah/web/templates/_side_panel_d.html:88
+msgid "Saved searches"
+msgstr "저장된 검색"
+
+#: src/gah/web/templates/_side_panel_d.html:100
+msgid "No saved searches yet."
+msgstr "아직 저장된 검색이 없습니다."
+
+#: src/gah/web/templates/_side_panel_d.html:107
+msgid "New search name…"
+msgstr "새 검색 이름…"
+
+#: src/gah/web/templates/_side_panel_d.html:112
+msgid "+ Save current search"
+msgstr "+ 현재 검색 저장"
+
+#: src/gah/web/templates/_side_panel_d.html:119
+msgid "Consistency / penalty"
+msgstr "일관성 / 페널티"
+
+#: src/gah/web/templates/_side_panel_d.html:130
+msgid "View details"
+msgstr "상세 보기"
+
+#: src/gah/web/templates/_unity_package_row.html:23
+msgid "Import"
+msgstr "임포트"
+
+#: src/gah/web/templates/_unity_package_row.html:26
+msgid "Skip"
+msgstr "건너뜀"
+
+#: src/gah/web/templates/_unity_package_row.html:29
+msgid "Restore"
+msgstr "다시 후보로"
+
+#: src/gah/web/templates/asset_detail.html:30
+msgid "Pack"
+msgstr "팩"
+
+#: src/gah/web/templates/asset_detail.html:33
+msgid "Resolution"
+msgstr "해상도"
+
+#: src/gah/web/templates/asset_detail.html:36
+msgid "File size"
+msgstr "파일 크기"
+
+#: src/gah/web/templates/asset_detail.html:39
+#: src/gah/web/templates/projects_list.html:18
+msgid "Path"
+msgstr "경로"
+
+#: src/gah/web/templates/error.html:7
+#: src/gah/web/templates/error_fragment.html:5
+msgid "Back to library"
+msgstr "라이브러리로 돌아가기"
+
+#: src/gah/web/templates/labels_admin.html:13
+msgid "You can add, edit, and disable label vocabulary per axis (24 axes)."
+msgstr "각 축(24개)의 라벨 어휘를 추가, 수정, 비활성화할 수 있습니다."
+
+#: src/gah/web/templates/labels_admin.html:14
+msgid "Signature:"
+msgstr "시그니처:"
+
+#: src/gah/web/templates/library.html:15
+msgid "Natural language search…  (Enter or 🔍 button)"
+msgstr "자연어 검색…  (Enter 또는 🔍 버튼)"
+
+#: src/gah/web/templates/library.html:27 src/gah/web/templates/library.html:28
+msgid "Search"
+msgstr "검색"
+
+#: src/gah/web/templates/library.html:34 src/gah/web/templates/library.html:35
+msgid "Advanced"
+msgstr "고급"
+
+#: src/gah/web/templates/library.html:75
+msgid "C Display"
+msgstr "C 표시"
+
+#: src/gah/web/templates/library.html:77
+msgid "D Adjust"
+msgstr "D 조정"
+
+#: src/gah/web/templates/packs.html:6 src/gah/web/templates/packs.html:11
+msgid "Pack management"
+msgstr "팩 관리"
+
+#: src/gah/web/templates/packs.html:12
+msgid ""
+"You can toggle active/inactive status for asset packs registered in the "
+"library."
+msgstr "라이브러리에 등록된 에셋 팩의 활성/비활성 상태를 전환할 수 있습니다."
+
+#: src/gah/web/templates/project_detail.html:15
+msgid "Currently active"
+msgstr "현재 활성"
+
+#: src/gah/web/templates/project_detail.html:18
+msgid "Back to list"
+msgstr "목록으로 돌아가기"
+
+#: src/gah/web/templates/project_detail.html:25
+msgid "Set as active project"
+msgstr "활성 프로젝트로 설정"
+
+#: src/gah/web/templates/project_detail.html:32
+msgid "Asset usage history"
+msgstr "자산 사용 내역"
+
+#: src/gah/web/templates/project_detail.html:39
+msgid "source"
+msgstr "출처"
+
+#: src/gah/web/templates/project_detail.html:40
+msgid "Used at"
+msgstr "사용 시각"
+
+#: src/gah/web/templates/project_detail.html:41
+msgid "context"
+msgstr "컨텍스트"
+
+#: src/gah/web/templates/project_detail.html:57
+msgid "No assets adopted yet."
+msgstr "아직 채택된 자산이 없습니다."
+
+#: src/gah/web/templates/project_detail.html:62
+msgid "Adopted pack distribution"
+msgstr "채택된 팩 분포"
+
+#: src/gah/web/templates/project_detail.html:79
+msgid "No pack distribution data."
+msgstr "팩 분포 데이터가 없습니다."
+
+#: src/gah/web/templates/projects_list.html:10
+msgid "➕ New project"
+msgstr "➕ 새 프로젝트"
+
+#: src/gah/web/templates/projects_list.html:17
+msgid "Display name"
+msgstr "표시 이름"
+
+#: src/gah/web/templates/projects_list.html:19
+msgid "First seen"
+msgstr "처음 등록"
+
+#: src/gah/web/templates/projects_list.html:21
+msgid "Adopted assets"
+msgstr "채택된 자산"
+
+#: src/gah/web/templates/projects_list.html:22
+msgid "Primary pack"
+msgstr "주요 팩"
+
+#: src/gah/web/templates/projects_list.html:23
+msgid "Pin/block"
+msgstr "고정/차단"
+
+#: src/gah/web/templates/projects_list.html:40
+msgid "Details"
+msgstr "상세"
+
+#: src/gah/web/templates/projects_list.html:46
+msgid ""
+"No projects registered. Create a new project or adopt assets from a Unity"
+" project to register one automatically."
+msgstr "등록된 프로젝트가 없습니다. 새 프로젝트를 만들거나 Unity 프로젝트에서 자산을 채택하면 자동으로 등록됩니다."
+
+#: src/gah/web/templates/settings.html:12
+msgid "Language"
+msgstr "언어"
+
+#: src/gah/web/templates/settings.html:16
+msgid "Korean"
+msgstr "한국어"
+
+#: src/gah/web/templates/settings.html:21
+msgid "English"
+msgstr "영어"
+
+#: src/gah/web/templates/settings.html:26
+msgid "Auto-detect"
+msgstr "자동 감지"
+
+#: src/gah/web/templates/settings.html:35
+msgid "Auto (system)"
+msgstr "자동 (시스템)"
+
+#: src/gah/web/templates/settings.html:40
+msgid "Light"
+msgstr "라이트"
+
+#: src/gah/web/templates/settings.html:45
+msgid "Dark"
+msgstr "다크"
+
+#: src/gah/web/templates/settings.html:50
+msgid "Startup"
+msgstr "시작"
+
+#: src/gah/web/templates/settings.html:53
+msgid "Start with Windows"
+msgstr "Windows 시작 시 자동 실행"
+
+#: src/gah/web/templates/settings.html:55
+msgid "Only available on Windows"
+msgstr "Windows 에서만 사용 가능"
+
+#: src/gah/web/templates/settings.html:59
+msgid "Save"
+msgstr "저장"
+
+#: src/gah/web/templates/settings.html:60
+msgid "Saving..."
+msgstr "저장 중..."
+
+#: src/gah/web/templates/unity_asset_store.html:10
+msgid "Cache path"
+msgstr "캐시 경로"
+
+#: src/gah/web/templates/unity_asset_store.html:13
+msgid ""
+"The cache path is empty. Please enter the Unity Asset Store cache path in"
+" settings."
+msgstr "캐시 경로가 비어 있습니다. 설정에서 Unity Asset Store 캐시 경로를 입력하세요."
+
+#: src/gah/web/templates/unity_asset_store.html:16
+msgid "Scan cache"
+msgstr "캐시 스캔"
+
+#: src/gah/web/templates/unity_asset_store.html:17
+msgid "Scanning…"
+msgstr "스캔 중…"
+
+#: src/gah/web/templates/unity_asset_store.html:32
+msgid "Publisher"
+msgstr "퍼블리셔"
+
+#: src/gah/web/templates/unity_asset_store.html:33
+msgid "Category"
+msgstr "카테고리"
+
+#: src/gah/web/templates/unity_asset_store.html:34
+msgid "Asset name"
+msgstr "자산 이름"
+
+#: src/gah/web/templates/unity_asset_store.html:36
+msgid "State"
+msgstr "상태"
+
+#: src/gah/web/templates/unity_asset_store.html:37
+msgid "Preview"
+msgstr "미리보기"
+
+#: src/gah/web/templates/unity_asset_store.html:38
+msgid "Added at"
+msgstr "추가 시각"
+
+#: src/gah/web/templates/unity_asset_store.html:49
+msgid "No scanned packages. Click 'Scan cache' to search for packages."
+msgstr "스캔된 패키지가 없습니다. '캐시 스캔'을 클릭하여 패키지를 검색하세요."
+
