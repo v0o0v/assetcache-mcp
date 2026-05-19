@@ -1,0 +1,92 @@
+{# v0.0.1 데이터 마이그레이션 배너 — Alpine + SSE 폴링 #}
+<div
+  x-data="{
+    candidate: null,
+    taskId: null,
+    state: 'idle',
+    progress: 0,
+    error: '',
+    async checkCandidate() {
+      try {
+        const r = await fetch('/api/migration/status');
+        const d = await r.json();
+        this.candidate = (d && d.candidate === null) ? null : d;
+      } catch (e) {
+        this.candidate = null;
+      }
+    },
+    async start(mode) {
+      const r = await fetch('/api/migration/run', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({mode}),
+      });
+      if (!r.ok) { this.state = 'failed'; this.error = 'run failed'; return; }
+      const d = await r.json();
+      this.taskId = d.task_id;
+      this.state = 'running';
+      this.streamProgress();
+    },
+    streamProgress() {
+      const es = new EventSource('/api/migration/progress?task_id=' + encodeURIComponent(this.taskId));
+      es.onmessage = (ev) => {
+        try {
+          const d = JSON.parse(ev.data);
+          this.progress = d.progress;
+        } catch (e) { /* ignore */ }
+      };
+      es.addEventListener('done', () => {
+        this.state = 'done';
+        es.close();
+        setTimeout(() => location.reload(), 1500);
+      });
+      es.addEventListener('error', (ev) => {
+        try {
+          const d = JSON.parse(ev.data || '{}');
+          this.error = d.error || 'unknown error';
+        } catch (e) {
+          this.error = 'unknown error';
+        }
+        this.state = 'failed';
+        es.close();
+      });
+    },
+    dismiss() {
+      this.candidate = null;
+      document.cookie = 'migration_dismissed=1; path=/';
+    },
+  }"
+  x-init="checkCandidate()"
+  x-show="candidate !== null && !document.cookie.includes('migration_dismissed=1')"
+  x-cloak
+  class="migration-banner"
+>
+  <template x-if="state === 'idle'">
+    <div>
+      <h3>{{ _("v0.0.1 데이터를 발견했습니다") }}</h3>
+      <p>
+        <span x-text="candidate?.total_files"></span> {{ _("파일") }}
+        (<span x-text="Math.round((candidate?.total_bytes || 0) / 1024 / 1024)"></span> MB)
+        — {{ _("AssetCacheMCP 로 이주합니다.") }}
+      </p>
+      <button @click="start('copy')">{{ _("복사") }}</button>
+      <button @click="start('move')">{{ _("이동") }}</button>
+      <button @click="dismiss()">{{ _("나중에") }}</button>
+    </div>
+  </template>
+  <template x-if="state === 'running'">
+    <div>
+      <p>{{ _("이주 중...") }} <span x-text="Math.round((progress || 0) * 100)"></span>%</p>
+      <progress :value="progress" max="1"></progress>
+    </div>
+  </template>
+  <template x-if="state === 'done'">
+    <p>{{ _("이주 완료. 새 데이터 폴더를 로드합니다.") }}</p>
+  </template>
+  <template x-if="state === 'failed'">
+    <div>
+      <p>{{ _("이주 실패:") }} <span x-text="error"></span></p>
+      <button @click="state = 'idle'">{{ _("재시도") }}</button>
+    </div>
+  </template>
+</div>
