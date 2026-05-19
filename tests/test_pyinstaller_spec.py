@@ -1,4 +1,4 @@
-﻿"""M8 — gah.spec 정합성 smoke (실 빌드는 수동)."""
+﻿"""M8 — assetcache.spec 정합성 smoke (실 빌드는 수동)."""
 from __future__ import annotations
 
 import ast

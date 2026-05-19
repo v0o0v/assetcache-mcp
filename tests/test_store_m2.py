@@ -1,4 +1,4 @@
-﻿"""M2 schema + CRUD tests for :class:`gah.core.store.Store`.
+﻿"""M2 schema + CRUD tests for :class:`assetcache.core.store.Store`.
 
 M2 extends the M1 schema with sprite_meta, sound_meta, assets_fts
 (FTS5), asset_embeddings, asset_labels, clip_label_cache, and labels.

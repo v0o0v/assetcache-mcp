@@ -34,7 +34,7 @@ def qapp():
     PySide6 forbids more than one QApplication per process and several
     widget constructors (notably :class:`QMainWindow` + ``QShortcut``)
     deadlock when none exists.  This fixture creates one on demand and
-    reuses it across tests, mirroring what ``gah.ui.test_ui_smoke``
+    reuses it across tests, mirroring what ``assetcache.ui.test_ui_smoke``
     already does manually.
     """
     from PySide6.QtWidgets import QApplication
@@ -347,7 +347,7 @@ def mock_ollama():
 def fake_clip_backend():
     """Deterministic CLIP stand-in.
 
-    Imported lazily because ``gah.core.clip_labeler`` only exists once the
+    Imported lazily because ``assetcache.core.clip_labeler`` only exists once the
     C.3 step of M2 is implemented; until then this fixture will simply
     fail to collect — that is intentional and matches the RED phase.
     """
@@ -361,7 +361,7 @@ def analyzer_inputs(fixture_dir: Path):
     """Factory that builds ``AnalyzerInput`` objects pointing at fixture files.
 
     Same lazy-import note as ``fake_clip_backend`` — only resolvable once
-    ``gah.core.analyzer.base`` lands in C.4.
+    ``assetcache.core.analyzer.base`` lands in C.4.
     """
     from assetcache.core.analyzer.base import AnalyzerInput  # type: ignore[import-not-found]
 
@@ -398,7 +398,7 @@ def _fake_embed_vec(text: str, dim: int = 768) -> bytes:
     """Deterministic float32 LE vector derived from sha256(text).
 
     Used by the M3 ``HybridSearcher`` tests as a drop-in replacement for
-    ``gah.core.embedding.EmbeddingEncoder`` — same byte format
+    ``assetcache.core.embedding.EmbeddingEncoder`` — same byte format
     (float32 little-endian, dim * 4 bytes) so it round-trips through
     ``Store.semantic_candidates_load``.
     """
@@ -418,7 +418,7 @@ def _fake_embed_vec(text: str, dim: int = 768) -> bytes:
 
 @pytest.fixture
 def fake_embedder():
-    """Lightweight stand-in for ``gah.core.embedding.EmbeddingEncoder``.
+    """Lightweight stand-in for ``assetcache.core.embedding.EmbeddingEncoder``.
 
     Exposes the same surface used by the M3 search path::
 
@@ -619,7 +619,7 @@ def consistency_summary_factory():
     """Builder for ``ProjectUsageSummary`` instances in consistency tests.
 
     Lazy import means the fixture is resolvable only after C.3 lands the
-    ``gah.core.usage_tracker`` module — exactly the M2 pattern.
+    ``assetcache.core.usage_tracker`` module — exactly the M2 pattern.
     """
     from assetcache.core.usage_tracker import ProjectUsageSummary  # type: ignore[import-not-found]
 

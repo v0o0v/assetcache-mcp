@@ -22,7 +22,7 @@ import pytest
 
 
 def test_tray_bridge_import():
-    """TrayBridge 가 gah.web.tray_bridge 에서 import 가능해야 한다."""
+    """TrayBridge 가 assetcache.web.tray_bridge 에서 import 가능해야 한다."""
     from assetcache.web.tray_bridge import TrayBridge  # noqa: F401
 
 

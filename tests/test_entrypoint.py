@@ -32,7 +32,7 @@ def test_version_flag_prints_version_and_exits_zero() -> None:
 
 
 def test_mcp_flag_calls_run_stdio(monkeypatch, tmp_path: Path) -> None:
-    """M3: --mcp 가 gah.mcp.server.run_stdio 를 호출해야 한다 (stub 제거 확인)."""
+    """M3: --mcp 가 assetcache.mcp.server.run_stdio 를 호출해야 한다 (stub 제거 확인)."""
     import assetcache.__main__ as main_mod
 
     called = {"n": 0}

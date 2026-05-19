@@ -1,4 +1,4 @@
-"""Smoke test: every module of gah must import without side effects."""
+"""Smoke test: every module of assetcache must import without side effects."""
 
 from __future__ import annotations
 
