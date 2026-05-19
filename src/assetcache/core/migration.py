@@ -83,9 +83,10 @@ class MigrationRunner:
     ) -> None:
         # 실 부팅 흐름에서 AppPaths.ensure_dirs 가 candidate.target 을 미리
         # 만든다 (data_dir/library/cache/logs). detect_v001_candidate 가
-        # _is_empty_dir 만 통과시키므로 이 시점의 target 은 반드시 비어있다.
+        # metadata.db 부재만 통과시키므로 이 시점의 target 안에는 v0.0.1
+        # 사용자 데이터가 없다 (logs/config.toml 같은 부산물뿐).
         # shutil.copytree(dirs_exist_ok=False) / shutil.move(dst-exists) 와
-        # 충돌하지 않도록 비어있는 target 트리를 제거해 깨끗한 캔버스로 넘긴다.
+        # 충돌하지 않도록 target 트리를 한 번 비우고 깨끗한 캔버스로 넘긴다.
         if candidate.target.exists():
             shutil.rmtree(candidate.target)
         if mode == "copy":
@@ -112,12 +113,6 @@ class MigrationCandidate:
 def is_already_migrated(target: Path) -> bool:
     """target 안에 마이그레이션 완료 마커가 있는지."""
     return (target / MIGRATION_MARKER).exists()
-
-
-def _is_empty_dir(p: Path) -> bool:
-    if not p.exists():
-        return True
-    return not any(p.iterdir())
 
 
 def _count_files(root: Path) -> tuple[int, int]:
@@ -175,7 +170,9 @@ def detect_v001_candidate(paths: AppPaths) -> Optional[MigrationCandidate]:
     if is_already_migrated(new_dir):
         return None
 
-    if not _is_empty_dir(new_dir):
+    # 새 data_dir 에 v0.0.1 사용자 데이터(metadata.db)가 이미 있으면 마이그레이션 X.
+    # ensure_dirs 가 만든 빈 library/cache/logs 는 OK — 사용자 데이터의 기준은 DB 파일.
+    if (new_dir / "metadata.db").exists():
         return None
 
     if not old_dir.exists():

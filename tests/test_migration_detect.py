@@ -65,6 +65,36 @@ def test_detect_no_candidate_when_new_folder_has_data(tmp_path):
     assert detect_v001_candidate(paths) is None
 
 
+def test_detect_candidate_when_new_dir_has_ensure_dirs_scaffolding(tmp_path):
+    """ensure_dirs 가 만든 library/cache/logs 가 있어도 metadata.db 가 없으면 후보 반환.
+
+    실 부팅 흐름: paths.ensure_dirs() 가 data_dir/library + data_dir/cache +
+    data_dir/logs 를 먼저 만들고, 그 다음 detect 가 호출된다. 이전 _is_empty_dir
+    검사는 이 부산물을 "사용자 데이터 있음" 으로 오인해 마이그레이션이
+    영구히 차단됐다 — DB 파일 부재로만 빈 상태를 판정해야 한다.
+    """
+    paths = _make_app_paths(tmp_path)
+    # ensure_dirs 흐름 재현
+    paths.data_dir.mkdir(parents=True)
+    paths.library_dir.mkdir(parents=True, exist_ok=True)
+    paths.cache_dir.mkdir(parents=True, exist_ok=True)
+    paths.log_path.parent.mkdir(parents=True, exist_ok=True)
+    (paths.log_path).write_text("first-run log\n", encoding="utf-8")
+    # config.toml (load_config 가 만든다) 도 흔히 같이 존재
+    (paths.config_path).write_text("[default]\nfoo = 1\n", encoding="utf-8")
+
+    paths.legacy_data_dir.mkdir(parents=True)
+    (paths.legacy_data_dir / "metadata.db").write_text("fake db")
+    (paths.legacy_data_dir / "library").mkdir()
+    (paths.legacy_data_dir / "library" / "asset.png").write_bytes(b"\x00" * 50)
+
+    candidate = detect_v001_candidate(paths)
+
+    assert candidate is not None
+    assert candidate.source == paths.legacy_data_dir
+    assert candidate.target == paths.data_dir
+
+
 def test_detect_no_candidate_when_already_migrated(tmp_path):
     """마이그레이션 완료 마커가 있으면 다시 candidate 안 됨."""
     paths = _make_app_paths(tmp_path)
