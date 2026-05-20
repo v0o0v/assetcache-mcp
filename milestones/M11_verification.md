@@ -92,6 +92,7 @@ pytest -m llm_integration
 | embedding dim 일관성 자동 처리 (chain 변경 시 자동 re-embed) | 사용자 수동 cleanup 필요 | M12 candidate |
 | rate limit token bucket / quota tracking | 없음 (HF 월 quota 작음 등) | M17 candidate |
 | per-asset 사용자 backend override (특정 asset 만 다른 backend) | 없음 | M12 candidate |
+| Gemini Batch API 활용 (50% 비용 절감, 24h SLO) | interactive 만 사용 — 대량 import 시 비용 비효율 | M11.1 또는 M12 candidate ([Batch API docs](https://ai.google.dev/gemini-api/docs/batch-api)). assetcache 적합 시나리오: library 초기 import / Unity Asset Store 80+ / failed bulk 재분석. drop 1장은 interactive 유지 (즉시 UX) — hybrid 정책 spec 필요 |
 
 ## 신규 의존성 (런타임 4건)
 
