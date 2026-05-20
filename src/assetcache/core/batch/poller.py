@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import threading
+import time
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -19,6 +20,18 @@ if TYPE_CHECKING:
     from ...config import Config
 
 log = logging.getLogger(__name__)
+
+# Gemini Job state → (DB state, terminal_flag | None)
+# terminal_flag None  = transient (PENDING / RUNNING)
+# terminal_flag str   = terminal state name
+_GEMINI_STATE_MAP: dict[str, tuple[str, str | None]] = {
+    "JOB_STATE_PENDING": ("submitted", None),
+    "JOB_STATE_RUNNING": ("running", None),
+    "JOB_STATE_SUCCEEDED": ("succeeded", "succeeded"),
+    "JOB_STATE_FAILED": ("failed", "failed"),
+    "JOB_STATE_CANCELLED": ("cancelled", "cancelled"),
+    "JOB_STATE_EXPIRED": ("expired", "expired"),
+}
 
 
 class BatchPoller(threading.Thread):
@@ -72,8 +85,27 @@ class BatchPoller(threading.Thread):
                 log.exception("poll_job failed for job_id=%s", getattr(job, "id", "?"))
 
     def _poll_job(self, job) -> None:
-        """Task 4.2 에서 실 구현 — state mapping + 만료 safety + 결과 처리 dispatch."""
-        pass
+        """Poll one job — state mapping + expiry safety net + result dispatch."""
+        now = int(time.time())
+        # 안전망: 만료 → terminal failure 강제 (backend.batch_get 안 호출)
+        if now > job.expires_at and job.state in ("submitted", "running"):
+            self._handle_terminal_failure(job, "expired", "expires_at passed")
+            return
+        backend = self._chain.get_backend(job.backend)
+        if backend is None:
+            log.warning("backend %s not registered for job %d", job.backend, job.id)
+            return
+        status = backend.batch_get(job.backend_job_id)
+        db_state, terminal = _GEMINI_STATE_MAP.get(status.state, ("running", None))
+        if terminal is None:
+            # transient — DB 만 갱신 (state 변경 시)
+            if db_state != job.state:
+                self._store.update_batch_job_state(job.id, state=db_state)
+            return
+        if terminal == "succeeded":
+            self._handle_succeeded(job, status, backend)
+        else:
+            self._handle_terminal_failure(job, terminal, status.error)
 
     def _handle_succeeded(self, job, status, backend) -> None:
         """Task 4.3 에서 실 구현."""
