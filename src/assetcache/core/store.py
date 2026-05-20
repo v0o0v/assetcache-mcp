@@ -1131,6 +1131,18 @@ class Store:
                 (asset_id, searchable_text),
             )
 
+    def get_searchable_text(self, asset_id: int) -> str | None:
+        """assets_fts 에서 저장된 searchable_text 반환.
+
+        분석 완료 전 또는 FTS 미등록 자산이면 None.
+        BatchManager._build_embed_texts 가 사용.
+        """
+        row = self.conn.execute(
+            "SELECT searchable_text FROM assets_fts WHERE asset_id = ?",
+            (asset_id,),
+        ).fetchone()
+        return row[0] if row else None
+
     # -- M2: CLIP label vector cache ----------------------------------
 
     def clip_label_cache_get(self, label: str, model: str) -> bytes | None:

@@ -1,8 +1,8 @@
 """BatchManager — modality 별 batch 진입 결정 + Gemini submit + rollback.
 
 Phase 3 task 3.1+3.2 — toggle/chain/threshold 결정 트리 + race lock.
-Phase 3 task 3.3 에서 _build_chat_requests / _build_embed_texts 가 분석 이미지/오디오
-실 바이트 로딩으로 교체됨 (현재는 placeholder).
+Phase 3 task 3.3 — _build_chat_requests / _build_embed_texts 를
+  analyzer/messages.py 공유 빌더 + store.get_searchable_text 로 교체.
 """
 
 from __future__ import annotations
@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 import threading
 import time
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from .types import BatchChatRequest
@@ -39,11 +40,13 @@ class BatchManager:
         chain_registry: "BackendRegistry",
         analysis_queue: "AnalysisQueue",
         cfg: "Config",
+        library_dir: Path | None = None,
     ) -> None:
         self._store = store
         self._chain = chain_registry
         self._aq = analysis_queue
         self._cfg = cfg
+        self._library_dir = library_dir
         self._locks = {m: threading.Lock() for m in _MODALITIES}
 
     def try_submit(self, modality: str) -> int | None:
@@ -120,19 +123,48 @@ class BatchManager:
         return job_id
 
     def _build_chat_requests(self, modality, rows):
-        """Phase 3 task 3.1+3.2: placeholder — Task 3.3 에서 실 이미지/오디오 base64 로 교체."""
-        from ..llm.base import ChatMessage
-        return [
-            BatchChatRequest(
+        """실 이미지/오디오 바이트를 base64 인코딩해 BatchChatRequest 목록 반환.
+
+        library_dir 가 없으면 row.path 를 절대 경로로 사용(테스트/fallback).
+        """
+        from ..analyzer.messages import (
+            BATCH_AUDIO_PROMPT,
+            BATCH_IMAGE_PROMPT,
+            build_audio_chat_messages,
+            build_image_chat_messages,
+        )
+
+        if modality == "chat_image":
+            builder = build_image_chat_messages
+            prompt = BATCH_IMAGE_PROMPT
+        else:
+            builder = build_audio_chat_messages
+            prompt = BATCH_AUDIO_PROMPT
+
+        out = []
+        for r in rows:
+            if self._library_dir is not None:
+                abs_path = (self._library_dir / r.path).resolve()
+            else:
+                abs_path = Path(r.path)
+            try:
+                messages = builder(abs_path=abs_path, prompt=prompt)
+            except OSError as e:
+                log.warning("batch: cannot read asset %d (%s): %s", r.id, abs_path, e)
+                continue
+            out.append(BatchChatRequest(
                 asset_id=r.id,
-                messages=[
-                    ChatMessage(role="user", content=f"placeholder asset {r.id}"),
-                ],
+                messages=messages,
                 force_json=True,
-            )
-            for r in rows
-        ]
+            ))
+        return out
 
     def _build_embed_texts(self, rows):
-        """Phase 3 task 3.1+3.2: placeholder — Task 3.3 에서 store.get_searchable_text 로 교체."""
-        return [f"placeholder asset {r.id}" for r in rows]
+        """assets_fts の searchable_text 를 사용. 미등록이면 path + kind 폴백."""
+        out = []
+        for r in rows:
+            text = self._store.get_searchable_text(r.id)
+            if text is None:
+                text = f"{r.path} {r.kind}"
+            out.append(text)
+        return out
