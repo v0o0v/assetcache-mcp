@@ -106,3 +106,72 @@ def test_registry_chain_preserves_priority_order():
     )
     chain = reg.get_chain("chat_image")
     assert [b.info.name for b in chain.backends] == ["gemini", "ollama"]
+
+
+def test_registry_gemini_via_default_factory(monkeypatch):
+    """gemini_factory 미지정 시 _default_gemini_factory 로 chain 구성."""
+    cfg = Config()
+    cfg.backends["gemini"]["enabled"] = True
+    cfg.backends["gemini"]["api_key"] = "AIzaTest"
+    cfg.chains["chat_image"] = ["gemini"]
+
+    # 실 google-genai 호출 회피 — _default_gemini_factory monkeypatch
+    from assetcache.core.llm import registry as reg_mod
+
+    monkeypatch.setattr(
+        reg_mod,
+        "_default_gemini_factory",
+        lambda settings, cfg: _FakeBackend("gemini"),
+    )
+    reg = BackendRegistry.from_config(cfg)
+    chain = reg.get_chain("chat_image")
+    assert len(chain.backends) == 1
+    assert chain.backends[0].info.name == "gemini"
+
+
+def test_default_gemini_factory_reads_env_for_api_key(monkeypatch):
+    """settings.api_key 비어있어도 GEMINI_API_KEY env 가 있으면 사용."""
+    from assetcache.core.llm import registry as reg_mod
+
+    captured = {}
+
+    class _StubGemini:
+        info = None
+
+        def __init__(self, **kw):
+            captured.update(kw)
+
+    monkeypatch.setattr(
+        "assetcache.core.llm.backends.gemini.GeminiBackend", _StubGemini
+    )
+    monkeypatch.setenv("GEMINI_API_KEY", "env-key-AAA")
+
+    cfg = Config()
+    settings = dict(cfg.backends["gemini"])
+    settings["api_key"] = ""  # blank → env fallback
+    reg_mod._default_gemini_factory(settings=settings, cfg=cfg)
+    assert captured["api_key"] == "env-key-AAA"
+    assert captured["model_image"] == cfg.backends["gemini"]["model_image"]
+    assert captured["timeout"] == cfg.analysis_timeout_seconds
+
+
+def test_default_gemini_factory_settings_api_key_wins(monkeypatch):
+    """settings.api_key 값이 있으면 env 보다 우선."""
+    from assetcache.core.llm import registry as reg_mod
+
+    captured = {}
+
+    class _StubGemini:
+        def __init__(self, **kw):
+            captured.update(kw)
+
+    monkeypatch.setattr(
+        "assetcache.core.llm.backends.gemini.GeminiBackend", _StubGemini
+    )
+    monkeypatch.setenv("GEMINI_API_KEY", "env-key-BBB")
+
+    cfg = Config()
+    settings = dict(cfg.backends["gemini"])
+    settings["api_key"] = "explicit-AIza"
+    reg_mod._default_gemini_factory(settings=settings, cfg=cfg)
+    assert captured["api_key"] == "explicit-AIza"

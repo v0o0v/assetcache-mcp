@@ -36,6 +36,18 @@ def _default_ollama_factory(*, settings: dict, cfg: Config) -> LLMBackend:
     return OllamaBackend(client=client)
 
 
+def _default_gemini_factory(*, settings: dict, cfg: Config) -> LLMBackend:
+    from .backends.gemini import GeminiBackend
+
+    return GeminiBackend(
+        api_key=settings.get("api_key") or _env("GEMINI_API_KEY"),
+        model_image=settings["model_image"],
+        model_audio=settings["model_audio"],
+        model_embed=settings["model_embed"],
+        timeout=cfg.analysis_timeout_seconds,
+    )
+
+
 class BackendRegistry:
     """instantiated backends + composed chains.
 
@@ -70,6 +82,7 @@ class BackendRegistry:
         huggingface_factory: BackendFactory | None = None,
     ) -> "BackendRegistry":
         ollama_factory = ollama_factory or _default_ollama_factory
+        gemini_factory = gemini_factory or _default_gemini_factory
         factories: dict[str, BackendFactory | None] = {
             "ollama": ollama_factory,
             "gemini": gemini_factory,
