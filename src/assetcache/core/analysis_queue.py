@@ -100,6 +100,7 @@ class AnalysisQueue(QObject):
         self._completed_in_session = 0
         self._enqueued_packs: set[int] = set()
         self._touched_packs: set[int] = set()
+        self._skip_ids: set[int] = set()
         self._stop_event = threading.Event()
         self._executor: ThreadPoolExecutor | None = None
         self._futures: list = []
@@ -165,6 +166,14 @@ class AnalysisQueue(QObject):
             self._queue.put(row.id)
         self._emit_progress()
         return len(rows)
+
+    def dequeue_assets(self, asset_ids: list[int]) -> int:
+        """Mark asset_ids 를 worker 가 skip 하도록 등록 (queue.Queue 가 random-access 불가).
+
+        BatchManager 가 batch submit 후 호출 — 워커가 큐에서 pop 시 _skip_ids 체크하여 skip.
+        """
+        self._skip_ids.update(asset_ids)
+        return len(asset_ids)
 
     def drain_pending(self) -> int:
         """Boot-time helper: enqueue everything currently marked pending."""
@@ -239,6 +248,9 @@ class AnalysisQueue(QObject):
                 continue
             if asset_id == -1:  # sentinel
                 return
+            if asset_id in self._skip_ids:
+                self._skip_ids.discard(asset_id)
+                continue  # skip — batch 가 처리 중
             self._handle_one(asset_id)
 
     def _handle_one(self, asset_id: int) -> None:

@@ -1,4 +1,6 @@
-"""Task 3.5 — AnalysisQueue.pending_by_modality 테스트."""
+"""Task 3.5 — AnalysisQueue.pending_by_modality 테스트.
+Task 3.6 — dequeue_assets + _skip_ids worker skip 테스트.
+"""
 
 
 def test_pending_by_modality_combines_queue_and_db():
@@ -16,3 +18,52 @@ def test_pending_by_modality_combines_queue_and_db():
     q._queue.put(102)
     n = q.pending_by_modality("chat_image")
     assert n == 5 + 2
+
+
+def test_dequeue_assets_adds_to_skip_ids():
+    from assetcache.core.analysis_queue import AnalysisQueue
+    from unittest.mock import MagicMock
+    q = AnalysisQueue(
+        store=MagicMock(), sprite=MagicMock(),
+        spritesheet=MagicMock(), sound=MagicMock(),
+    )
+    count = q.dequeue_assets([1, 2, 3])
+    assert count == 3
+    assert q._skip_ids == {1, 2, 3}
+
+
+def test_dequeue_empty_noop():
+    from assetcache.core.analysis_queue import AnalysisQueue
+    from unittest.mock import MagicMock
+    q = AnalysisQueue(
+        store=MagicMock(), sprite=MagicMock(),
+        spritesheet=MagicMock(), sound=MagicMock(),
+    )
+    assert q.dequeue_assets([]) == 0
+    assert q._skip_ids == set()
+
+
+def test_worker_loop_skips_dequeued_assets(monkeypatch):
+    """Worker 가 큐에서 pop 한 asset_id 가 _skip_ids 에 있으면 _handle_one 안 호출 + set 에서 제거."""
+    from assetcache.core.analysis_queue import AnalysisQueue
+    from unittest.mock import MagicMock
+    q = AnalysisQueue(
+        store=MagicMock(), sprite=MagicMock(),
+        spritesheet=MagicMock(), sound=MagicMock(),
+    )
+    # 큐에 3개 push
+    q._queue.put(1)
+    q._queue.put(2)
+    q._queue.put(3)
+    q.dequeue_assets([1, 3])  # 1, 3 skip
+    handled: list[int] = []
+    monkeypatch.setattr(q, "_handle_one", lambda aid: handled.append(aid))
+    # 워커 한 사이클 시뮬 — _stop_event 가 한 번 돌고 set 되도록
+    iterations = [0]
+    def is_set_mock():
+        iterations[0] += 1
+        return iterations[0] > 4  # 4번 iter 후 break (3 asset + 1 추가 안전망)
+    monkeypatch.setattr(q._stop_event, "is_set", is_set_mock)
+    q._worker_loop()
+    assert handled == [2]  # 1, 3 skip / 2 만 handle
+    assert q._skip_ids == set()  # 모두 처리됨
