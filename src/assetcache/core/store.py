@@ -445,6 +445,12 @@ CREATE INDEX IF NOT EXISTS idx_batch_jobs_state ON batch_jobs(state);
 CREATE INDEX IF NOT EXISTS idx_batch_jobs_backend_job_id ON batch_jobs(backend_job_id);
 """
 
+_MODALITY_KIND_FILTER: dict[str, tuple[str, ...]] = {
+    "chat_image": ("sprite", "spritesheet"),
+    "chat_audio": ("sound",),
+    # text_embed → 모든 kind (dict 에 없으면 kind 필터 미적용)
+}
+
 
 # ── Store ────────────────────────────────────────────────────────────
 
@@ -2474,6 +2480,77 @@ class Store:
                 "UPDATE assets SET batch_state = ? WHERE id = ?",
                 (batch_state, asset_id),
             )
+
+    def fetch_pending_by_modality(
+        self,
+        modality: str,
+        *,
+        batch_state_in: tuple[str, ...] = ("none",),
+        limit: int = 1000,
+    ) -> list[AssetRow]:
+        """analysis_state='pending' AND batch_state IN (...) AND modality kind 필터."""
+        kinds = _MODALITY_KIND_FILTER.get(modality)
+        state_ph = ",".join("?" * len(batch_state_in))
+        if kinds is None:
+            # text_embed — 모든 kind
+            sql = f"""
+                SELECT id, pack_id, path, kind, file_hash, file_size,
+                       added_at, analyzed_at, analysis_state, analysis_error,
+                       backend_image, backend_audio, backend_embed
+                FROM assets
+                WHERE analysis_state = 'pending'
+                  AND batch_state IN ({state_ph})
+                ORDER BY id
+                LIMIT ?
+            """
+            args: list = [*batch_state_in, limit]
+        else:
+            kind_ph = ",".join("?" * len(kinds))
+            sql = f"""
+                SELECT id, pack_id, path, kind, file_hash, file_size,
+                       added_at, analyzed_at, analysis_state, analysis_error,
+                       backend_image, backend_audio, backend_embed
+                FROM assets
+                WHERE analysis_state = 'pending'
+                  AND batch_state IN ({state_ph})
+                  AND kind IN ({kind_ph})
+                ORDER BY id
+                LIMIT ?
+            """
+            args = [*batch_state_in, *kinds, limit]
+        rows = self.conn.execute(sql, args).fetchall()
+        return [AssetRow(*r) for r in rows]
+
+    def list_assets_in_batch(self, batch_job_id: int) -> list[AssetRow]:
+        """모든 asset where batch_job_id = ?. order by id."""
+        rows = self.conn.execute(
+            """
+            SELECT id, pack_id, path, kind, file_hash, file_size,
+                   added_at, analyzed_at, analysis_state, analysis_error,
+                   backend_image, backend_audio, backend_embed
+            FROM assets
+            WHERE batch_job_id = ?
+            ORDER BY id
+            """,
+            (batch_job_id,),
+        ).fetchall()
+        return [AssetRow(*r) for r in rows]
+
+    def list_recent_failures(self, *, limit: int = 20) -> list[AssetRow]:
+        """analysis_state='failed' order by analyzed_at DESC, id DESC limit ?."""
+        rows = self.conn.execute(
+            """
+            SELECT id, pack_id, path, kind, file_hash, file_size,
+                   added_at, analyzed_at, analysis_state, analysis_error,
+                   backend_image, backend_audio, backend_embed
+            FROM assets
+            WHERE analysis_state = 'failed'
+            ORDER BY analyzed_at DESC, id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        return [AssetRow(*r) for r in rows]
 
 
 # ── helpers ──────────────────────────────────────────────────────────

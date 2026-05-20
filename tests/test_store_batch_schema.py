@@ -243,3 +243,56 @@ def test_mark_assets_batch_queued_idempotent(fresh_store, _seed_assets):
             f"SELECT batch_state FROM assets WHERE id IN ({placeholders})", asset_ids
         ).fetchall()
     assert all(r[0] == "queued" for r in rows)
+
+
+# ── Task 1.4: Store batch query ──────────────────────────────────────
+
+
+def test_fetch_pending_by_modality_chat_image(fresh_store, _seed_assets):
+    ids = _seed_assets(3)  # 3 sprite
+    rows = fresh_store.fetch_pending_by_modality("chat_image", limit=10)
+    assert len(rows) == 3
+    assert all(r.kind == "sprite" for r in rows)
+
+
+def test_fetch_pending_by_modality_excludes_already_queued(fresh_store, _seed_assets):
+    ids = _seed_assets(3)
+    fresh_store.mark_assets_batch_queued(ids[:2])
+    rows = fresh_store.fetch_pending_by_modality("chat_image", limit=10)
+    assert len(rows) == 1
+    assert rows[0].id == ids[2]
+
+
+def test_fetch_pending_by_modality_chat_audio_filters(fresh_store, _seed_assets):
+    _seed_assets(3)  # sprite 만
+    rows = fresh_store.fetch_pending_by_modality("chat_audio", limit=10)
+    assert len(rows) == 0
+
+
+def test_fetch_pending_by_modality_limit(fresh_store, _seed_assets):
+    _seed_assets(50)
+    rows = fresh_store.fetch_pending_by_modality("chat_image", limit=30)
+    assert len(rows) == 30
+
+
+def test_list_assets_in_batch(fresh_store, _seed_assets):
+    ids = _seed_assets(3)
+    job_id = fresh_store.save_batch_job(
+        backend="gemini", modality="chat_image",
+        backend_job_id="batches/x", asset_count=3,
+        submitted_at=0, expires_at=172800, display_name="d",
+    )
+    fresh_store.mark_assets_batch_submitted(ids, job_id)
+    rows = fresh_store.list_assets_in_batch(job_id)
+    assert {r.id for r in rows} == set(ids)
+
+
+def test_list_recent_failures(fresh_store, _seed_assets):
+    ids = _seed_assets(2)
+    fresh_store.mark_asset_state(ids[0], "failed", error="non-json", analyzed_at=1000)
+    fresh_store.mark_asset_state(ids[1], "failed", error="timeout", analyzed_at=2000)
+    rows = fresh_store.list_recent_failures(limit=10)
+    assert len(rows) == 2
+    # 최신순 (analyzed_at DESC)
+    assert rows[0].id == ids[1]
+    assert rows[0].analysis_error == "timeout"
