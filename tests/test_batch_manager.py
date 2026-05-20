@@ -1,15 +1,33 @@
 """Phase 3 task 3.1+3.2 — BatchManager.try_submit + _do_submit."""
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from assetcache.core.batch.manager import BatchManager
+from assetcache.core.batch.types import BatchChatRequest
+from assetcache.core.llm.base import ChatMessage
+
+
+def _make_fake_requests(rows):
+    """테스트용 가짜 BatchChatRequest 목록 (파일 I/O 없이)."""
+    return [
+        BatchChatRequest(
+            asset_id=r.id,
+            messages=[ChatMessage(role="user", content=f"test{r.id}")],
+            force_json=True,
+        )
+        for r in rows
+    ]
 
 
 @pytest.fixture
 def manager_factory():
-    """Factory — produce (manager, store, chain_registry, analysis_queue, backend_mock)."""
+    """Factory — produce (manager, store, chain_registry, analysis_queue, backend_mock).
+
+    _build_chat_requests 는 파일 I/O 를 수행하므로 기본적으로 fake 구현으로 patch.
+    특정 테스트에서 monkeypatch 로 override 가능.
+    """
     def make(*, toggle="auto", chain_first="gemini", pending_count=0,
             threshold=30, supports_batch=True):
         store = MagicMock()
@@ -38,6 +56,8 @@ def manager_factory():
             store=store, chain_registry=chain_registry,
             analysis_queue=analysis_queue, cfg=cfg,
         )
+        # 파일 I/O 없이 동작하도록 _build_chat_requests 기본 patch
+        m._build_chat_requests = lambda modality, rows: _make_fake_requests(rows)
         return m, store, chain_registry, analysis_queue, backend_mock
     return make
 
@@ -132,3 +152,56 @@ def test_do_submit_caps_at_threshold(manager_factory):
     m.try_submit("chat_image")
     fetch_kw = store.fetch_pending_by_modality.call_args.kwargs
     assert fetch_kw["limit"] == 30
+
+
+def test_do_submit_filters_out_oserror_skipped_assets(manager_factory, monkeypatch):
+    """OSError 로 일부 asset 빌드 실패 시 — 실패 항목은 batch_state='none' 으로 복구 + asset_count 는 filtered."""
+    m, store, _, aq, backend = manager_factory(toggle="forced_on", pending_count=5)
+    store.save_batch_job.return_value = 100
+    # _build_chat_requests 가 5개 중 2개 skip 하도록 patch
+    from assetcache.core.batch.types import BatchChatRequest
+    from assetcache.core.llm.base import ChatMessage
+    def build_partial(modality, rows):
+        # 첫 3개만 build, 나머지 2 (id 3, 4) 는 OSError 처럼 skip
+        return [
+            BatchChatRequest(
+                asset_id=r.id,
+                messages=[ChatMessage(role="user", content=f"x{r.id}")],
+                force_json=True,
+            )
+            for r in rows[:3]
+        ]
+    monkeypatch.setattr(m, "_build_chat_requests", build_partial)
+    job_id = m.try_submit("chat_image")
+    assert job_id == 100
+    # asset_count = 3 (filtered), not 5
+    save_kw = store.save_batch_job.call_args.kwargs
+    assert save_kw["asset_count"] == 3
+    # mark_assets_batch_submitted 가 3개 만 받음
+    submitted_call = store.mark_assets_batch_submitted.call_args
+    assert len(submitted_call.args[0]) == 3
+    assert submitted_call.args[0] == [0, 1, 2]
+    # skipped (id 3, 4) 가 'none' 으로 복구
+    skipped_calls = [
+        c for c in store.mark_asset_batch_state.call_args_list
+        if c.args[1] == "none"
+    ]
+    assert len(skipped_calls) == 2
+    skipped_ids = {c.args[0] for c in skipped_calls}
+    assert skipped_ids == {3, 4}
+
+
+def test_do_submit_aborts_when_all_assets_fail_to_build(manager_factory, monkeypatch):
+    """모든 asset OSError → empty requests → submit 호출 안 됨, 모두 'none' rollback."""
+    m, store, _, aq, backend = manager_factory(toggle="forced_on", pending_count=3)
+    monkeypatch.setattr(m, "_build_chat_requests", lambda mod, rows: [])
+    job_id = m.try_submit("chat_image")
+    assert job_id is None
+    backend.batch_chat.assert_not_called()
+    store.save_batch_job.assert_not_called()
+    # 모든 3 asset → 'none'
+    rollback_calls = [
+        c for c in store.mark_asset_batch_state.call_args_list
+        if c.args[1] == "none"
+    ]
+    assert len(rollback_calls) == 3

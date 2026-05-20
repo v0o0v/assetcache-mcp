@@ -91,9 +91,22 @@ class BatchManager:
         try:
             if modality in ("chat_image", "chat_audio"):
                 requests = self._build_chat_requests(modality, rows)
+                asset_ids_built = [req.asset_id for req in requests]
+                # OSError 로 skip 된 asset 은 즉시 'none' 으로 복구 (interactive fallback)
+                skipped = set(asset_ids) - set(asset_ids_built)
+                for aid in skipped:
+                    self._store.mark_asset_batch_state(aid, "none")
+                if not requests:
+                    log.warning(
+                        "batch submit modality=%s: all assets failed to build, abort",
+                        modality,
+                    )
+                    return None
                 backend_job_id = backend.batch_chat(
                     modality=modality, requests=requests,
                 )
+                # use filtered list for count / mark / dequeue
+                asset_ids = asset_ids_built
             else:  # text_embed
                 texts = self._build_embed_texts(rows)
                 backend_job_id = backend.batch_embed(texts=texts)
@@ -160,7 +173,7 @@ class BatchManager:
         return out
 
     def _build_embed_texts(self, rows):
-        """assets_fts の searchable_text 를 사용. 미등록이면 path + kind 폴백."""
+        """assets_fts 의 searchable_text 를 사용. 미등록이면 path + kind 폴백."""
         out = []
         for r in rows:
             text = self._store.get_searchable_text(r.id)
