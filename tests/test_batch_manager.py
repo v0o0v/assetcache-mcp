@@ -205,3 +205,46 @@ def test_do_submit_aborts_when_all_assets_fail_to_build(manager_factory, monkeyp
         if c.args[1] == "none"
     ]
     assert len(rollback_calls) == 3
+
+
+def test_cancel_calls_backend_cancel_and_marks_all_failed(manager_factory):
+    m, store, _, aq, backend = manager_factory(pending_count=0)
+    store.get_batch_job.return_value = MagicMock(
+        id=1, backend="gemini", modality="chat_image",
+        backend_job_id="batches/x", state="submitted",
+    )
+    store.list_assets_in_batch.return_value = [MagicMock(id=10), MagicMock(id=11)]
+    # chain_registry.get_backend mock 보강 — manager_factory 가 first_backend 만 가짐
+    m._chain.get_backend.return_value = backend
+    m.cancel(1)
+    backend.batch_cancel.assert_called_once_with("batches/x")
+    # 모든 asset 'failed' + interactive 재enqueue
+    failed_calls = [
+        c for c in store.mark_asset_batch_state.call_args_list
+        if c.args[1] == "failed"
+    ]
+    assert len(failed_calls) == 2
+    assert aq.enqueue_asset.call_count == 2
+    # batch_job state = cancelled
+    store.update_batch_job_state.assert_called_once()
+    kw = store.update_batch_job_state.call_args.kwargs
+    assert kw["state"] == "cancelled"
+
+
+def test_cancel_idempotent_on_already_terminal(manager_factory):
+    m, store, *_ = manager_factory()
+    store.get_batch_job.return_value = MagicMock(
+        id=1, state="succeeded",
+    )
+    m.cancel(1)
+    # 이미 succeeded — backend.batch_cancel 호출 안 함
+    # store.update_batch_job_state 호출 안 함
+    store.update_batch_job_state.assert_not_called()
+    m._chain.get_backend.assert_not_called()
+
+
+def test_cancel_missing_job_returns_silently(manager_factory):
+    m, store, *_ = manager_factory()
+    store.get_batch_job.return_value = None
+    m.cancel(99999)  # 예외 없음
+    store.list_assets_in_batch.assert_not_called()

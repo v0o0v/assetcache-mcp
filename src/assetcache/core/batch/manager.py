@@ -181,3 +181,30 @@ class BatchManager:
                 text = f"{r.path} {r.kind}"
             out.append(text)
         return out
+
+    def cancel(self, batch_job_id: int) -> None:
+        """User-initiated cancel — backend best-effort + 모든 asset interactive 재enqueue.
+
+        이미 terminal 상태인 job 은 noop.
+        Missing job (못 찾으면) silent return.
+        """
+        job = self._store.get_batch_job(batch_job_id)
+        if job is None:
+            log.warning("cancel: batch_job_id %d not found", batch_job_id)
+            return
+        if job.state in ("succeeded", "failed", "cancelled", "expired"):
+            log.info(
+                "cancel: job %d already terminal (%s) — noop",
+                batch_job_id, job.state,
+            )
+            return
+        backend = self._chain.get_backend(job.backend)
+        if backend is not None and hasattr(backend, "batch_cancel"):
+            backend.batch_cancel(job.backend_job_id)
+        # 모든 asset interactive 재enqueue
+        for asset in self._store.list_assets_in_batch(batch_job_id):
+            self._store.mark_asset_batch_state(asset.id, "failed")
+            self._aq.enqueue_asset(asset.id)
+        self._store.update_batch_job_state(
+            batch_job_id, state="cancelled", completed_at=int(time.time()),
+        )
