@@ -15,6 +15,7 @@ thread 이벤트 루프로 마샬링해 메뉴를 동적으로 갱신한다. ``Q
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional
 
 from PySide6.QtCore import QCoreApplication, QObject, Signal
@@ -75,6 +76,35 @@ def _handle_tray_activation(reason, on_open_main: Optional[Callable[[], None]]) 
 
     if reason == QSystemTrayIcon.DoubleClick and on_open_main is not None:
         on_open_main()
+
+
+# M11.1 Task 5.4 — Batch toggle 순환 테이블 (Qt-free, 단위 테스트 가능)
+_BATCH_TOGGLE_CYCLE: dict[str, str] = {
+    "auto": "forced_on",
+    "forced_on": "forced_off",
+    "forced_off": "auto",
+}
+
+
+def cycle_batch_toggle(cfg: Any, path: "Path") -> None:
+    """cfg.batch.toggle 을 다음 상태로 순환하고 disk 에 저장한다.
+
+    순환 순서: auto → forced_on → forced_off → auto.
+
+    Parameters
+    ----------
+    cfg:
+        현재 ``Config`` 인스턴스. ``cfg.batch.toggle`` 이 in-place 갱신된다.
+        (``BatchConfig`` 는 dataclass 이므로 frozen=False — 직접 attr 할당 가능.)
+    path:
+        config.toml 경로. ``save_config(cfg, path)`` 를 통해 저장.
+    """
+    from assetcache.config import save_config
+
+    next_toggle = _BATCH_TOGGLE_CYCLE.get(cfg.batch.toggle, "auto")
+    cfg.batch.toggle = next_toggle
+    save_config(cfg, path)
+    log.debug("batch.toggle → %s (저장: %s)", next_toggle, path)
 
 
 def make_tray_icon(
@@ -179,6 +209,41 @@ def make_tray_icon(
 
     autostart_action.toggled.connect(_toggle_autostart)
     menu.addAction(autostart_action)
+    menu.addSeparator()
+
+    # M11.1 Task 5.4 — Batch mode toggle (auto / forced_on / forced_off)
+    # 클릭할 때마다 다음 상태로 순환하며 라벨이 갱신된다.
+    # cfg / cfg_path 가 없을 때는 action 이 no-op 로 동작 (안전).
+    def _batch_action_label(toggle: str) -> str:
+        return _tr("Batch: {state}").format(state=toggle)
+
+    try:
+        from assetcache.config import load_config
+        from assetcache.platform.single_instance import get_app_paths
+        _cfg_path = get_app_paths().config_path
+        _cfg = load_config(_cfg_path)
+        _initial_toggle = _cfg.batch.toggle
+    except Exception:
+        _cfg = None
+        _cfg_path = None
+        _initial_toggle = "auto"
+
+    batch_action = QAction(_batch_action_label(_initial_toggle), menu)
+    # batch_action 을 tray 오브젝트에 attribute 로 노출 → 테스트 접근 가능
+    tray._batch_action = batch_action  # type: ignore[attr-defined]
+
+    def _on_batch_toggle() -> None:
+        nonlocal _cfg
+        if _cfg is None or _cfg_path is None:
+            return
+        try:
+            cycle_batch_toggle(_cfg, _cfg_path)
+            batch_action.setText(_batch_action_label(_cfg.batch.toggle))
+        except Exception:
+            log.exception("batch toggle 저장 실패")
+
+    batch_action.triggered.connect(_on_batch_toggle)
+    menu.addAction(batch_action)
     menu.addSeparator()
 
     quit_action = QAction(_tr("종료"), menu)
