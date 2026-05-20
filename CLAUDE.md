@@ -31,6 +31,7 @@
 | **M8 — 패키징 + i18n (1주)** | **✅ 완료** ([PR #9](https://github.com/v0o0v/game-asset-helper/pull/9) + [PR #10](https://github.com/v0o0v/game-asset-helper/pull/10) main 머지 + 후속 fix 2건 main 직접 누적, 수동 검증 통과) | PyInstaller `--onefile` + Babel gettext (ko/en) + 다크모드 토글 + Windows autostart. 신규 의존성 2 (Babel>=2.14, pyinstaller>=6 dev). **+44 신규 테스트** (총 1046). `dist/GameAssetHelper.exe` 308MB 부팅 검증 통과. spec: [`docs/superpowers/specs/2026-05-19-m8-packaging-and-i18n-design.md`](./docs/superpowers/specs/2026-05-19-m8-packaging-and-i18n-design.md), plan: [`milestones/M8_plan.md`](./milestones/M8_plan.md) |
 | M10 — PyPI 배포 + AssetCacheMCP rename | ✅ 완료 ([PR #11](https://github.com/v0o0v/assetcache-mcp/pull/11) main 머지 + [PR #12](https://github.com/v0o0v/assetcache-mcp/pull/12) Node.js 24 workflow fix) | rename (`gah` → `assetcache`) + M9 cherry-pick (PyPI 알림 배너 + tray Signal) → **PyPI 1차 배포** + Trusted Publishing (OIDC). **+57 신규 테스트** (총 1103). [PyPI v0.1.0 Latest](https://pypi.org/project/assetcache-mcp/0.1.0/) + [GitHub release v0.1.0](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.0). spec: [`docs/superpowers/specs/2026-05-19-m10-pypi-and-rename.md`](./docs/superpowers/specs/2026-05-19-m10-pypi-and-rename.md), plan: [`milestones/M10_plan.md`](./milestones/M10_plan.md) |
 | v0.1.1 yagni-clean (chore patch) + PyPI publish | ✅ 완료 ([PR #14](https://github.com/v0o0v/assetcache-mcp/pull/14) main 머지 + [PyPI v0.1.1 publish](https://pypi.org/project/assetcache-mcp/0.1.1/) + [GitHub release v0.1.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.1)) | v0.0.1 마이그레이션 helper (Phase 1) 코드 + 테스트 + i18n 일괄 제거 → version 0.1.0 → 0.1.1 bump. 신규 의존성 0. **회귀 -24** (1103 → **1079**). MCP 20 도구 변동 없음. **Trusted Publishing (OIDC) 첫 자동 publish 검증 ✅ 32초 성공** ([run 26139260454](https://github.com/v0o0v/assetcache-mcp/actions/runs/26139260454)). spec: [`docs/superpowers/specs/2026-05-20-v011-yagni-clean-v001-compat-design.md`](./docs/superpowers/specs/2026-05-20-v011-yagni-clean-v001-compat-design.md) |
+| v0.1.2 PyPI 페이지 정직성 patch + PyPI publish | ✅ 완료 ([PR #15](https://github.com/v0o0v/assetcache-mcp/pull/15) main 머지 + [PyPI v0.1.2 publish](https://pypi.org/project/assetcache-mcp/0.1.2/) + [GitHub release v0.1.2](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.2)) | README PyInstaller exe 섹션 제거 (release artifact 0건 거짓 안내), DESIGN/docs stale 명령어 `python -m gah`/`game-asset-helper` → `assetcache` 갱신, pyproject classifiers 보강 (Games/Entertainment + Sound/Audio), CLAUDE.md M10 worktree 안내 제거. 코드 변경 0, 신규 의존성 0, 회귀 1079 그대로. **Trusted Publishing 2회째 자동 publish 29초 성공** ([run 26141958223](https://github.com/v0o0v/assetcache-mcp/actions/runs/26141958223)) — 패턴 안정성 확인 |
 
 각 마일스톤의 상세 계획·체크리스트·검증 결과는 `milestones/M{N}_plan.md`, `M{N}_todo.md`, `M{N}_verification.md`.
 
@@ -180,27 +181,27 @@ MCP stdio 서버 모드:
 python -m assetcache --mcp
 ```
 
-## 8. 다음 작업 (M10 + v0.1.1 yagni-clean + v0.1.1 PyPI publish ✅ 완료)
+## 8. 다음 작업 (M10 + v0.1.1 + v0.1.2 모두 publish ✅ 완료)
 
-v1 (M0~M8) + M10 (v2 PyPI 배포 + rename) + **v0.1.1 yagni-clean** + **v0.1.1 PyPI publish (Trusted Publishing OIDC 첫 자동 검증 32초 ✅)** 모두 완료. M9 (코드 서명 + GitHub releases 자동 업데이트) 은 path pivot 으로 머지 보류 (`feat/m9` 브랜치 보존, PyPI 흐름의 일부 모듈은 M10 Phase 2 에서 cherry-pick 됨).
+v1 (M0~M8) + M10 (v2 PyPI 배포 + rename) + **v0.1.1 yagni-clean** + **v0.1.2 PyPI 페이지 정직성 patch** 모두 publish 완료. Trusted Publishing OIDC 자동 publish 2회 검증 (v0.1.1 32초 + v0.1.2 29초). M9 (코드 서명 + GitHub releases 자동 업데이트) 은 path pivot 으로 머지 보류 (`feat/m9` 브랜치 보존, PyPI 흐름의 일부 모듈은 M10 Phase 2 에서 cherry-pick 됨).
 
-**M10 최종 결과**:
+**최종 결과**:
 
-- PyPI: [v0.1.0 Latest](https://pypi.org/project/assetcache-mcp/0.1.0/) (2026-05-20 publish, 298 KB whl + 385 KB tar.gz)
-- GitHub release: [v0.1.0 Latest](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.0)
+- PyPI: [v0.1.2 Latest](https://pypi.org/project/assetcache-mcp/0.1.2/) + [v0.1.1](https://pypi.org/project/assetcache-mcp/0.1.1/) + [v0.1.0](https://pypi.org/project/assetcache-mcp/0.1.0/)
+- GitHub release: [v0.1.2 Latest](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.2) + [v0.1.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.1) + [v0.1.0](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.0)
 - GitHub repo: `v0o0v/game-asset-helper` → `v0o0v/assetcache-mcp` rename 완료
-- **Trusted Publishing (OIDC)** 셋업 — 향후 `git tag vX.Y.Z; git push origin vX.Y.Z` 한 줄로 자동
+- **Trusted Publishing (OIDC)** 셋업 + 안정 — `git tag vX.Y.Z; git push origin vX.Y.Z` 한 줄로 자동 (2회 검증 평균 30초)
 - GitHub Actions workflow: `actions/checkout@v6` + `actions/setup-python@v6` (Node.js 24 호환)
 
 ### 8.1 현재 상태
 
-- **main** — `3dcd99a` (docs stale wording 정리) → `8b793f4` (v0.1.1 yagni-clean PR #14 merge) → `7ba6551` (workflow Node.js 24 fix) → `d9a3862` (M10 PR #11 merge) → M0~M8 base
-- **현재 브랜치 = main** (origin/main 동기화 완료), 회귀 **1079 passed + 1 skipped + 40 deselected** (v0.1.1 yagni-clean 후 baseline; v0.0.1 마이그레이션 helper 제거 -24)
-- MCP **20 도구** (M10 신규 0, v0.1.1 변동 없음)
-- 설치: `pipx install assetcache-mcp` 또는 `pip install assetcache-mcp` (v0.1.1 Latest)
+- **main** — `34ddde4` (PR #15 v0.1.2 patch merge) → `3d5b570` (version bump 0.1.1→0.1.2) → `a0badee` / `2715f83` / `44742e8` (PR #15 fix commits) → `8b793f4` (PR #14 v0.1.1 yagni-clean) → `d9a3862` (M10 PR #11)
+- **현재 브랜치 = main** (origin/main 동기화 완료), 회귀 **1079 passed + 1 skipped + 40 deselected** (v0.1.1 yagni-clean 후 baseline 그대로 — v0.1.2 는 코드 변경 0, 문서/메타데이터만)
+- MCP **20 도구** (M10 신규 0, v0.1.1/v0.1.2 변동 없음)
+- 설치: `pipx install assetcache-mcp` 또는 `pip install assetcache-mcp` (v0.1.2 Latest)
 - 콘솔 스크립트: `assetcache` (트레이/MCP 통합) + `assetcache-mcp` (MCP stdio 전용)
 - 사용자 데이터: `%APPDATA%\AssetCacheMCP\`
-- PyPI: [v0.1.1 Latest](https://pypi.org/project/assetcache-mcp/0.1.1/) + [v0.1.0](https://pypi.org/project/assetcache-mcp/0.1.0/) (Trusted Publishing OIDC 자동 publish 활성)
+- PyPI: [v0.1.2 Latest](https://pypi.org/project/assetcache-mcp/0.1.2/) + [v0.1.1](https://pypi.org/project/assetcache-mcp/0.1.1/) + [v0.1.0](https://pypi.org/project/assetcache-mcp/0.1.0/) (Trusted Publishing OIDC 자동 publish 활성)
 
 ### 8.2 다음 세션 진입 시 첫 작업
 
@@ -229,7 +230,7 @@ v1 (M0~M8) + M10 (v2 PyPI 배포 + rename) + **v0.1.1 yagni-clean** + **v0.1.1 P
 4. **다음 작업 후보** — 사용자 결정:
    - M11 후보: Mac/Linux 검증 (PyPI 패키지 cross-platform 호환 정식 검증)
    - **사용자 피드백 수집**: [PyPI download 통계](https://pypistats.org/packages/assetcache-mcp) + [GitHub Issues](https://github.com/v0o0v/assetcache-mcp/issues) 모니터링
-   - **v0.1.2 patch**: 발견된 bug fix 누적 → `git tag v0.1.2; git push origin v0.1.2` 한 줄로 자동 publish (Trusted Publishing 패턴 검증됨, 32초)
+   - **v0.1.3+ patch**: 추가로 발견될 bug fix 누적 → `git tag vX.Y.Z; git push origin vX.Y.Z` 한 줄로 자동 publish (Trusted Publishing 패턴 v0.1.1+v0.1.2 양쪽 검증됨, 평균 30초)
 
 ### 8.3 마일스톤 정렬
 
@@ -237,9 +238,10 @@ v1 (M0~M8) + M10 (v2 PyPI 배포 + rename) + **v0.1.1 yagni-clean** + **v0.1.1 P
 |---:|---|---|
 | M0~M8 | v1 (뼈대 ~ 패키징 + i18n) | ✅ 완료 (main 머지) |
 | M9 | 코드 서명 + 자동 업데이트 (GitHub releases) | ⚠️ implementation 완료 / **머지 보류** (PyPI 채택으로 path pivot, 일부 모듈은 M10 Phase 2 cherry-pick) |
-| M10 | PyPI 배포 + AssetCacheMCP rename | ✅ 완료 (PR #11 + #12 머지, v0.1.0 PyPI Latest) |
+| M10 | PyPI 배포 + AssetCacheMCP rename | ✅ 완료 (PR #11 + #12 머지, v0.1.0 PyPI) |
 | v0.1.1 yagni-clean + PyPI publish | v0.0.1 마이그레이션 helper 제거 + Trusted Publishing OIDC 첫 자동 publish | ✅ 완료 ([PR #14](https://github.com/v0o0v/assetcache-mcp/pull/14) + [PyPI v0.1.1](https://pypi.org/project/assetcache-mcp/0.1.1/) + [GitHub release v0.1.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.1), 32초 자동) |
-| M11+ | Mac/Linux 검증 + 사용자 피드백 대응 + v0.1.2 patch 누적 | 📋 미정 |
+| v0.1.2 PyPI 페이지 정직성 patch + PyPI publish | README/DESIGN/docs stale 일괄 갱신 + classifiers 보강 + Trusted Publishing 2회째 자동 publish | ✅ 완료 ([PR #15](https://github.com/v0o0v/assetcache-mcp/pull/15) + [PyPI v0.1.2 Latest](https://pypi.org/project/assetcache-mcp/0.1.2/) + [GitHub release v0.1.2](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.2), 29초 자동) |
+| M11+ | Mac/Linux 검증 + 사용자 피드백 대응 + v0.1.3+ patch 누적 | 📋 미정 |
 
 참고 DESIGN: §3 (아키텍처), §4.9 (Unity Asset Store Importer — M7), §4.10 (활성 프로젝트/프로젝트 페이지 — M7), §4.5 (MCP — 20 도구), §4.8 (트레이 + 웹 UI), §11 (로드맵).
 
