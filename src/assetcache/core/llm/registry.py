@@ -58,6 +58,19 @@ def _default_claude_factory(*, settings: dict, cfg: Config) -> LLMBackend:
     )
 
 
+def _default_openai_factory(*, settings: dict, cfg: Config) -> LLMBackend:
+    from .backends.openai_backend import OpenAIBackend
+
+    return OpenAIBackend(
+        api_key=settings.get("api_key") or _env("OPENAI_API_KEY"),
+        model_image=settings["model_image"],
+        model_audio=settings["model_audio"],
+        model_embed=settings["model_embed"],
+        timeout=cfg.analysis_timeout_seconds,
+        # base_url=None — Phase 4 OpenRouter 가 sub-factory 로 override
+    )
+
+
 class BackendRegistry:
     """instantiated backends + composed chains.
 
@@ -94,6 +107,7 @@ class BackendRegistry:
         ollama_factory = ollama_factory or _default_ollama_factory
         gemini_factory = gemini_factory or _default_gemini_factory
         claude_factory = claude_factory or _default_claude_factory
+        openai_factory = openai_factory or _default_openai_factory
         factories: dict[str, BackendFactory | None] = {
             "ollama": ollama_factory,
             "gemini": gemini_factory,

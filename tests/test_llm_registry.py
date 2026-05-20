@@ -246,6 +246,77 @@ def test_default_claude_factory_settings_api_key_wins(monkeypatch):
     assert captured["api_key"] == "sk-ant-explicit"
 
 
+# ---- OpenAI (Phase 3) ----
+
+
+def test_registry_openai_via_default_factory(monkeypatch):
+    """openai_factory 미지정 시 _default_openai_factory 로 chain 구성."""
+    cfg = Config()
+    cfg.backends["openai"]["enabled"] = True
+    cfg.backends["openai"]["api_key"] = "sk-test"
+    cfg.chains["chat_image"] = ["openai"]
+
+    from assetcache.core.llm import registry as reg_mod
+
+    monkeypatch.setattr(
+        reg_mod,
+        "_default_openai_factory",
+        lambda settings, cfg: _FakeBackend("openai"),
+    )
+    reg = BackendRegistry.from_config(cfg)
+    chain = reg.get_chain("chat_image")
+    assert len(chain.backends) == 1
+    assert chain.backends[0].info.name == "openai"
+
+
+def test_default_openai_factory_reads_env_for_api_key(monkeypatch):
+    """settings.api_key 비어있어도 OPENAI_API_KEY env 있으면 사용."""
+    from assetcache.core.llm import registry as reg_mod
+
+    captured = {}
+
+    class _StubOpenAI:
+        def __init__(self, **kw):
+            captured.update(kw)
+
+    monkeypatch.setattr(
+        "assetcache.core.llm.backends.openai_backend.OpenAIBackend", _StubOpenAI
+    )
+    monkeypatch.setenv("OPENAI_API_KEY", "env-key-OAI")
+
+    cfg = Config()
+    settings = dict(cfg.backends["openai"])
+    settings["api_key"] = ""
+    reg_mod._default_openai_factory(settings=settings, cfg=cfg)
+    assert captured["api_key"] == "env-key-OAI"
+    assert captured["model_image"] == cfg.backends["openai"]["model_image"]
+    assert captured["model_audio"] == cfg.backends["openai"]["model_audio"]
+    assert captured["model_embed"] == cfg.backends["openai"]["model_embed"]
+    assert captured["timeout"] == cfg.analysis_timeout_seconds
+
+
+def test_default_openai_factory_settings_api_key_wins(monkeypatch):
+    """settings.api_key 값이 있으면 env 보다 우선."""
+    from assetcache.core.llm import registry as reg_mod
+
+    captured = {}
+
+    class _StubOpenAI:
+        def __init__(self, **kw):
+            captured.update(kw)
+
+    monkeypatch.setattr(
+        "assetcache.core.llm.backends.openai_backend.OpenAIBackend", _StubOpenAI
+    )
+    monkeypatch.setenv("OPENAI_API_KEY", "env-key-XXX")
+
+    cfg = Config()
+    settings = dict(cfg.backends["openai"])
+    settings["api_key"] = "sk-explicit"
+    reg_mod._default_openai_factory(settings=settings, cfg=cfg)
+    assert captured["api_key"] == "sk-explicit"
+
+
 def test_registry_claude_audio_chain_falls_back_to_ollama(monkeypatch):
     """claude+ollama enabled, chat_audio=[claude, ollama] → audio 호출은 ollama."""
     from assetcache.core.llm import registry as reg_mod
