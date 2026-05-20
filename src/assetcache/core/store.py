@@ -2443,6 +2443,38 @@ class Store:
         ).fetchall()
         return [BatchJobRow(*r) for r in rows]
 
+    # -- M11.1: assets batch_state ----------------------------------------
+
+    def mark_assets_batch_queued(self, asset_ids: list[int]) -> None:
+        """Bulk UPDATE — set batch_state='queued' for asset_ids (race condition 방지)."""
+        if not asset_ids:
+            return
+        placeholders = ",".join("?" * len(asset_ids))
+        with self.write_lock:
+            self.conn.execute(
+                f"UPDATE assets SET batch_state = 'queued' WHERE id IN ({placeholders})",
+                asset_ids,
+            )
+
+    def mark_assets_batch_submitted(self, asset_ids: list[int], batch_job_id: int) -> None:
+        """Bulk UPDATE — set batch_state='submitted' + batch_job_id."""
+        if not asset_ids:
+            return
+        placeholders = ",".join("?" * len(asset_ids))
+        with self.write_lock:
+            self.conn.execute(
+                f"UPDATE assets SET batch_state = 'submitted', batch_job_id = ? WHERE id IN ({placeholders})",
+                [batch_job_id, *asset_ids],
+            )
+
+    def mark_asset_batch_state(self, asset_id: int, batch_state: str) -> None:
+        """Single asset UPDATE — used during rollback / individual completion."""
+        with self.write_lock:
+            self.conn.execute(
+                "UPDATE assets SET batch_state = ? WHERE id = ?",
+                (batch_state, asset_id),
+            )
+
 
 # ── helpers ──────────────────────────────────────────────────────────
 

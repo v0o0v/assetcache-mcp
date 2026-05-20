@@ -161,3 +161,85 @@ def test_list_active_includes_running(fresh_store):
 
 def test_get_batch_job_missing(fresh_store):
     assert fresh_store.get_batch_job(99999) is None
+
+
+# ── Task 1.3: assets batch_state CRUD ────────────────────────────────
+
+
+@pytest.fixture
+def _seed_assets(fresh_store):
+    """fresh_store 에 pack 1개 + N개 sprite asset 생성. return list[int]."""
+    import sqlite3 as _s
+
+    def make(count: int) -> list[int]:
+        with _s.connect(fresh_store.db_path) as conn:
+            conn.execute(
+                "INSERT INTO packs (name, enabled, added_at) VALUES ('p', 1, 0)"
+            )
+            pack_id = conn.execute("SELECT id FROM packs ORDER BY id DESC LIMIT 1").fetchone()[0]
+            ids = []
+            for i in range(count):
+                cur = conn.execute(
+                    "INSERT INTO assets (pack_id, path, kind, file_hash, file_size, added_at, analysis_state) "
+                    "VALUES (?, ?, 'sprite', ?, 1, 0, 'pending')",
+                    (pack_id, f"a{i}.png", f"h{i}"),
+                )
+                ids.append(cur.lastrowid)
+            return ids
+
+    return make
+
+
+def test_mark_assets_batch_queued(fresh_store, _seed_assets):
+    asset_ids = _seed_assets(3)
+    fresh_store.mark_assets_batch_queued(asset_ids)
+    with sqlite3.connect(fresh_store.db_path) as conn:
+        placeholders = ",".join("?" * len(asset_ids))
+        rows = conn.execute(
+            f"SELECT batch_state FROM assets WHERE id IN ({placeholders})", asset_ids
+        ).fetchall()
+    assert all(r[0] == "queued" for r in rows)
+
+
+def test_mark_assets_batch_submitted(fresh_store, _seed_assets):
+    asset_ids = _seed_assets(2)
+    job_id = fresh_store.save_batch_job(
+        backend="gemini", modality="chat_image",
+        backend_job_id="batches/x", asset_count=2,
+        submitted_at=0, expires_at=172800, display_name="d",
+    )
+    fresh_store.mark_assets_batch_submitted(asset_ids, job_id)
+    with sqlite3.connect(fresh_store.db_path) as conn:
+        placeholders = ",".join("?" * len(asset_ids))
+        rows = conn.execute(
+            f"SELECT batch_state, batch_job_id FROM assets WHERE id IN ({placeholders})",
+            asset_ids,
+        ).fetchall()
+    assert all(r == ("submitted", job_id) for r in rows)
+
+
+def test_mark_asset_batch_state_single(fresh_store, _seed_assets):
+    asset_ids = _seed_assets(1)
+    fresh_store.mark_asset_batch_state(asset_ids[0], "completed")
+    with sqlite3.connect(fresh_store.db_path) as conn:
+        s = conn.execute(
+            "SELECT batch_state FROM assets WHERE id = ?", (asset_ids[0],)
+        ).fetchone()[0]
+    assert s == "completed"
+
+
+def test_mark_assets_batch_queued_empty_list_noop(fresh_store):
+    # 빈 리스트 → 에러 없이 통과
+    fresh_store.mark_assets_batch_queued([])
+
+
+def test_mark_assets_batch_queued_idempotent(fresh_store, _seed_assets):
+    asset_ids = _seed_assets(2)
+    fresh_store.mark_assets_batch_queued(asset_ids)  # 1st
+    fresh_store.mark_assets_batch_queued(asset_ids)  # 2nd — re-queued, same state
+    with sqlite3.connect(fresh_store.db_path) as conn:
+        placeholders = ",".join("?" * len(asset_ids))
+        rows = conn.execute(
+            f"SELECT batch_state FROM assets WHERE id IN ({placeholders})", asset_ids
+        ).fetchall()
+    assert all(r[0] == "queued" for r in rows)
