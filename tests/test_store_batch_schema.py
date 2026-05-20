@@ -296,3 +296,46 @@ def test_list_recent_failures(fresh_store, _seed_assets):
     # 최신순 (analyzed_at DESC)
     assert rows[0].id == ids[1]
     assert rows[0].analysis_error == "timeout"
+
+
+# ── Task 1.5: mark_asset_backends ───────────────────────────────────
+
+
+def test_mark_asset_backends_image_only(fresh_store, _seed_assets):
+    ids = _seed_assets(1)
+    fresh_store.mark_asset_backends(ids[0], image="gemini")
+    with sqlite3.connect(str(fresh_store.db_path)) as conn:
+        row = conn.execute(
+            "SELECT backend_image, backend_audio, backend_embed FROM assets WHERE id = ?",
+            (ids[0],),
+        ).fetchone()
+    assert row == ("gemini", None, None)
+
+
+def test_mark_asset_backends_all_three(fresh_store, _seed_assets):
+    ids = _seed_assets(1)
+    fresh_store.mark_asset_backends(ids[0], image="gemini", audio="ollama", embed="gemini")
+    with sqlite3.connect(str(fresh_store.db_path)) as conn:
+        row = conn.execute(
+            "SELECT backend_image, backend_audio, backend_embed FROM assets WHERE id = ?",
+            (ids[0],),
+        ).fetchone()
+    assert row == ("gemini", "ollama", "gemini")
+
+
+def test_mark_asset_backends_none_args_preserve_existing(fresh_store, _seed_assets):
+    ids = _seed_assets(1)
+    fresh_store.mark_asset_backends(ids[0], image="ollama")
+    fresh_store.mark_asset_backends(ids[0], audio="gemini")
+    with sqlite3.connect(str(fresh_store.db_path)) as conn:
+        row = conn.execute(
+            "SELECT backend_image, backend_audio FROM assets WHERE id = ?",
+            (ids[0],),
+        ).fetchone()
+    assert row == ("ollama", "gemini")
+
+
+def test_mark_asset_backends_no_args_noop(fresh_store, _seed_assets):
+    ids = _seed_assets(1)
+    fresh_store.mark_asset_backends(ids[0])  # 모든 None — UPDATE 안 함
+    # 예외 없이 통과

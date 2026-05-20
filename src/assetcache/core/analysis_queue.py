@@ -303,6 +303,15 @@ class AnalysisQueue(QObject):
             asset_id, result.state, error=result.error,
             analyzed_at=int(time.time()),
         )
+        # M11.1 Task 1.5 — backend_used write hook (M11 verification 알려진 한계 해결)
+        backend_used = getattr(result, "backend_used", {}) or {}
+        if backend_used:
+            self.store.mark_asset_backends(
+                asset_id,
+                image=backend_used.get("image"),
+                audio=backend_used.get("audio"),
+                embed=backend_used.get("embed"),
+            )
 
     def _maybe_finalize_pack(self, pack_id: int) -> None:
         # 팩에 pending 이 0 개면 aggregate_meta 한 번 새로 씀
