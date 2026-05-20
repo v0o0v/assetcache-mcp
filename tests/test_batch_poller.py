@@ -285,3 +285,46 @@ def test_handle_succeeded_parse_error_falls_back_to_interactive(poller_factory):
     ]
     assert (40, "failed") in failed_calls
     p._aq.enqueue_asset.assert_called_with(40)
+
+
+def test_handle_terminal_failure_failed_reenqueues_all(poller_factory):
+    p, store = poller_factory()
+    job = MagicMock(id=1, modality="chat_image")
+    store.list_assets_in_batch.return_value = [
+        MagicMock(id=1), MagicMock(id=2), MagicMock(id=3),
+    ]
+    p._handle_terminal_failure(job, "failed", "internal error")
+    # 모든 3 asset 'failed' + interactive 재enqueue
+    failed_calls = [
+        c for c in store.mark_asset_batch_state.call_args_list
+        if c.args[1] == "failed"
+    ]
+    assert len(failed_calls) == 3
+    assert p._aq.enqueue_asset.call_count == 3
+    # job state 갱신
+    store.update_batch_job_state.assert_called_once()
+    kw = store.update_batch_job_state.call_args.kwargs
+    assert kw["state"] == "failed"
+    assert kw["error"] == "internal error"
+
+
+def test_handle_terminal_failure_expired(poller_factory):
+    p, store = poller_factory()
+    job = MagicMock(id=1, modality="chat_image")
+    store.list_assets_in_batch.return_value = []
+    p._handle_terminal_failure(job, "expired", "expires_at passed")
+    store.update_batch_job_state.assert_called_once()
+    kw = store.update_batch_job_state.call_args.kwargs
+    assert kw["state"] == "expired"
+    assert kw["error"] == "expires_at passed"
+
+
+def test_handle_terminal_failure_cancelled(poller_factory):
+    p, store = poller_factory()
+    job = MagicMock(id=1, modality="chat_image")
+    store.list_assets_in_batch.return_value = [MagicMock(id=99)]
+    p._handle_terminal_failure(job, "cancelled", None)
+    store.update_batch_job_state.assert_called_once()
+    kw = store.update_batch_job_state.call_args.kwargs
+    assert kw["state"] == "cancelled"
+    p._aq.enqueue_asset.assert_called_with(99)

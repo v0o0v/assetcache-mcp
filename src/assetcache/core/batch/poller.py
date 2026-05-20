@@ -171,7 +171,7 @@ class BatchPoller(threading.Thread):
                 elif job.modality == "text_embed":
                     vec = list(resp.embedding.values)
                     blob = _serialize_vec(vec)
-                    model = self._cfg.backends.gemini.model_embed
+                    model = self._get_gemini_embed_model()
                     self._store.save_embedding(asset.id, model, blob, len(vec))
                     self._store.mark_asset_backends(asset.id, embed="gemini")
                 else:
@@ -222,6 +222,35 @@ class BatchPoller(threading.Thread):
             asset_id, "ok", error=None, analyzed_at=int(time.time()),
         )
 
-    def _handle_terminal_failure(self, job, terminal_state, error) -> None:
-        """Task 4.4 에서 실 구현."""
-        pass
+    def _get_gemini_embed_model(self) -> str:
+        """Phase 4.4 fix — cfg.backends.gemini.model_embed 의 안전한 access path.
+
+        실 Config 에서 backends 는 dict[str, dict[str, Any]].
+        테스트 MagicMock 에서는 attribute 체인으로 접근하므로 두 경로 모두 지원.
+        """
+        backends = getattr(self._cfg, "backends", None)
+        if backends is None:
+            return "gemini-embedding-001"
+        # 실 Config: dict 형태 (hasattr "gemini" == False 이므로 __getitem__ 경로)
+        if hasattr(backends, "__getitem__") and not hasattr(backends, "gemini"):
+            try:
+                return backends["gemini"]["model_embed"]
+            except (KeyError, TypeError):
+                return "gemini-embedding-001"
+        # MagicMock / attribute 형태 fallback
+        gemini = getattr(backends, "gemini", None)
+        if gemini is None:
+            return "gemini-embedding-001"
+        return getattr(gemini, "model_embed", "gemini-embedding-001")
+
+    def _handle_terminal_failure(self, job, terminal_state: str, error: str | None) -> None:
+        """failed / cancelled / expired — 모든 asset interactive 재enqueue + job 갱신."""
+        for asset in self._store.list_assets_in_batch(job.id):
+            self._store.mark_asset_batch_state(asset.id, "failed")
+            self._aq.enqueue_asset(asset.id)
+        self._store.update_batch_job_state(
+            job.id,
+            state=terminal_state,
+            completed_at=int(time.time()),
+            error=error,
+        )

@@ -154,6 +154,7 @@ def run_tray(paths: AppPaths, config: Config, argv: Sequence[str] | None = None)
 
     # M11.1 Task 3.7 — BatchManager 주입 (AnalysisQueue 생성 직후, start/drain 전)
     from .core.batch.manager import BatchManager as _BatchManager
+    from .core.batch.poller import BatchPoller as _BatchPoller
     _batch_manager = _BatchManager(
         store=store,
         chain_registry=registry_llm,
@@ -162,6 +163,15 @@ def run_tray(paths: AppPaths, config: Config, argv: Sequence[str] | None = None)
         library_dir=library_root,
     )
     queue.set_batch_manager(_batch_manager)
+
+    # M11.1 Task 4.4 — BatchPoller daemon thread (active batch job polling)
+    _batch_poller = _BatchPoller(
+        store=store,
+        chain_registry=registry_llm,
+        analysis_queue=queue,
+        cfg=config,
+    )
+    _batch_poller.start()
 
     queue.start()
     queue.drain_pending()
@@ -228,6 +238,7 @@ def run_tray(paths: AppPaths, config: Config, argv: Sequence[str] | None = None)
     rc = qapp.exec()
 
     web.stop()
+    _batch_poller.stop(timeout=5.0)
     queue.stop()
     watcher.stop()
     store.close()
