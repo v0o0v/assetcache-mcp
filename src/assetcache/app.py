@@ -212,7 +212,12 @@ def run_tray(paths: AppPaths, config: Config, argv: Sequence[str] | None = None)
     watcher.start(library_root)
 
     # ── 트레이 + 분석 큐 시그널 라우팅 ─────────────────────────────
-    tray = make_tray_icon(qapp, on_open_main=lambda: webbrowser.open(url))
+    tray = make_tray_icon(
+        qapp,
+        on_open_main=lambda: webbrowser.open(url),
+        cfg=config,
+        cfg_path=paths.config_path,
+    )
     queue.progressChanged.connect(lambda snap: update_tray_tooltip(tray, snap))
     queue.progressChanged.connect(
         lambda snap: sse_broadcast("analysis_progress", _snap_to_dict(snap))

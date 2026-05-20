@@ -111,6 +111,8 @@ def make_tray_icon(
     qapp: "QApplication",
     *,
     on_open_main: Optional[Callable[[], None]] = None,
+    cfg: Optional[Any] = None,
+    cfg_path: Optional["Path"] = None,
 ) -> "QSystemTrayIcon":
     """Build a tray icon and return it.
 
@@ -165,13 +167,13 @@ def make_tray_icon(
             try:
                 from assetcache.core.unity_import.cache_paths import detect_cache_path
                 from assetcache.core.unity_import.scanner import UnityAssetStoreScanner
-                from assetcache.config import load_config
-                from assetcache.platform.single_instance import get_app_paths
+                from assetcache.config import default_app_paths, load_config
             except ImportError:
                 _log.debug("unity_import 모듈 없음 — 수동 스캔 skip")
                 return
             try:
-                paths, cfg = get_app_paths(), load_config()
+                paths = default_app_paths()
+                cfg = load_config(paths.config_path)
                 from assetcache.core.store import Store
                 store = Store(paths.db_path)
                 store.initialize()
@@ -217,16 +219,27 @@ def make_tray_icon(
     def _batch_action_label(toggle: str) -> str:
         return _tr("Batch: {state}").format(state=toggle)
 
-    try:
-        from assetcache.config import load_config
-        from assetcache.platform.single_instance import get_app_paths
-        _cfg_path = get_app_paths().config_path
-        _cfg = load_config(_cfg_path)
-        _initial_toggle = _cfg.batch.toggle
-    except Exception:
-        _cfg = None
-        _cfg_path = None
-        _initial_toggle = "auto"
+    # cfg / cfg_path 가 caller 에서 명시 전달되면 그것을 사용 (run_tray 가 share).
+    # 명시 안 되면 fallback: disk 에서 load (단 별 instance 라 web 과 sync X — 테스트/CLI 용).
+    if cfg is not None and cfg_path is not None:
+        _cfg = cfg
+        _cfg_path = cfg_path
+        try:
+            _initial_toggle = _cfg.batch.toggle
+        except AttributeError:
+            log.warning("tray batch toggle: cfg.batch 없음 — fallback auto")
+            _initial_toggle = "auto"
+    else:
+        try:
+            from assetcache.config import default_app_paths, load_config
+            _cfg_path = default_app_paths().config_path
+            _cfg = load_config(_cfg_path)
+            _initial_toggle = _cfg.batch.toggle
+        except Exception:
+            log.exception("tray batch toggle: load_config 실패 — action 비활성")
+            _cfg = None
+            _cfg_path = None
+            _initial_toggle = "auto"
 
     batch_action = QAction(_batch_action_label(_initial_toggle), menu)
     # batch_action 을 tray 오브젝트에 attribute 로 노출 → 테스트 접근 가능
