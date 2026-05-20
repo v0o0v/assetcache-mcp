@@ -1,0 +1,232 @@
+"""M11 Phase 5 — /api/settings/backends/<name> + /test + /chains 라우터.
+
+기존 M8 settings 라우터 (`/api/settings`) 와 별개로, multi-backend LLM 설정용
+3 endpoint 추가:
+
+- POST /api/settings/backends/<name>  — backend 설정 갱신 (JSON body)
+- POST /api/settings/backends/<name>/test  — backend.test_connection 호출
+- POST /api/settings/chains  — chain 순서 갱신
+"""
+
+from __future__ import annotations
+
+from unittest.mock import MagicMock
+
+import pytest
+from fastapi.testclient import TestClient
+
+
+@pytest.fixture
+def web_deps(deps_fixture):
+    return deps_fixture
+
+
+@pytest.fixture
+def web_app(web_deps):
+    from assetcache.web.app import build_app
+
+    return build_app(web_deps)
+
+
+@pytest.fixture
+def client(web_app):
+    return TestClient(web_app)
+
+
+# ---- POST /api/settings/backends/<name> ----
+
+
+def test_post_backend_update_enables_and_saves(client, web_deps):
+    """gemini enabled + api_key + 모델 갱신."""
+    r = client.post(
+        "/api/settings/backends/gemini",
+        json={
+            "enabled": True,
+            "api_key": "AIzaTest",
+            "model_image": "gemini-2.5-flash",
+            "model_audio": "gemini-2.5-flash",
+            "model_embed": "gemini-embedding-001",
+        },
+    )
+    assert r.status_code == 200
+    assert r.json()["ok"] is True
+    assert web_deps.config.backends["gemini"]["enabled"] is True
+    assert web_deps.config.backends["gemini"]["api_key"] == "AIzaTest"
+
+
+def test_post_backend_update_partial_keeps_others(client, web_deps):
+    """api_key 만 변경 — 다른 필드는 유지."""
+    web_deps.config.backends["gemini"]["enabled"] = True
+    web_deps.config.backends["gemini"]["model_image"] = "old-model"
+    r = client.post(
+        "/api/settings/backends/gemini",
+        json={"api_key": "AIzaNew"},
+    )
+    assert r.status_code == 200
+    assert web_deps.config.backends["gemini"]["api_key"] == "AIzaNew"
+    # enabled / model_image 그대로 유지
+    assert web_deps.config.backends["gemini"]["enabled"] is True
+    assert web_deps.config.backends["gemini"]["model_image"] == "old-model"
+
+
+def test_post_backend_update_unknown_backend_404(client):
+    r = client.post(
+        "/api/settings/backends/wat",
+        json={"enabled": True},
+    )
+    assert r.status_code == 404
+
+
+def test_post_backend_update_persists_to_file(client, web_deps, monkeypatch):
+    """save_config 가 호출되어 cfg 가 영속."""
+    from assetcache.web.routers import settings as settings_mod
+
+    saved = []
+    real_save = settings_mod.save_config
+
+    def _spy(cfg, path):
+        saved.append((cfg.backends["openai"]["api_key"], str(path)))
+        return real_save(cfg, path)
+
+    monkeypatch.setattr(settings_mod, "save_config", _spy)
+    r = client.post(
+        "/api/settings/backends/openai",
+        json={"enabled": True, "api_key": "sk-saved"},
+    )
+    assert r.status_code == 200
+    assert len(saved) == 1
+    assert saved[0][0] == "sk-saved"
+
+
+def test_post_backend_update_rejects_unknown_fields(client, web_deps):
+    """알려진 필드만 갱신 — `evil` 같은 임의 키는 무시."""
+    r = client.post(
+        "/api/settings/backends/claude",
+        json={"api_key": "sk-ant-x", "evil": "injected"},
+    )
+    assert r.status_code == 200
+    assert "evil" not in web_deps.config.backends["claude"]
+
+
+# ---- POST /api/settings/backends/<name>/test ----
+
+
+def test_post_backend_test_returns_ok(client, web_deps, monkeypatch):
+    """test_connection 이 True 반환 시 {ok: True} JSON."""
+    # ollama 가 기본 enabled → registry rebuild 후 backend.test_connection 호출
+    from assetcache.web.routers import settings as settings_mod
+
+    fake_backend = MagicMock()
+    fake_backend.test_connection.return_value = True
+    fake_registry = MagicMock()
+    fake_registry.get_backend.return_value = fake_backend
+
+    monkeypatch.setattr(
+        settings_mod, "_build_registry_for_test",
+        lambda cfg: fake_registry,
+    )
+    r = client.post("/api/settings/backends/ollama/test")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["ok"] is True
+    fake_backend.test_connection.assert_called_once()
+
+
+def test_post_backend_test_returns_failure(client, web_deps, monkeypatch):
+    """test_connection False → {ok: False}."""
+    from assetcache.web.routers import settings as settings_mod
+
+    fake_backend = MagicMock()
+    fake_backend.test_connection.return_value = False
+    fake_registry = MagicMock()
+    fake_registry.get_backend.return_value = fake_backend
+
+    monkeypatch.setattr(
+        settings_mod, "_build_registry_for_test",
+        lambda cfg: fake_registry,
+    )
+    r = client.post("/api/settings/backends/gemini/test")
+    assert r.status_code == 200
+    assert r.json()["ok"] is False
+
+
+def test_post_backend_test_unknown_backend_404(client):
+    r = client.post("/api/settings/backends/wat/test")
+    assert r.status_code == 404
+
+
+def test_post_backend_test_disabled_backend_returns_message(
+    client, web_deps, monkeypatch
+):
+    """비활성 backend — registry 가 instantiation 안 해 None 반환 → {ok: False, message}."""
+    from assetcache.web.routers import settings as settings_mod
+
+    fake_registry = MagicMock()
+    fake_registry.get_backend.return_value = None  # disabled / not configured
+    monkeypatch.setattr(
+        settings_mod, "_build_registry_for_test",
+        lambda cfg: fake_registry,
+    )
+    r = client.post("/api/settings/backends/openrouter/test")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["ok"] is False
+    assert "message" in body or "error" in body
+
+
+# ---- POST /api/settings/chains ----
+
+
+def test_post_chains_reorder_chat_image(client, web_deps):
+    """chat_image 순서 변경."""
+    r = client.post(
+        "/api/settings/chains",
+        json={"chat_image": ["gemini", "ollama"]},
+    )
+    assert r.status_code == 200
+    assert r.json()["ok"] is True
+    assert web_deps.config.chains["chat_image"] == ["gemini", "ollama"]
+
+
+def test_post_chains_reorder_all_modalities(client, web_deps):
+    """3 modality 동시 변경."""
+    r = client.post(
+        "/api/settings/chains",
+        json={
+            "chat_image": ["openai", "ollama"],
+            "chat_audio": ["openai", "ollama"],
+            "text_embed": ["openai", "ollama"],
+        },
+    )
+    assert r.status_code == 200
+    assert web_deps.config.chains["chat_image"] == ["openai", "ollama"]
+    assert web_deps.config.chains["chat_audio"] == ["openai", "ollama"]
+    assert web_deps.config.chains["text_embed"] == ["openai", "ollama"]
+
+
+def test_post_chains_unknown_modality_rejected(client, web_deps):
+    """알 수 없는 modality 키 → 400."""
+    r = client.post(
+        "/api/settings/chains",
+        json={"chat_video": ["gemini"]},
+    )
+    assert r.status_code == 400
+
+
+def test_post_chains_unknown_backend_rejected(client, web_deps):
+    """알 수 없는 backend 이름 → 400."""
+    r = client.post(
+        "/api/settings/chains",
+        json={"chat_image": ["xinference", "ollama"]},
+    )
+    assert r.status_code == 400
+
+
+def test_post_chains_empty_list_allowed(client, web_deps):
+    """빈 chain 도 허용 — UI 가 잠시 모든 backend 제거하는 중간 상태."""
+    r = client.post(
+        "/api/settings/chains",
+        json={"chat_image": []},
+    )
+    assert r.status_code == 200
+    assert web_deps.config.chains["chat_image"] == []

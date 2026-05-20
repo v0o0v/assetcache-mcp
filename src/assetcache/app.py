@@ -170,6 +170,7 @@ def run_tray(paths: AppPaths, config: Config, argv: Sequence[str] | None = None)
         queue=queue, config=config, paths=paths, pending_picks=pending,
         tray_bridge=bridge,
         library_root=library_root,  # M5 bugfix: assets.path 상대경로 해석용
+        llm_registry=registry_llm,  # M11 Phase 5 — settings UI 의 test_connection 가 사용
     )
     web = WebServer(deps)
     web.start()
