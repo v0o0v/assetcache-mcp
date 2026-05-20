@@ -55,6 +55,7 @@ dependencies = [
   "Babel>=2.14",
   # M11: 멀티 백엔드 LLM
   "google-genai>=0.1",
+  "anthropic>=0.40",
 ]
 
 [project.optional-dependencies]
