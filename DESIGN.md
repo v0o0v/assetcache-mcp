@@ -537,8 +537,8 @@ src/assetcache/core/analyzer/
 
 #### 4.11.4 DB 추가 컬럼/테이블 (§5.1 갱신)
 
-- `batch_jobs` 테이블 (신설): `id`, `gemini_batch_id`, `modality`, `state`, `asset_count`, `submitted_at`, `completed_at`, `expires_at`, `result_uri`, `error_msg`
-- `assets` 테이블 추가 컬럼: `batch_job_id INTEGER REFERENCES batch_jobs(id)`, `batch_state TEXT` (`queued`/`submitted`/`ok`/`failed`)
+- `batch_jobs` 테이블 (신설): `id`, `backend`, `modality`, `backend_job_id` (UNIQUE), `asset_count`, `submitted_at`, `expires_at`, `state`, `completed_at`, `success_count`, `failure_count`, `error`, `display_name`
+- `assets` 테이블 추가 컬럼: `batch_job_id INTEGER REFERENCES batch_jobs(id)`, `batch_state TEXT NOT NULL DEFAULT 'none'` (`none`/`queued`/`submitted`/`completed`/`failed`/`expired`)
 
 #### 4.11.5 웹 UI 신규 페이지 및 엔드포인트
 
