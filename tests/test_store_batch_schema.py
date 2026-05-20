@@ -76,3 +76,88 @@ def test_initialize_idempotent(fresh_store):
             "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='batch_jobs'"
         ).fetchone()[0]
     assert count == 1
+
+
+# ── Task 1.2: batch_jobs CRUD ──────────────────────────────────────────
+
+
+def test_save_batch_job_returns_id(fresh_store):
+    job_id = fresh_store.save_batch_job(
+        backend="gemini",
+        modality="chat_image",
+        backend_job_id="batches/abc",
+        asset_count=30,
+        submitted_at=1000,
+        expires_at=1000 + 172800,
+        display_name="test-job",
+    )
+    assert isinstance(job_id, int) and job_id > 0
+
+
+def test_get_batch_job_roundtrip(fresh_store):
+    job_id = fresh_store.save_batch_job(
+        backend="gemini", modality="chat_image",
+        backend_job_id="batches/xyz", asset_count=10,
+        submitted_at=2000, expires_at=2000 + 172800,
+        display_name="d",
+    )
+    row = fresh_store.get_batch_job(job_id)
+    assert row.backend == "gemini"
+    assert row.modality == "chat_image"
+    assert row.backend_job_id == "batches/xyz"
+    assert row.state == "submitted"
+    assert row.asset_count == 10
+    assert row.success_count == 0
+    assert row.failure_count == 0
+    assert row.error is None
+    assert row.completed_at is None
+
+
+def test_update_batch_job_state(fresh_store):
+    job_id = fresh_store.save_batch_job(
+        backend="gemini", modality="chat_image",
+        backend_job_id="batches/a", asset_count=5,
+        submitted_at=0, expires_at=172800, display_name="d",
+    )
+    fresh_store.update_batch_job_state(
+        job_id, state="succeeded", completed_at=100,
+        success_count=4, failure_count=1,
+    )
+    row = fresh_store.get_batch_job(job_id)
+    assert row.state == "succeeded"
+    assert row.completed_at == 100
+    assert row.success_count == 4
+    assert row.failure_count == 1
+
+
+def test_list_active_batch_jobs_filters_terminal(fresh_store):
+    active_id = fresh_store.save_batch_job(
+        backend="gemini", modality="chat_image",
+        backend_job_id="batches/active", asset_count=1,
+        submitted_at=0, expires_at=172800, display_name="d",
+    )
+    done_id = fresh_store.save_batch_job(
+        backend="gemini", modality="chat_audio",
+        backend_job_id="batches/done", asset_count=1,
+        submitted_at=0, expires_at=172800, display_name="d",
+    )
+    fresh_store.update_batch_job_state(done_id, state="succeeded", completed_at=10)
+    active = fresh_store.list_active_batch_jobs()
+    ids = {r.id for r in active}
+    assert active_id in ids
+    assert done_id not in ids
+
+
+def test_list_active_includes_running(fresh_store):
+    job_id = fresh_store.save_batch_job(
+        backend="gemini", modality="chat_image",
+        backend_job_id="batches/r", asset_count=1,
+        submitted_at=0, expires_at=172800, display_name="d",
+    )
+    fresh_store.update_batch_job_state(job_id, state="running")
+    rows = fresh_store.list_active_batch_jobs()
+    assert any(r.id == job_id for r in rows)
+
+
+def test_get_batch_job_missing(fresh_store):
+    assert fresh_store.get_batch_job(99999) is None

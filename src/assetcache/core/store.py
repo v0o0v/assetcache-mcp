@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
+from .batch.types import BatchJobRow
 from .manifest import PackManifest
 
 log = logging.getLogger(__name__)
@@ -2354,6 +2355,93 @@ class Store:
             (str(package_path),),
         ).fetchone()
         return _unity_import_row(row) if row else None
+
+    # -- M11.1: batch_jobs CRUD ------------------------------------------
+
+    def save_batch_job(
+        self,
+        *,
+        backend: str,
+        modality: str,
+        backend_job_id: str,
+        asset_count: int,
+        submitted_at: int,
+        expires_at: int,
+        display_name: str | None,
+    ) -> int:
+        """Insert new batch_jobs row with state='submitted'. Return id."""
+        with self.write_lock:
+            cur = self.conn.execute(
+                """
+                INSERT INTO batch_jobs (
+                    backend, modality, backend_job_id, asset_count,
+                    submitted_at, expires_at, state, display_name
+                ) VALUES (?, ?, ?, ?, ?, ?, 'submitted', ?)
+                """,
+                (backend, modality, backend_job_id, asset_count,
+                 submitted_at, expires_at, display_name),
+            )
+            return cur.lastrowid
+
+    def update_batch_job_state(
+        self,
+        batch_job_id: int,
+        *,
+        state: str,
+        completed_at: int | None = None,
+        success_count: int | None = None,
+        failure_count: int | None = None,
+        error: str | None = None,
+    ) -> None:
+        """Partial update — only provided kwargs are SET."""
+        sets = ["state = ?"]
+        args: list = [state]
+        if completed_at is not None:
+            sets.append("completed_at = ?")
+            args.append(completed_at)
+        if success_count is not None:
+            sets.append("success_count = ?")
+            args.append(success_count)
+        if failure_count is not None:
+            sets.append("failure_count = ?")
+            args.append(failure_count)
+        if error is not None:
+            sets.append("error = ?")
+            args.append(error)
+        args.append(batch_job_id)
+        with self.write_lock:
+            self.conn.execute(
+                f"UPDATE batch_jobs SET {', '.join(sets)} WHERE id = ?", args
+            )
+
+    def get_batch_job(self, batch_job_id: int) -> BatchJobRow | None:
+        """단일 row by id. 없으면 None."""
+        row = self.conn.execute(
+            """
+            SELECT id, backend, modality, backend_job_id, asset_count,
+                   submitted_at, expires_at, state, completed_at,
+                   success_count, failure_count, error, display_name
+            FROM batch_jobs WHERE id = ?
+            """,
+            (batch_job_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return BatchJobRow(*row)
+
+    def list_active_batch_jobs(self) -> list[BatchJobRow]:
+        """state IN ('submitted', 'running') 만 반환."""
+        rows = self.conn.execute(
+            """
+            SELECT id, backend, modality, backend_job_id, asset_count,
+                   submitted_at, expires_at, state, completed_at,
+                   success_count, failure_count, error, display_name
+            FROM batch_jobs
+            WHERE state IN ('submitted', 'running')
+            ORDER BY id
+            """
+        ).fetchall()
+        return [BatchJobRow(*r) for r in rows]
 
 
 # ── helpers ──────────────────────────────────────────────────────────
