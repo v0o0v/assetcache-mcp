@@ -298,7 +298,7 @@ def test_settings_page_includes_ko_partial_for_gemini(client, web_deps):
     body = r.text
     # gemini ko partial 의 식별 가능한 본문
     assert "무료 tier 있음" in body
-    assert "1,500 req/day" in body
+    assert "gemini-3.1-flash-lite" in body
     # setup link label (i18n msgid)
     assert "Google AI Studio" in body
 
