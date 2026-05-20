@@ -1,0 +1,108 @@
+"""BackendRegistry — config 의 [backends.*] + [chains] → BackendChain 구성."""
+
+from __future__ import annotations
+
+from assetcache.config import Config
+from assetcache.core.llm.base import (
+    BackendCapabilities,
+    BackendInfo,
+)
+from assetcache.core.llm.registry import BackendRegistry
+
+
+class _FakeBackend:
+    def __init__(self, name, *, img=True, aud=True, emb=True):
+        self.info = BackendInfo(
+            name=name,
+            display_name=name,
+            homepage="",
+            capabilities=BackendCapabilities(img, aud, emb, embed_dim=None),
+        )
+
+    def chat(self, *a, **kw):
+        return {"backend": self.info.name}
+
+    def embed(self, *a, **kw):
+        return [0.0]
+
+    def test_connection(self):
+        return True
+
+
+def test_registry_builds_ollama_default_chain():
+    """기본 Config — ollama 1개만 enabled → 모든 chain 이 ollama 하나."""
+    cfg = Config()
+    reg = BackendRegistry.from_config(cfg)
+    chain = reg.get_chain("chat_image")
+    assert len(chain.backends) == 1
+    assert chain.backends[0].info.name == "ollama"
+
+    audio_chain = reg.get_chain("chat_audio")
+    assert len(audio_chain.backends) == 1
+    assert audio_chain.backends[0].info.name == "ollama"
+
+    embed_chain = reg.get_chain("text_embed")
+    assert len(embed_chain.backends) == 1
+    assert embed_chain.backends[0].info.name == "ollama"
+
+
+def test_registry_skips_disabled_backend():
+    """gemini enabled + ollama disabled → chain 에 gemini 만."""
+    cfg = Config()
+    cfg.backends["ollama"]["enabled"] = False
+    cfg.backends["gemini"]["enabled"] = True
+    cfg.backends["gemini"]["api_key"] = "AIzaTest"
+    cfg.chains["chat_image"] = ["ollama", "gemini"]
+
+    reg = BackendRegistry.from_config(
+        cfg, gemini_factory=lambda settings, cfg: _FakeBackend("gemini"),
+    )
+    names = [b.info.name for b in reg.get_chain("chat_image").backends]
+    assert "ollama" not in names
+    assert "gemini" in names
+
+
+def test_registry_get_backend_returns_instance():
+    cfg = Config()
+    reg = BackendRegistry.from_config(cfg)
+    backend = reg.get_backend("ollama")
+    assert backend is not None
+    assert backend.info.name == "ollama"
+
+
+def test_registry_get_backend_returns_none_for_disabled():
+    cfg = Config()
+    reg = BackendRegistry.from_config(cfg)
+    # gemini disabled by default → not instantiated
+    assert reg.get_backend("gemini") is None
+
+
+def test_registry_factory_failure_logged_not_raised(caplog):
+    """factory 가 예외 던져도 registry instantiation 은 계속."""
+    import logging
+    caplog.set_level(logging.WARNING)
+    cfg = Config()
+    cfg.backends["gemini"]["enabled"] = True
+    cfg.backends["gemini"]["api_key"] = "AIzaTest"
+
+    def boom(*a, **kw):
+        raise RuntimeError("intentional")
+
+    reg = BackendRegistry.from_config(cfg, gemini_factory=boom)
+    # gemini 는 빠지지만 ollama 는 여전히 chain 에 있어야
+    assert reg.get_backend("ollama") is not None
+    assert reg.get_backend("gemini") is None
+    assert any("gemini" in r.message and "intentional" in r.message
+                for r in caplog.records)
+
+
+def test_registry_chain_preserves_priority_order():
+    cfg = Config()
+    cfg.backends["gemini"]["enabled"] = True
+    cfg.backends["gemini"]["api_key"] = "AIzaTest"
+    cfg.chains["chat_image"] = ["gemini", "ollama"]
+    reg = BackendRegistry.from_config(
+        cfg, gemini_factory=lambda settings, cfg: _FakeBackend("gemini"),
+    )
+    chain = reg.get_chain("chat_image")
+    assert [b.info.name for b in chain.backends] == ["gemini", "ollama"]
