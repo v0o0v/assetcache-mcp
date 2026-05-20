@@ -230,3 +230,35 @@ def test_post_chains_empty_list_allowed(client, web_deps):
     )
     assert r.status_code == 200
     assert web_deps.config.chains["chat_image"] == []
+
+
+# ---- Settings 페이지 (UI) ----
+
+
+def test_settings_page_includes_backends_section(client):
+    """/settings 페이지가 6 backend 이름 모두 렌더링."""
+    r = client.get("/settings")
+    assert r.status_code == 200
+    body = r.text
+    for name in ("ollama", "gemini", "claude", "openai", "openrouter", "huggingface"):
+        assert name in body, f"settings page missing backend: {name}"
+
+
+def test_settings_page_includes_chains_section(client):
+    """/settings 페이지가 3 modality 이름 모두 렌더링."""
+    r = client.get("/settings")
+    assert r.status_code == 200
+    body = r.text
+    assert "chat_image" in body
+    assert "chat_audio" in body
+    assert "text_embed" in body
+
+
+def test_settings_page_shows_current_backend_state(client, web_deps):
+    """gemini 가 enabled + api_key 셋팅된 상태가 페이지에 반영."""
+    web_deps.config.backends["gemini"]["enabled"] = True
+    web_deps.config.backends["gemini"]["api_key"] = "AIzaInPage"
+    r = client.get("/settings")
+    assert r.status_code == 200
+    # Alpine 데이터 모델 또는 input value 로 표출
+    assert "AIzaInPage" in r.text
