@@ -1,16 +1,16 @@
 # HANDOFF — Cowork → Claude Code (또는 다음 세션)
 
-**마지막 인계 시각**: 2026-05-20 (M11 implementation Phase 0~7 완료, main 머지 대기)
-**마지막 완료 작업**: **M11 — Multi-backend LLM Architecture implementation 완료** (`feat/m11-multi-backend-llm` 브랜치, HEAD = `ddabe3a` 또는 후속 문서 commit). Phase 0 (framework + Ollama wrap) → 1 (Gemini) → 2 (Claude image only) → 3 (OpenAI full modality) → 4 (OpenRouter + HuggingFace) → 5 (/settings UI + i18n) → 6 (DB schema + find_asset backend_used + 카드 배지) → 7 (cross-backend integration + verification.md). 회귀 **1079 → 1239** (+160 신규 + 13 옵트인 `llm_integration`). 신규 의존성 4 (`google-genai`/`anthropic`/`openai`/`huggingface_hub`). MCP 20 도구 그대로 (응답 schema 만 확장).
-**M11 결과**: 6 backend (Ollama + Gemini + Claude + OpenAI + OpenRouter + HuggingFace) + modality 별 chain + 자동 fallback (transient만, hard 즉시 raise) + `/settings` 페이지 backend 카드 + chain ▲/▼ 우선순위 + DB `backend_image/audio/embed` 컬럼 + MCP `find_asset.backend_used` + 검색 카드 🤖 배지. spec: [`docs/superpowers/specs/2026-05-20-m11-multi-backend-llm-design.md`](docs/superpowers/specs/2026-05-20-m11-multi-backend-llm-design.md), verification: [`milestones/M11_verification.md`](milestones/M11_verification.md)
-**현재 브랜치**: `feat/m11-multi-backend-llm` (main 머지 대기, 17 commits since main `34ddde4`)
-**다음 세션 작업**: 사용자 결정 — (a) M11 수동 검증 6 시나리오 → PR push + 머지 + v0.2.0 publish, (b) AnalysisQueue → mark_asset_backends write hook (v0.2.x patch, M11 verification.md §"알려진 한계" 1번), (c) M12 (C4 측정/학습/벤치마크 — 6 backend 정확도 비교).
+**마지막 인계 시각**: 2026-05-20 (M11 v0.2.0 PyPI publish 완료)
+**마지막 완료 작업**: **M11 v0.2.0 publish 완료** — PR [#16](https://github.com/v0o0v/assetcache-mcp/pull/16) squash merge → main `f68ef88` → v0.2.0 tag → Trusted Publishing OIDC 자동 publish (3회째 검증) → [PyPI v0.2.0 Latest](https://pypi.org/project/assetcache-mcp/0.2.0/) + [GitHub release v0.2.0](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.0). 회귀 **1252 passed + 1 skipped + 53 deselected** (v0.1.2 baseline 1079 + 173 신규 + 13 옵트인 `llm_integration`). 신규 의존성 4 (`google-genai`/`anthropic`/`openai`/`huggingface_hub`).
+**M11 결과**: 6 backend (Ollama + Gemini + Claude + OpenAI + OpenRouter + HuggingFace) + modality 별 chain + 자동 fallback + `/settings` 페이지 backend 카드 + chain ▲/▼ 우선순위 + DB `backend_image/audio/embed` 컬럼 + MCP `find_asset.backend_used` + 검색 카드 🤖 배지 + backend 카드 가격·셋업 안내 (ko/en partial). spec: [`docs/superpowers/specs/2026-05-20-m11-multi-backend-llm-design.md`](docs/superpowers/specs/2026-05-20-m11-multi-backend-llm-design.md), verification: [`milestones/M11_verification.md`](milestones/M11_verification.md)
+**현재 브랜치**: `main` (v0.2.0 tag = `f68ef88`, feat/m11-multi-backend-llm deleted by --delete-branch)
+**다음 세션 작업**: **Gemini Batch API** 작업 (사용자 명시) — M11.1 또는 M12. 50% 비용 할인 + 24h SLO turnaround. brainstorm → spec → plan → TDD. 적합 use case: library 초기 import / failed bulk 재분석 / 수천 장 일괄. drop 1장은 interactive 유지 — hybrid 정책 spec 필요. WebSearch 사전 조사 완료 ([batch-api docs](https://ai.google.dev/gemini-api/docs/batch-api), [batch vs caching](https://yingtu.ai/en/blog/gemini-api-batch-vs-caching), [batch mode blog](https://developers.googleblog.com/scale-your-ai-workloads-batch-mode-gemini-api/)).
 
 이 문서는 작업이 중단될 때 다음 세션이 "현재 어디까지 와 있는가"를 한 번에 파악하도록 작성된 스냅샷이다.
 
 ## 1. 한 줄 요약
 
-**M11 implementation 완료** (`feat/m11-multi-backend-llm` 브랜치, main 머지 대기). 6 backend (Ollama + Gemini + Claude + OpenAI + OpenRouter + HuggingFace) + modality 별 chain + 자동 fallback + /settings UI + per-asset backend_used 가시화 + 카드 배지. 회귀 **1239 passed + 1 skipped + 53 deselected** (v0.1.2 baseline 1079 + M11 Phase 0~7 +160 신규 + 13 옵트인 `llm_integration` 마커). 신규 의존성 4 (`google-genai`/`anthropic`/`openai`/`huggingface_hub`). MCP 20 도구 그대로 (응답 schema 만 확장: `find_asset.backend_used`). main 마지막 = `34ddde4` (v0.1.2 tag). **Trusted Publishing (OIDC)** v0.1.1+v0.1.2 검증 ✅ — M11 머지 후 v0.2.0 tag push 한 줄로 자동 publish 가능. 알려진 한계: AnalysisQueue → mark_asset_backends write hook 은 후속 patch (v0.2.x, schema 만 준비, read path 완성).
+**M11 v0.2.0 publish 완료** (main `f68ef88`, PyPI Latest). 6 backend (Ollama + Gemini + Claude + OpenAI + OpenRouter + HuggingFace) + modality 별 chain + /settings UI + per-asset backend_used 가시화 + 카드 배지 + 가격·셋업 안내. 회귀 **1252 passed + 1 skipped + 53 deselected** (v0.1.2 1079 + 173 신규 + 13 옵트인). 신규 의존성 4. MCP 20 도구 그대로 (응답 schema 만 확장). Gemini default = `gemini-3.1-flash-lite` (output -40% 비용 vs 2.5-flash). **Trusted Publishing OIDC** 자동 publish 3회째 성공 (v0.1.1/v0.1.2/v0.2.0 — 평균 30초). 다음 세션: **Gemini Batch API** (사용자 명시).
 
 ## 2. 검증된 사실 (M10 완료 시점)
 
@@ -70,19 +70,9 @@ git pull
 pytest -q
 ```
 
-→ `1239 passed, 1 skipped, 53 deselected` 확인 (M11 implementation 완료 후 baseline; v0.1.2 1079 + Phase 0~7 +160).
+→ `1252 passed, 1 skipped, 53 deselected` 확인 (M11 v0.2.0 publish 후 main baseline; v0.1.2 1079 + 173 신규).
 
-**현재 브랜치 = `feat/m11-multi-backend-llm`** (main 머지 대기). main 으로 돌아가려면:
-
-```powershell
-git checkout main
-```
-
-```powershell
-git pull
-```
-
-→ main 회귀는 v0.1.2 baseline `1079 passed, 1 skipped, 40 deselected`.
+**현재 브랜치 = `main`** (v0.2.0 tag = `f68ef88`, feat/m11-multi-backend-llm deleted by --delete-branch). 추가 회귀나 다음 작업은 새 브랜치에서.
 
 ## 5. 다음 세션 진입 절차 (로드맵 brainstorm 후 — M11 implementation 자연)
 
@@ -129,8 +119,9 @@ git pull
 | v0.1.1 | v0.0.1 마이그레이션 helper 제거 + 첫 Trusted Publishing OIDC 자동 publish | ✅ 완료 ([PR #14](https://github.com/v0o0v/assetcache-mcp/pull/14) + 32초 publish) |
 | v0.1.2 | PyPI 페이지 정직성 patch (README/DESIGN/docs/CLAUDE stale 일괄 정리, classifiers 보강) + Trusted Publishing 2회째 자동 publish | ✅ 완료 ([PR #15](https://github.com/v0o0v/assetcache-mcp/pull/15) + 29초 publish) |
 | **로드맵 brainstorm** | M11~M18 8 마일스톤 design + Reactive backlog ([roadmap-design.md](docs/superpowers/specs/2026-05-20-roadmap-design.md)) | ✅ 완료 (main `b3f8fe8`) |
-| **M11** | Multi-backend LLM Architecture (Ollama+Gemini+Claude+OpenAI+OpenRouter+HF) | ✅ implementation 완료 (`feat/m11-multi-backend-llm`, main 머지 대기). Phase 0~7 모두 완료, 회귀 1079 → 1239 (+160). 신규 의존성 4. [verification](milestones/M11_verification.md) |
-| M12~M18 | 측정/Mac-Linux/원격 통신/Unity Editor/유사 검색/성능/분산 | 📋 미정 (사용자 결정, M11 머지 후 M12 가 자연) |
+| **M11** | Multi-backend LLM Architecture (Ollama+Gemini+Claude+OpenAI+OpenRouter+HF) | ✅ v0.2.0 publish 완료 ([PR #16](https://github.com/v0o0v/assetcache-mcp/pull/16) main 머지 `f68ef88`, [PyPI v0.2.0 Latest](https://pypi.org/project/assetcache-mcp/0.2.0/), [GitHub release v0.2.0](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.0)). 회귀 1079 → 1252 (+173 + 13 옵트인). 신규 의존성 4. Trusted Publishing 3회째 자동 (~30초). [verification](milestones/M11_verification.md) |
+| **M11.1 / M12** | Gemini Batch API (50% 비용, 24h SLO) | 📋 다음 세션 (사용자 명시) — brainstorm → spec → plan → TDD. [batch-api docs](https://ai.google.dev/gemini-api/docs/batch-api) |
+| M12~M18 | 측정/Mac-Linux/원격 통신/Unity Editor/유사 검색/성능/분산 | 📋 미정 (사용자 결정) |
 
 ## 7. M10 후속 정리거리 (해결됨/잔존)
 
