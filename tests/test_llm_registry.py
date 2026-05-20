@@ -317,6 +317,139 @@ def test_default_openai_factory_settings_api_key_wins(monkeypatch):
     assert captured["api_key"] == "sk-explicit"
 
 
+# ---- OpenRouter (Phase 4) ----
+
+
+def test_registry_openrouter_via_default_factory(monkeypatch):
+    cfg = Config()
+    cfg.backends["openrouter"]["enabled"] = True
+    cfg.backends["openrouter"]["api_key"] = "sk-or-test"
+    cfg.chains["chat_image"] = ["openrouter"]
+
+    from assetcache.core.llm import registry as reg_mod
+
+    monkeypatch.setattr(
+        reg_mod,
+        "_default_openrouter_factory",
+        lambda settings, cfg: _FakeBackend("openrouter", aud=False, emb=False),
+    )
+    reg = BackendRegistry.from_config(cfg)
+    chain = reg.get_chain("chat_image")
+    assert len(chain.backends) == 1
+    assert chain.backends[0].info.name == "openrouter"
+
+
+def test_default_openrouter_factory_reads_env_for_api_key(monkeypatch):
+    from assetcache.core.llm import registry as reg_mod
+
+    captured = {}
+
+    class _Stub:
+        def __init__(self, **kw):
+            captured.update(kw)
+
+    monkeypatch.setattr(
+        "assetcache.core.llm.backends.openrouter.OpenRouterBackend", _Stub
+    )
+    monkeypatch.setenv("OPENROUTER_API_KEY", "env-key-OR")
+
+    cfg = Config()
+    settings = dict(cfg.backends["openrouter"])
+    settings["api_key"] = ""
+    reg_mod._default_openrouter_factory(settings=settings, cfg=cfg)
+    assert captured["api_key"] == "env-key-OR"
+    assert captured["model_image"] == cfg.backends["openrouter"]["model_image"]
+    assert captured["timeout"] == cfg.analysis_timeout_seconds
+
+
+def test_default_openrouter_factory_settings_api_key_wins(monkeypatch):
+    from assetcache.core.llm import registry as reg_mod
+
+    captured = {}
+
+    class _Stub:
+        def __init__(self, **kw):
+            captured.update(kw)
+
+    monkeypatch.setattr(
+        "assetcache.core.llm.backends.openrouter.OpenRouterBackend", _Stub
+    )
+    monkeypatch.setenv("OPENROUTER_API_KEY", "env-x")
+
+    cfg = Config()
+    settings = dict(cfg.backends["openrouter"])
+    settings["api_key"] = "sk-or-explicit"
+    reg_mod._default_openrouter_factory(settings=settings, cfg=cfg)
+    assert captured["api_key"] == "sk-or-explicit"
+
+
+# ---- HuggingFace (Phase 4) ----
+
+
+def test_registry_huggingface_via_default_factory(monkeypatch):
+    cfg = Config()
+    cfg.backends["huggingface"]["enabled"] = True
+    cfg.backends["huggingface"]["api_key"] = "hf_test"
+    cfg.chains["chat_image"] = ["huggingface"]
+
+    from assetcache.core.llm import registry as reg_mod
+
+    monkeypatch.setattr(
+        reg_mod,
+        "_default_huggingface_factory",
+        lambda settings, cfg: _FakeBackend("huggingface"),
+    )
+    reg = BackendRegistry.from_config(cfg)
+    chain = reg.get_chain("chat_image")
+    assert len(chain.backends) == 1
+    assert chain.backends[0].info.name == "huggingface"
+
+
+def test_default_huggingface_factory_reads_env_for_api_key(monkeypatch):
+    from assetcache.core.llm import registry as reg_mod
+
+    captured = {}
+
+    class _Stub:
+        def __init__(self, **kw):
+            captured.update(kw)
+
+    monkeypatch.setattr(
+        "assetcache.core.llm.backends.huggingface.HuggingFaceBackend", _Stub
+    )
+    # HF_TOKEN 우선 (huggingface 공식 env name)
+    monkeypatch.setenv("HF_TOKEN", "env-hf-token")
+
+    cfg = Config()
+    settings = dict(cfg.backends["huggingface"])
+    settings["api_key"] = ""
+    reg_mod._default_huggingface_factory(settings=settings, cfg=cfg)
+    assert captured["api_key"] == "env-hf-token"
+    assert captured["model_image"] == cfg.backends["huggingface"]["model_image"]
+    assert captured["timeout"] == cfg.analysis_timeout_seconds
+
+
+def test_default_huggingface_factory_settings_api_key_wins(monkeypatch):
+    from assetcache.core.llm import registry as reg_mod
+
+    captured = {}
+
+    class _Stub:
+        def __init__(self, **kw):
+            captured.update(kw)
+
+    monkeypatch.setattr(
+        "assetcache.core.llm.backends.huggingface.HuggingFaceBackend", _Stub
+    )
+    monkeypatch.setenv("HF_TOKEN", "env-x")
+
+    cfg = Config()
+    settings = dict(cfg.backends["huggingface"])
+    settings["api_key"] = "hf_explicit"
+    reg_mod._default_huggingface_factory(settings=settings, cfg=cfg)
+    assert captured["api_key"] == "hf_explicit"
+
+
 def test_registry_claude_audio_chain_falls_back_to_ollama(monkeypatch):
     """claude+ollama enabled, chat_audio=[claude, ollama] → audio 호출은 ollama."""
     from assetcache.core.llm import registry as reg_mod
