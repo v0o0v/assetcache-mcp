@@ -1171,26 +1171,32 @@ class Store:
             "SELECT id, axis, label, description, source, enabled FROM labels"
         )
         params: list = []
-        where: list[str] = []
+        where: list[str] = ["id IS NOT NULL"]  # M11.1 defensive — race condition 보호
         if axis is not None:
             where.append("axis = ?")
             params.append(axis)
         if enabled_only:
             where.append("enabled = 1")
-        if where:
-            sql += " WHERE " + " AND ".join(where)
+        sql += " WHERE " + " AND ".join(where)
         sql += " ORDER BY axis, label"
-        return [
-            LabelRow(
-                id=int(r[0]),
-                axis=r[1],
-                label=r[2],
-                description=r[3],
-                source=r[4],
-                enabled=bool(r[5]),
+        rows: list[LabelRow] = []
+        for r in self.conn.execute(sql, params).fetchall():
+            if r[0] is None:
+                # WHERE id IS NOT NULL 로 1차 차단되지만 SQLite WAL transient
+                # race 시 reader 가 partial row 볼 가능성 — log + skip 으로 방어.
+                log.warning("labels row with NULL id — skipping (race?): %s", r)
+                continue
+            rows.append(
+                LabelRow(
+                    id=int(r[0]),
+                    axis=r[1],
+                    label=r[2],
+                    description=r[3],
+                    source=r[4],
+                    enabled=bool(r[5]),
+                )
             )
-            for r in self.conn.execute(sql, params).fetchall()
-        ]
+        return rows
 
     def get_label_by_id(self, label_id: int) -> Optional[LabelRow]:
         """label_id 로 라벨 조회. 없으면 None."""
