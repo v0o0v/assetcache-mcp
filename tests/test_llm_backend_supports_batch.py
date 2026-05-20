@@ -73,8 +73,8 @@ def test_huggingface_supports_batch_default_false(monkeypatch):
     assert b.supports_batch() is False
 
 
-def test_gemini_supports_batch_default_false_until_phase2(monkeypatch):
-    """Phase 0 — Gemini 도 일단 False. Phase 2 에서 True 로 변경."""
+def test_gemini_supports_batch_true(monkeypatch):
+    """Phase 2 — GeminiBackend supports_batch True 로 변경."""
     monkeypatch.setattr(
         "assetcache.core.llm.backends.gemini.genai.Client",
         lambda **kw: MagicMock(),
@@ -88,4 +88,4 @@ def test_gemini_supports_batch_default_false_until_phase2(monkeypatch):
         model_embed="m",
         timeout=60.0,
     )
-    assert b.supports_batch() is False  # Phase 2 에서 True
+    assert b.supports_batch() is True

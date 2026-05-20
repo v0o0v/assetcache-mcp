@@ -11,6 +11,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import time
 
 from google import genai
 from google.genai import types as genai_types
@@ -22,6 +23,7 @@ from ..base import (
     ChatMessage,
     LLMBackend,
 )
+from ...batch.types import BatchChatRequest
 
 log = logging.getLogger(__name__)
 
@@ -171,7 +173,47 @@ class GeminiBackend:
             return False
 
     def supports_batch(self) -> bool:
-        return False  # Phase 2 task 2.1 에서 True 로 변경
+        return True  # M11.1 Phase 2 — Gemini Batch API 지원
+
+    def batch_chat(
+        self,
+        *,
+        modality: str,
+        requests: list[BatchChatRequest],
+    ) -> str:
+        """배치 chat 작업 제출. Gemini job name 'batches/xxx' 반환.
+
+        modality: 'chat_image' (model_image 사용) 또는 'chat_audio' (model_audio 사용).
+        text_embed 는 batch_embed() 사용.
+        """
+        if modality == "chat_image":
+            model = self.model_image
+        elif modality == "chat_audio":
+            model = self.model_audio
+        else:
+            raise ValueError(f"batch_chat invalid modality: {modality!r}")
+
+        inlined = []
+        for r in requests:
+            item: dict = {"contents": self._to_contents(r.messages)}
+            if r.force_json:
+                item["config"] = {"response_mime_type": "application/json"}
+            inlined.append(item)
+
+        try:
+            job = self._client.batches.create(
+                model=model,
+                src=inlined,
+                config={"display_name": f"assetcache-{modality}-{int(time.time())}"},
+            )
+        except Exception as e:
+            raise BackendError(
+                backend="gemini",
+                stage=f"batch_{modality}",
+                transient=_classify(e),
+                cause=e,
+            ) from e
+        return job.name
 
 
 _: LLMBackend = GeminiBackend.__new__(GeminiBackend)  # type: ignore[arg-type]
