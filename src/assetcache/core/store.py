@@ -424,6 +424,27 @@ CREATE INDEX IF NOT EXISTS idx_unity_imports_state ON unity_imports(import_state
 """
 
 
+_M11_1_BATCH_SCHEMA = """
+CREATE TABLE IF NOT EXISTS batch_jobs (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    backend         TEXT NOT NULL,
+    modality        TEXT NOT NULL,
+    backend_job_id  TEXT NOT NULL UNIQUE,
+    asset_count     INTEGER NOT NULL,
+    submitted_at    INTEGER NOT NULL,
+    expires_at      INTEGER NOT NULL,
+    state           TEXT NOT NULL,
+    completed_at    INTEGER,
+    success_count   INTEGER NOT NULL DEFAULT 0,
+    failure_count   INTEGER NOT NULL DEFAULT 0,
+    error           TEXT,
+    display_name    TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_batch_jobs_state ON batch_jobs(state);
+CREATE INDEX IF NOT EXISTS idx_batch_jobs_backend_job_id ON batch_jobs(backend_job_id);
+"""
+
+
 # ── Store ────────────────────────────────────────────────────────────
 
 
@@ -459,7 +480,7 @@ class Store:
     # -- lifecycle ----------------------------------------------------
 
     def initialize(self) -> None:
-        """Create M1 + M2 + M3 + M4 + M7 tables.  Safe to call repeatedly."""
+        """Create M1 + M2 + M3 + M4 + M7 + M11.1 tables.  Safe to call repeatedly."""
         self.conn.executescript(_M1_SCHEMA)
         self.conn.executescript(_M2_SCHEMA)
         self.conn.executescript(_M3_SCHEMA)
@@ -467,6 +488,7 @@ class Store:
         self._migrate_m6_animations_json()
         self._migrate_unity_imports()
         self._migrate_m11_backend_columns()
+        self._migrate_m11_1_batch_schema()
 
     def _migrate_m6_animations_json(self) -> None:
         """M6 — sprite_meta.animations_json 컬럼 idempotent 추가."""
@@ -497,6 +519,33 @@ class Store:
                     self.conn.execute(
                         f"ALTER TABLE assets ADD COLUMN {col} TEXT"
                     )
+
+    def _migrate_m11_1_batch_schema(self) -> None:
+        """M11.1 — batch_jobs 테이블 + assets.batch_job_id/batch_state 컬럼 idempotent 추가.
+
+        순서:
+        1. batch_jobs 테이블 + 인덱스 생성 (CREATE TABLE IF NOT EXISTS — idempotent)
+        2. assets 에 batch_job_id (FK → batch_jobs.id) 컬럼 ALTER TABLE (없을 때만)
+        3. assets 에 batch_state TEXT NOT NULL DEFAULT 'none' 컬럼 ALTER TABLE (없을 때만)
+        4. idx_assets_batch_state 인덱스 생성 (컬럼 확보 후 — CREATE INDEX IF NOT EXISTS)
+        """
+        with self.write_lock:
+            # 1. batch_jobs 테이블 + state/backend_job_id 인덱스
+            self.conn.executescript(_M11_1_BATCH_SCHEMA)
+            # 2 & 3. assets ALTER TABLE — idempotent
+            cols = {r[1] for r in self.conn.execute("PRAGMA table_info(assets)").fetchall()}
+            if "batch_job_id" not in cols:
+                self.conn.execute(
+                    "ALTER TABLE assets ADD COLUMN batch_job_id INTEGER REFERENCES batch_jobs(id)"
+                )
+            if "batch_state" not in cols:
+                self.conn.execute(
+                    "ALTER TABLE assets ADD COLUMN batch_state TEXT NOT NULL DEFAULT 'none'"
+                )
+            # 4. idx_assets_batch_state (컬럼이 있어야 생성 가능)
+            self.conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_assets_batch_state ON assets(batch_state)"
+            )
 
     def close(self) -> None:
         try:
