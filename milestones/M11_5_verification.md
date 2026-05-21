@@ -82,31 +82,48 @@ sqlite3 "$env:TEMP\m11_5_verify_data\metadata.db" "SELECT a.name, a.kind, m.fram
 sqlite3 "$env:TEMP\m11_5_verify_data\metadata.db" "SELECT a.name, l.axis, l.label FROM asset_labels l JOIN assets a ON a.id=l.asset_id WHERE l.axis IN ('category','palette','mood','animation') ORDER BY a.name, l.axis"
 ```
 
-## 3. LIVE 결과 표 (Phase 1 gate)
+## 3. LIVE 결과 표 (Phase 1 gate) — ✅ 2026-05-22
 
-| # | 자산 | M11.4 기대 | LIVE 결과 | 분기 |
+driver: `scripts/drive_live_batch.py` (Qt tray 우회, BatchManager+BatchPoller 직접 구동).  Gemini batch inline destination 사용.
+
+batch_jobs:
+
+| job_id | modality | state | asset_count | success | failure |
+|---:|---|---|---:|---:|---:|
+| 1 | chat_image | succeeded | 1 | 1 | 0 |
+| 2 | chat_spritesheet | succeeded | 5 | 5 | 0 |
+
+→ chat_image 가 6 자산 fetch → classify_image_assets 가 5 자산을 spritesheet kind 로 promote (elemental_cyan 포함, D-1 작동 LIVE 확인) → crown_icon (sprite) 만 chat_image batch 진입.  chat_spritesheet 가 promote 된 5 자산 batch.  payload validation ValueError 0건.
+
+| # | 자산 | M11.4 기대 | LIVE 결과 | 평가 |
 |---:|---|---|---|---|
-| 1 | elemental_cyan | kind=spritesheet, 6 frame | TBD | sprite 면 → Phase 3 (#2 AXIS_SPAN_RATIO 튜닝) |
-| 2 | crown_icon | category ∈ {inventory_item, item, icon} | TBD | character 면 → M12 (모델 업그레이드) trigger |
-| 3 | hero_warrior | category=character, 4 anim 라벨 | TBD | regression 0 여부 |
-| 4 | mage_purple | category=character, 3 anim 라벨 | TBD | regression 0 |
-| 5 | knight_gold | kind=spritesheet, frame_w=32 (D-2 stride) | TBD | M11_3_verification 의 "17/28" 은 D-2 적용 전 결과 — D-2 적용 후 32 가 정상 |
-| 6 | monster_red | kind=spritesheet, 4 frame | TBD | regression 0 |
-| 7 | palette 응답 분포 | hex 0건 + tone group 안 | TBD | hex 가 있으면 prompt 추가 강화 (Phase 6 trigger) |
+| 1 | elemental_cyan | kind=spritesheet, 6 frame | **kind=spritesheet, 64×64×6** ✅ | **D-1 color-edge LIVE 통과** |
+| 2 | crown_icon | category ∈ {inventory_item, item, icon} | **category=inventory_item** ✅ | **LLM #3 patch LIVE 통과** |
+| 3 | hero_warrior | category=character, 4 anim 라벨 | **character + idle/walk/attack/hurt + 'other'** ✅ | regression 0 |
+| 4 | mage_purple | category=character, 3 anim 라벨 | **character + cast/idle/walk + 'other'** ✅ | regression 0 |
+| 5 | knight_gold | kind=spritesheet, frame_w=32 (D-2 stride) | **kind=spritesheet, 32×32×8** ✅ | regression 0 (M11.3 "17/28" 은 D-2 적용 전 — 32 가 정상) |
+| 6 | monster_red | kind=spritesheet, 4 frame | **kind=spritesheet, 48×48×4 + animation=idle (Gemma 추측)** ✅ | M11.2 chat_spritesheet modality 의 가치 LIVE 확인 |
+| 7 | palette 응답 분포 | hex 0건 + tone group 안 | **crown_icon palette=warm, high_contrast — hex 0건** ✅ | tone group enum 내 응답 |
 
-## 4. Phase 2 / 4 분기 결정 매트릭스
+### 3.1 별 발견 (M11.5 범위 밖)
 
-`§3` 의 LIVE 결과를 보고 채우는 표.
+| 항목 | 상태 | 후속 |
+|---|---|---|
+| elemental_cyan category=character | LLM 분류 한계 — 합성 색 cycle orb 자산 시각이 character 와 구분 안 됨.  실 게임 자산은 색만 cycle 하는 시트가 드물어 영향 낮음 | M11.5 범위 밖 |
+| 시트 자산 (hero/mage/knight/monster) palette 라벨 부재 | BATCH_SPRITESHEET_PROMPT 가 palette 를 명시 안 함 — chat_image 만 palette 응답 | 별 patch 후보 (BATCH_SPRITESHEET_PROMPT 강화) |
+| animation='other' 가 여러 자산에 등록 | prompt 가 'other' fallback 을 받는 영향 — 의미 X 라벨이 합산 | LabelRegistry filter 또는 prompt 'other' 금지 (별 patch) |
 
-| trigger | 조건 | 진입 Phase | 산출물 |
-|---|---|---|---|
-| #1 elemental_cyan sprite 유지 | LIVE 결과 #1 = sprite | Phase 3 (AXIS_SPAN_RATIO 튜닝) | `core/sheet/grid_detect.py` ratio 조정 또는 std-검증 |
-| #1 elemental_cyan spritesheet 통과 | LIVE 결과 #1 = spritesheet | Phase 3 skip | — |
-| #2 crown_icon character 유지 | LIVE 결과 #2 = character | M12 spec trigger (별 마일스톤) | M11.5 범위 밖 |
-| #2 crown_icon inventory_item 통과 | LIVE 결과 #2 ∈ acceptable | Phase 5 (acceptable set strict) 진입 가능 | `tests/.../inventory_item_integration.py` strict |
-| #7 palette hex 검출 | LIVE 응답에 `#XXXXXX` 라벨 | Phase 6 (palette narrow + prompt 강화) | `core/labels.py` 시드 narrow + `messages.py` hex 강조 |
-| #7 palette tone group 응답 | `vibrant`/`saturated`/`muted` 빈도 高 | Phase 6 strict | 동일 |
-| #3~#6 regression 발견 | 변경 0 가정 깨짐 | Phase 7 별 patch | 회귀별 trace |
+## 4. Phase 2 / 4 분기 결정 매트릭스 — ✅ 2026-05-22
+
+| trigger | LIVE 결과 | 결정 |
+|---|---|---|
+| #1 elemental_cyan kind | **spritesheet ✓** | **Phase 3 SKIP** (D-1 LIVE 통과) |
+| #2 crown_icon category | **inventory_item ✓** | **M12 모델 업그레이드 trigger 안 함** + Phase 5 strict 진입 가능 |
+| #7 palette hex | **0건 ✓** | Phase 6 hex 강화 불필요 |
+| #7 palette tone group narrow | 응답 분포 적음 (crown_icon 만 palette 라벨) | **Phase 6 SKIP** — narrow 결정에 필요한 분포 부족, 시드 변경 무의미 |
+| #3~#6 regression | 변경 0 ✓ | regression 0 |
+
+→ **M11.5 patch 범위**: Phase 5 (llm_integration acceptable set strict 화) 만.
 
 ## 5. Phase 3 — AXIS_SPAN_RATIO 튜닝 (조건부, TBD)
 
@@ -168,9 +185,9 @@ LIVE 응답 분포 본 후 결정:
 
 | Phase | 상태 |
 |---|---|
-| 1 — LIVE 검증 (gate) | 🟡 자산 생성 + detect_sheet smoke 완료, **사용자 GEMINI_API_KEY + tray 실행 단계 대기** |
-| 2 — 분기 결정 | ⏸ Phase 1 결과 대기 |
-| 3 — AXIS_SPAN_RATIO 튜닝 | ⏸ 조건부 |
-| 5 — llm_integration strict | ⏸ 조건부 |
-| 6 — palette narrow | ⏸ 조건부 |
-| 7 — PR + tag | ⏸ Phase 3/5/6 종료 후 |
+| 1 — LIVE 검증 (gate) | ✅ chat_image 1/1 + chat_spritesheet 5/5 success (elemental_cyan D-1 + crown_icon LLM #3 LIVE 통과) |
+| 2 — 분기 결정 | ✅ Phase 3 SKIP / Phase 5 진입 / Phase 6 SKIP / M12 trigger 안 함 |
+| 3 — AXIS_SPAN_RATIO 튜닝 | ⏭ SKIP (elemental_cyan promote 확인) |
+| 5 — llm_integration acceptable set strict | 🟡 **진입** — crown `{inventory_item, item}`, ui_button `{ui_icon, ui}` strict 화 |
+| 6 — palette narrow | ⏭ SKIP (LIVE 분포 부족) |
+| 7 — PR + tag | ⏸ Phase 5 종료 후 |
