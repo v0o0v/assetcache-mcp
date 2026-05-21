@@ -134,14 +134,22 @@ LIVE 결과 #1 = sprite 일 때만 진입.  현재 가설:
 
 신규 테스트 ~3 (sweep 케이스 + std 검증).
 
-## 6. Phase 5 — llm_integration acceptable set strict (조건부, TBD)
+## 6. Phase 5 — llm_integration acceptable set strict — ✅ 2026-05-22
 
-LIVE 결과 #2 통과 후 1회 strict 화:
+`tests/test_llm_backend_gemini_inventory_item_integration.py`:
+* crown: `{inventory_item, item, icon, ui_icon, other}` → **`{inventory_item, item}`** (icon/ui_icon/other 제거)
+* ui_button: `{ui_icon, ui, icon, inventory_item, other}` → **`{ui_icon, ui}`** (icon/inventory_item/other 제거)
 
-* crown: `{inventory_item, item}` (icon/ui_icon/other 제거)
-* ui_button: `{ui_icon, ui}` (inventory_item/icon/other 제거)
+LIVE 옵트인 결과 (gemini-2.5-flash, 2026-05-22):
 
-옵트인 `pytest -m llm_integration` 가 strict set 으로 통과해야 PR 머지.
+```
+tests/test_llm_backend_gemini_inventory_item_integration.py::test_crown_classified_as_inventory_item_not_character PASSED
+tests/test_llm_backend_gemini_inventory_item_integration.py::test_ui_button_classified_as_ui_icon_not_character PASSED
+
+2 passed in 10.12s
+```
+
+→ Gemini 가 strict set 안에서 응답 (crown=inventory_item 또는 item, ui_button=ui_icon 또는 ui).  M11.4 prompt 가이드의 효과가 LIVE 1회 통과 확인.
 
 ## 7. Phase 6 — palette tone-group narrow (조건부, TBD)
 
