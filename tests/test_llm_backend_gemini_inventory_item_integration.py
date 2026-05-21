@@ -85,10 +85,11 @@ def test_crown_classified_as_inventory_item_not_character(gemini) -> None:
     assert category != "character", (
         f"crown_icon 이 여전히 character 로 분류됨: {out!r}"
     )
-    # 이상적 결과: inventory_item (or 최소한 item-adjacent 카테고리)
-    acceptable = {"inventory_item", "item", "icon", "ui_icon", "other"}
+    # M11.5 Phase 5 — strict.  M11.4 의 acceptable set 에서 icon/ui_icon/other
+    # 를 제거 (LIVE 검증에서 inventory_item 직응답 확인 — verification.md §3).
+    acceptable = {"inventory_item", "item"}
     assert category in acceptable, (
-        f"crown_icon category {category!r} 이 acceptable set 밖: {out!r}"
+        f"crown_icon category {category!r} 이 strict acceptable set 밖: {out!r}"
     )
 
 
@@ -103,7 +104,10 @@ def test_ui_button_classified_as_ui_icon_not_character(gemini) -> None:
     assert category != "character", (
         f"ui_button 이 character 로 잘못 분류됨: {out!r}"
     )
-    acceptable = {"ui_icon", "ui", "icon", "inventory_item", "other"}
+    # M11.5 Phase 5 — strict.  M11.4 의 acceptable set 에서 icon/inventory_item/other
+    # 를 제거.  ui_icon 카테고리가 시드에 등록됐고 (M11.4 Phase 2) prompt 도
+    # ui_icon 을 명시 → Gemini 가 정확히 ui_icon/ui 로 응답하는지 strict 확인.
+    acceptable = {"ui_icon", "ui"}
     assert category in acceptable, (
-        f"ui_button category {category!r} 이 acceptable set 밖: {out!r}"
+        f"ui_button category {category!r} 이 strict acceptable set 밖: {out!r}"
     )
