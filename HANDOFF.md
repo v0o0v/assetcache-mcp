@@ -1,15 +1,19 @@
 # HANDOFF — Cowork → Claude Code (또는 다음 세션)
 
-**마지막 인계 시각**: 2026-05-21 (v0.2.x patch A/B/C [PR #18](https://github.com/v0o0v/assetcache-mcp/pull/18) main 머지 + M11.2 spec 작성)
-**마지막 완료 작업**: **v0.2.x patches PR #18 머지** (main `12ebc42`) — batch 경로가 sync 와 동등한 결과 (labels + sprite_meta + sound_meta + spritesheet frame meta + frameTags 라벨 + kind promote) 를 생성하도록 3 단계 보강. 회귀 1424 → **1490 passed + 3 skipped + 56 deselected** (+66 신규, 회귀 0). 신규 의존성 0. **M11.2 spec 작성 완료** ([`docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md`](./docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md)) + `milestones/M11_2_plan.md` starter 작성됨.
-**PR #18 산출물** (3 patches squash):
-- patch A (`68a3257`) — `core/analyzer/payload_parser.py` 신설 + BatchPoller `registry` 주입으로 batch payload → validated labels 변환
-- patch B (`bdde0e0`) — `core/analyzer/tech_meta.py` 신설 + BatchPoller `library_dir` 주입으로 sprite_meta/sound_meta 충전
-- patch C (`65fb4aa`) — `core/analyzer/spritesheet_meta.py` 신설 + BatchPoller 가 `detect_sheet` 호출로 Aseprite/TexturePacker frameTags hit 시 frame_w/h/count + animations_json + frameTags 라벨 + `kind='spritesheet'` promote
+**마지막 인계 시각**: 2026-05-21 (M11.2 implement 완료 — `feat/m11-2-batch-spritesheet-modality` 브랜치 7 commit, PR 대기)
+**마지막 완료 작업**: **M11.2 — Batch Spritesheet Modality implement** — `chat_spritesheet` modality 신설로 PR #18 한계 (grid-only 시트 animation 라벨 부재) 해소. 7 Phase TDD 사이클 (modality 분리 → sheet_classifier → composite prompt → BatchManager classify-on-fetch → BatchPoller _persist_spritesheet_payload → UI/i18n → docs/옵트인). 회귀 1490 → **1528 passed + 3 skipped + 56 deselected** (+38 신규, 회귀 0). 신규 의존성 0.
+**M11.2 7 commits** (squash 예정):
+- `f953417` — phase 1: modality split (`chat_image=sprite`, `chat_spritesheet=spritesheet`)
+- `78ee90b` — phase 2: `core/batch/sheet_classifier.py` (detect_sheet + kind promote)
+- `cd9e063` — phase 3: `BATCH_SPRITESHEET_PROMPT` + `build_spritesheet_chat_messages` (composite strip)
+- `8a1f006` — phase 4: BatchManager classify-on-fetch + AnalysisQueue 4-modality + Gemini batch_chat
+- `2c3fdb1` — phase 5: BatchPoller `_persist_spritesheet_payload` (sync 와 동등)
+- `3b6343c` — phase 6: UI 4행 modality + ko/en `Batch spritesheet` msgid
+- (phase 7) — verification + 옵트인 + docs (이 commit)
 
-**현재 브랜치**: `main` (PR #18 squash merge tag `12ebc42`, fix/batch-label-parsing 브랜치 자동 삭제)
+**현재 브랜치**: `feat/m11-2-batch-spritesheet-modality` (main `12ebc42` 기준 +7 commit)
 
-**다음 세션 작업**: **M11.2 implement** — batch spritesheet modality (`chat_spritesheet`) 신설로 PR #18 한계 (grid-only 시트 animation 라벨 비어 있음) 해소. spec: [`docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md`](./docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md), plan starter: [`milestones/M11_2_plan.md`](./milestones/M11_2_plan.md). 자세한 시작 절차는 §5 참조.
+**다음 세션 작업**: PR 생성 → 머지 → v0.2.2 publish (Trusted Publishing 5회째) 결정. spec/plan/verification 은 §5 참조.
 
 이 문서는 작업이 중단될 때 다음 세션이 "현재 어디까지 와 있는가"를 한 번에 파악하도록 작성된 스냅샷이다.
 

@@ -89,8 +89,10 @@ def test_save_then_load_roundtrip(tmp_path):
     assert "openai" in cfg2.backends
     assert "openrouter" in cfg2.backends
     assert "huggingface" in cfg2.backends
+    # M11.2 — chat_spritesheet modality 신설.  default 는 chat_image 와 동일 ["ollama"].
     assert cfg2.chains == {
         "chat_image": ["ollama"],
+        "chat_spritesheet": ["ollama"],
         "chat_audio": ["ollama"],
         "text_embed": ["ollama"],
     }

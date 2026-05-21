@@ -86,7 +86,7 @@ _VALID_UI_LANGUAGES = ("ko", "en", "auto")
 _VALID_UI_THEMES = ("auto", "light", "dark")
 
 # M11 — multi-backend LLM
-_VALID_CHAIN_MODALITIES = ("chat_image", "chat_audio", "text_embed")
+_VALID_CHAIN_MODALITIES = ("chat_image", "chat_spritesheet", "chat_audio", "text_embed")
 _KNOWN_BACKENDS = ("ollama", "gemini", "claude", "openai", "openrouter", "huggingface")
 
 
@@ -144,6 +144,7 @@ def _default_backends() -> dict[str, dict[str, Any]]:
 def _default_chains() -> dict[str, list[str]]:
     return {
         "chat_image": ["ollama"],
+        "chat_spritesheet": ["ollama"],
         "chat_audio": ["ollama"],
         "text_embed": ["ollama"],
     }
@@ -315,6 +316,9 @@ class Config:
             for modality, order in data_chains.items():
                 if modality in _VALID_CHAIN_MODALITIES and isinstance(order, list):
                     chains[modality] = [str(x) for x in order]
+        # chat_spritesheet 미지정 시 chat_image 와 동일 chain 으로 fallback
+        if "chat_spritesheet" not in (data_chains if isinstance(data_chains, dict) else {}):
+            chains["chat_spritesheet"] = list(chains["chat_image"])
         filtered["chains"] = chains
 
         # M11.1 — batch section migration (missing section → default)

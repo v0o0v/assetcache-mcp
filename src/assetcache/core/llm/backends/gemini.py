@@ -186,7 +186,7 @@ class GeminiBackend:
         modality: 'chat_image' (model_image 사용) 또는 'chat_audio' (model_audio 사용).
         text_embed 는 batch_embed() 사용.
         """
-        if modality == "chat_image":
+        if modality in ("chat_image", "chat_spritesheet"):
             model = self.model_image
         elif modality == "chat_audio":
             model = self.model_audio

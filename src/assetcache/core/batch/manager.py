@@ -17,13 +17,14 @@ from .types import BatchChatRequest
 
 if TYPE_CHECKING:
     from ..analysis_queue import AnalysisQueue
+    from ..labels import LabelRegistry
     from ..llm.registry import BackendRegistry
     from ..store import Store
     from ...config import Config
 
 log = logging.getLogger(__name__)
 
-_MODALITIES = ("chat_image", "chat_audio", "text_embed")
+_MODALITIES = ("chat_image", "chat_spritesheet", "chat_audio", "text_embed")
 
 
 class BatchManager:
@@ -41,12 +42,14 @@ class BatchManager:
         analysis_queue: "AnalysisQueue",
         cfg: "Config",
         library_dir: Path | None = None,
+        registry: "LabelRegistry | None" = None,
     ) -> None:
         self._store = store
         self._chain = chain_registry
         self._aq = analysis_queue
         self._cfg = cfg
         self._library_dir = library_dir
+        self._registry = registry
         self._locks = {m: threading.Lock() for m in _MODALITIES}
 
     def try_submit(self, modality: str) -> int | None:
@@ -86,11 +89,44 @@ class BatchManager:
         rows = self._store.fetch_pending_by_modality(modality, limit=threshold)
         if not rows:
             return None
+
+        sheet_results: list = []  # [(AssetRow, SheetDetection), ...] — chat_spritesheet 전용
+        if modality == "chat_image":
+            # M11.2 — fetch 후 시트 식별 + kind promote.  시트 rows 는 batch 에 안 보내고
+            # 다음 sweep 의 chat_spritesheet 가 픽업.  sprite rows 만 chat_image batch.
+            from .sheet_classifier import classify_image_assets
+            _sheets, rows = classify_image_assets(
+                rows, library_dir=self._library_dir, store=self._store,
+            )
+            if not rows:
+                # 전부 시트 — promote 만 수행, batch submit 0.
+                return None
+        elif modality == "chat_spritesheet":
+            # spritesheet kind 는 이미 promote 된 상태.  builder 에 detection 을 전달하기
+            # 위해 detect_sheet 다시 호출.  detect miss 면 skip.
+            from .sheet_classifier import classify_image_assets
+            sheet_results, _ = classify_image_assets(
+                rows, library_dir=self._library_dir, store=self._store,
+            )
+            if not sheet_results:
+                log.warning(
+                    "chat_spritesheet submit: 0 detect_sheet hits in %d rows",
+                    len(rows),
+                )
+                return None
+            rows = [row for row, _ in sheet_results]
+
         asset_ids = [r.id for r in rows]
         self._store.mark_assets_batch_queued(asset_ids)
         try:
             if modality in ("chat_image", "chat_audio"):
                 requests = self._build_chat_requests(modality, rows)
+            elif modality == "chat_spritesheet":
+                requests = self._build_spritesheet_requests(sheet_results)
+            else:  # text_embed
+                texts = self._build_embed_texts(rows)
+
+            if modality in ("chat_image", "chat_audio", "chat_spritesheet"):
                 asset_ids_built = [req.asset_id for req in requests]
                 # OSError 로 skip 된 asset 은 즉시 'none' 으로 복구 (interactive fallback)
                 skipped = set(asset_ids) - set(asset_ids_built)
@@ -108,7 +144,6 @@ class BatchManager:
                 # use filtered list for count / mark / dequeue
                 asset_ids = asset_ids_built
             else:  # text_embed
-                texts = self._build_embed_texts(rows)
                 backend_job_id = backend.batch_embed(texts=texts)
         except Exception as e:
             log.warning(
@@ -167,6 +202,51 @@ class BatchManager:
                 continue
             out.append(BatchChatRequest(
                 asset_id=r.id,
+                messages=messages,
+                force_json=True,
+            ))
+        return out
+
+    def _build_spritesheet_requests(self, sheet_results):
+        """시트 + detection 튜플 list 를 composite strip + 시트 전용 prompt 로 변환.
+
+        sheet_results: ``[(AssetRow, SheetDetection), ...]`` from classify_image_assets.
+        registry 가 있으면 ``list_labels('animation')`` 으로 enum 동적 주입.
+        없으면 빈 enum 으로 fallback (sync SpritesheetAnalyzer 와 동일 동작).
+        """
+        from ..analyzer.messages import (
+            BATCH_SPRITESHEET_PROMPT,
+            build_spritesheet_chat_messages,
+        )
+
+        anim_enum = ""
+        if self._registry is not None:
+            try:
+                anim_enum = ", ".join(self._registry.list_labels("animation"))
+            except Exception:  # noqa: BLE001 — registry 오류 silent fallback
+                anim_enum = ""
+
+        out: list[BatchChatRequest] = []
+        for row, detection in sheet_results:
+            if self._library_dir is not None:
+                abs_path = (self._library_dir / row.path).resolve()
+            else:
+                abs_path = Path(row.path)
+            try:
+                messages = build_spritesheet_chat_messages(
+                    abs_path=abs_path,
+                    detection=detection,
+                    prompt=BATCH_SPRITESHEET_PROMPT,
+                    anim_enum=anim_enum,
+                )
+            except (OSError, ValueError) as e:
+                log.warning(
+                    "batch spritesheet: cannot build composite asset_id=%d (%s): %s",
+                    row.id, abs_path, e,
+                )
+                continue
+            out.append(BatchChatRequest(
+                asset_id=row.id,
                 messages=messages,
                 force_json=True,
             ))

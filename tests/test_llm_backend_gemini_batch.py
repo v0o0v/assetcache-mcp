@@ -73,6 +73,24 @@ def test_batch_chat_invalid_modality_raises(gemini_backend):
         backend.batch_chat(modality="text_embed", requests=[])
 
 
+def test_batch_chat_spritesheet_uses_image_model(gemini_backend):
+    """M11.2 — chat_spritesheet modality 는 model_image 사용 (chat_image 와 동일)."""
+    backend, client = gemini_backend
+    fake_job = MagicMock()
+    fake_job.name = "batches/sheet-1"
+    client.batches.create.return_value = fake_job
+    backend.batch_chat(modality="chat_spritesheet", requests=[
+        BatchChatRequest(
+            asset_id=99,
+            messages=[ChatMessage(role="user", content="x", images_b64=["aGk="])],
+            force_json=True,
+        ),
+    ])
+    kw = client.batches.create.call_args.kwargs
+    assert kw["model"] == "gemini-3.1-flash-lite"
+    assert "chat_spritesheet" in kw["config"]["display_name"]
+
+
 def test_batch_chat_transient_error_raises_backend_error(gemini_backend):
     from assetcache.core.llm.base import BackendError
     backend, client = gemini_backend
