@@ -58,6 +58,8 @@ def _image_registry() -> _StubRegistry:
 def _make_poller(*, library_dir: Path):
     store = MagicMock()
     store.list_active_batch_jobs.return_value = []
+    # M11.3 — 신선한 DB 기본은 sprite_meta 미저장.  cache hit 분기 안 타게.
+    store.get_sprite_meta.return_value = None
     chain_registry = MagicMock()
     analysis_queue = MagicMock()
     cfg = MagicMock()

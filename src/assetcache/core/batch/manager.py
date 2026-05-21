@@ -7,6 +7,7 @@ Phase 3 task 3.3 — _build_chat_requests / _build_embed_texts 를
 
 from __future__ import annotations
 
+import collections
 import logging
 import threading
 import time
@@ -19,12 +20,36 @@ if TYPE_CHECKING:
     from ..analysis_queue import AnalysisQueue
     from ..labels import LabelRegistry
     from ..llm.registry import BackendRegistry
+    from ..sheet.detect import SheetDetection
     from ..store import Store
     from ...config import Config
 
 log = logging.getLogger(__name__)
 
 _MODALITIES = ("chat_image", "chat_spritesheet", "chat_audio", "text_embed")
+
+# M11.3 — sweep memory cache 최대 entries.  일반 라이브러리는 ≤ 1000장 시트.
+_DETECTION_CACHE_MAX_SIZE = 1024
+
+
+class _BoundedLRUCache(collections.OrderedDict):
+    """OrderedDict 변형 — max_size 초과 시 가장 오래된 entry 부터 evict.
+
+    ``classify_image_assets`` 가 ``cache[row.id] = detection`` 식으로 직접
+    작성하기 때문에 ``__setitem__`` 에서 eviction 처리.  re-assignment 시에는
+    가장 최근 사용으로 이동 (`move_to_end`).
+    """
+
+    def __init__(self, max_size: int = _DETECTION_CACHE_MAX_SIZE) -> None:
+        super().__init__()
+        self._max_size = max_size
+
+    def __setitem__(self, key, value) -> None:
+        if key in self:
+            self.move_to_end(key)
+        super().__setitem__(key, value)
+        while len(self) > self._max_size:
+            self.popitem(last=False)
 
 
 class BatchManager:
@@ -51,6 +76,11 @@ class BatchManager:
         self._library_dir = library_dir
         self._registry = registry
         self._locks = {m: threading.Lock() for m in _MODALITIES}
+        # M11.3 옵션 C — sweep 메모리 캐시.  chat_image classify 가 채운
+        # detection 을 chat_spritesheet classify 가 재사용.  instance lifetime.
+        self._detection_cache: "_BoundedLRUCache[int, SheetDetection | None]" = (
+            _BoundedLRUCache()
+        )
 
     def try_submit(self, modality: str) -> int | None:
         """Try to submit a batch job for `modality`. Return batch_jobs.id or None.
@@ -94,9 +124,11 @@ class BatchManager:
         if modality == "chat_image":
             # M11.2 — fetch 후 시트 식별 + kind promote.  시트 rows 는 batch 에 안 보내고
             # 다음 sweep 의 chat_spritesheet 가 픽업.  sprite rows 만 chat_image batch.
+            # M11.3 — sweep cache 전달 + sprite_meta 자동 enrich+save (옵션 B+C).
             from .sheet_classifier import classify_image_assets
             _sheets, rows = classify_image_assets(
                 rows, library_dir=self._library_dir, store=self._store,
+                cache=self._detection_cache,
             )
             if not rows:
                 # 전부 시트 — promote 만 수행, batch submit 0.
@@ -104,9 +136,11 @@ class BatchManager:
         elif modality == "chat_spritesheet":
             # spritesheet kind 는 이미 promote 된 상태.  builder 에 detection 을 전달하기
             # 위해 detect_sheet 다시 호출.  detect miss 면 skip.
+            # M11.3 — 같은 sweep cache 재사용 → chat_image 가 이미 채운 결과 hit.
             from .sheet_classifier import classify_image_assets
             sheet_results, _ = classify_image_assets(
                 rows, library_dir=self._library_dir, store=self._store,
+                cache=self._detection_cache,
             )
             if not sheet_results:
                 log.warning(
