@@ -53,9 +53,24 @@ def test_enqueue_asset_calls_try_batch_submit():
     )
     q.set_batch_manager(bm)
     q.enqueue_asset(42)
-    # 3 modality try_submit
+    # M11.2 — 4 modality try_submit (chat_spritesheet 신설)
     modalities = [c.args[0] for c in bm.try_submit.call_args_list]
-    assert set(modalities) == {"chat_image", "chat_audio", "text_embed"}
+    assert set(modalities) == {"chat_image", "chat_spritesheet", "chat_audio", "text_embed"}
+
+
+def test_try_batch_submit_dispatches_in_order():
+    """M11.2 — chat_spritesheet 이 chat_image 다음, chat_audio 앞에 위치."""
+    from assetcache.core.analysis_queue import AnalysisQueue
+    from unittest.mock import MagicMock
+    bm = MagicMock()
+    q = AnalysisQueue(
+        store=MagicMock(), sprite=MagicMock(),
+        spritesheet=MagicMock(), sound=MagicMock(),
+    )
+    q.set_batch_manager(bm)
+    q._try_batch_submit()
+    modalities = [c.args[0] for c in bm.try_submit.call_args_list]
+    assert modalities == ["chat_image", "chat_spritesheet", "chat_audio", "text_embed"]
 
 
 def test_enqueue_pack_calls_try_batch_submit():
@@ -70,7 +85,8 @@ def test_enqueue_pack_calls_try_batch_submit():
     )
     q.set_batch_manager(bm)
     q.enqueue_pack(99)
-    assert bm.try_submit.call_count == 3
+    # M11.2 — 4 modality (chat_spritesheet 신설)
+    assert bm.try_submit.call_count == 4
 
 
 def test_try_batch_submit_swallows_exceptions():
@@ -78,14 +94,15 @@ def test_try_batch_submit_swallows_exceptions():
     from assetcache.core.analysis_queue import AnalysisQueue
     from unittest.mock import MagicMock
     bm = MagicMock()
-    bm.try_submit.side_effect = [RuntimeError("oops"), 1, 2]
+    # M11.2 — 4 modality, 첫 번째만 예외 던지고 나머지 3개는 계속 시도
+    bm.try_submit.side_effect = [RuntimeError("oops"), 1, 2, 3]
     q = AnalysisQueue(
         store=MagicMock(), sprite=MagicMock(),
         spritesheet=MagicMock(), sound=MagicMock(),
     )
     q.set_batch_manager(bm)
     q.enqueue_asset(1)  # 예외 안 던짐
-    assert bm.try_submit.call_count == 3
+    assert bm.try_submit.call_count == 4
 
 
 def test_no_batch_manager_noop():

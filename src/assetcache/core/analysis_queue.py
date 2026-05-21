@@ -121,7 +121,7 @@ class AnalysisQueue(QObject):
         """
         if self._batch_manager is None:
             return
-        for modality in ("chat_image", "chat_audio", "text_embed"):
+        for modality in ("chat_image", "chat_spritesheet", "chat_audio", "text_embed"):
             try:
                 self._batch_manager.try_submit(modality)
             except Exception:
