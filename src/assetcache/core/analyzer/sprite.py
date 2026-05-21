@@ -209,11 +209,17 @@ class SpriteAnalyzer:
             "- category: one of [{category_enum}]\n"
             "- style: one of [{style_enum}]\n"
             "- mood: array (1..3) from [{mood_enum}]\n"
-            "- palette: array (1..2) from [{palette_enum}]\n"
+            "- palette: array (1..2) from [{palette_enum}] — "
+            "do NOT use hex codes like #FDD835\n"
             "- animation_hint: array (0..4) from [{animation_enum}]\n"
             "- subject: short noun phrase in {language}\n"
             "- description: one sentence (<= 30 words) in {language}\n"
             "- confidence: float 0..1\n\n"
+            "Guidance:\n"
+            "- Use 'inventory_item' for crown, sword, potion, gem, scroll, "
+            "key, or other carry-and-use objects — NOT 'character'.\n"
+            "- Use 'ui_icon' for HUD buttons, settings cog, heart counter, "
+            "or stand-alone interface graphics.\n"
             "If unsure of an enum, pick \"other\"."
         ).format(**slots)
 
