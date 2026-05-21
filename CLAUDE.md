@@ -35,7 +35,7 @@
 | **M11 — Multi-backend LLM Architecture + v0.2.0 publish** | ✅ 완료 ([PR #16](https://github.com/v0o0v/assetcache-mcp/pull/16) main 머지 + [PyPI v0.2.0](https://pypi.org/project/assetcache-mcp/0.2.0/) + [GitHub release v0.2.0](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.0)) | 6 backend (Ollama + Gemini + Claude + OpenAI + OpenRouter + HuggingFace) + modality 별 chain + 자동 fallback + `/settings` 페이지 backend 카드 (가격·셋업 안내 partial 12, ko/en) + chain ▲/▼ 우선순위 + i18n 27 msgid + DB `backend_image/audio/embed` 컬럼 + MCP `find_asset` 응답 `backend_used` + 검색 카드 🤖 배지. Gemini default = `gemini-3.1-flash-lite` (output -40% 비용 vs 2.5-flash). 신규 의존성 4 (`google-genai`/`anthropic`/`openai`/`huggingface_hub`). **+173 신규 테스트 + 13 옵트인 `llm_integration` 마커** (총 **1252**). 수동 검증 중 5 fix 누적. spec: [`docs/superpowers/specs/2026-05-20-m11-multi-backend-llm-design.md`](./docs/superpowers/specs/2026-05-20-m11-multi-backend-llm-design.md), plan: [`milestones/M11_plan.md`](./milestones/M11_plan.md), verification: [`milestones/M11_verification.md`](./milestones/M11_verification.md). MCP 20 도구 그대로 (응답 schema 만 확장). 알려진 한계: AnalysisQueue → mark_asset_backends write hook + Gemini Batch API 미적용 — v0.2.x candidate |
 | **M11.1 — Gemini Batch API + /analyzing dashboard + v0.2.1 publish** | ✅ 완료 ([PR #17](https://github.com/v0o0v/assetcache-mcp/pull/17) main `782a047` + [PyPI v0.2.1](https://pypi.org/project/assetcache-mcp/0.2.1/) + [GitHub release v0.2.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.1)) + Manual verification 시나리오 1~4 통과 | Gemini Batch API 50% 비용 + 24h SLO, image/audio/embed 모든 modality + hybrid 정책 (임계값 30, auto/forced_on/forced_off toggle) + `/analyzing` dashboard (5초 자동 새로고침) + Qt tray toggle + i18n 18 msgid + M11 한계(`mark_asset_backends`) 동시 해결. 신규 의존성 0. **+174 신규 테스트 + 3 옵트인 추가** (총 **1426** + 옵트인 16). spec/plan/verification: [spec](./docs/superpowers/specs/2026-05-20-gemini-batch-api-design.md) / [plan](./docs/superpowers/plans/2026-05-20-gemini-batch-api.md) / [verification](./milestones/M11_1_verification.md). **Trusted Publishing 4회째 자동 publish 31초 성공** ([run 26206683356](https://github.com/v0o0v/assetcache-mcp/actions/runs/26206683356)). 수동 검증 중 4 patch squash 포함. 알려진 한계 3건 (batch stub persist) → **PR #18 v0.2.x patches 에서 모두 해소** |
 | **v0.2.x patches — batch persist 보강 (PR #18)** | ✅ 완료 ([PR #18](https://github.com/v0o0v/assetcache-mcp/pull/18) main 머지 `12ebc42`, v0.2.2 publish 미정) | M11.1 의 batch stub persist 한계를 3 단계로 해결: patch A (`68a3257`) `core/analyzer/payload_parser.py` 신설 + BatchPoller `registry` 주입으로 batch payload → validated labels / patch B (`bdde0e0`) `core/analyzer/tech_meta.py` 신설 + BatchPoller `library_dir` 주입으로 sprite_meta/sound_meta 충전 / patch C (`65fb4aa`) `core/analyzer/spritesheet_meta.py` 신설 + BatchPoller 가 `detect_sheet` 호출로 Aseprite/TexturePacker frameTags hit 시 frame_w/h/count + animations_json + frameTags 라벨 + `kind='spritesheet'` promote. **+66 신규 테스트** (회귀 1424 → **1490 passed + 3 skipped + 56 deselected**, 회귀 0). 신규 의존성 0. MCP 20 도구 그대로. 알려진 한계: grid-only 시트 (frameTags 없음) 의 animation 라벨 비어 있음 → **M11.2 candidate** |
-| **M11.2 — Batch Spritesheet Modality (다음 세션 implement 대상)** | 📋 spec 작성됨, implement 대기 | `chat_spritesheet` modality 신설로 PR #18 한계 (grid-only 시트 animation 라벨) 해소. BatchManager 가 fetch 시 detect_sheet → 시트는 별 modality 로 분류 + composite preview 합성 + 시트 전용 prompt 로 Gemini batch 전송 → sync `SpritesheetAnalyzer` 와 동등한 라벨/메타 생성. 신규 의존성 0 예상, ~+30~50 신규 테스트. spec: [`docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md`](./docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md), plan starter: [`milestones/M11_2_plan.md`](./milestones/M11_2_plan.md). 작업 시간 추정: 2~3일 |
+| **M11.2 — Batch Spritesheet Modality** | ✅ 완료 (feat 브랜치 `feat/m11-2-batch-spritesheet-modality` 7 commit, PR 대기) | `chat_spritesheet` modality 신설로 PR #18 한계 (grid-only 시트 animation 라벨 부재) 해소. 신규 모듈 2 (`core/batch/sheet_classifier.py` + `BATCH_SPRITESHEET_PROMPT` + `build_spritesheet_chat_messages` in `core/analyzer/messages.py`). BatchManager `_do_submit("chat_image")` 가 fetch 후 `detect_sheet` 로 시트 식별 → kind promote (다음 sweep 의 chat_spritesheet 가 픽업). BatchPoller `_persist_spritesheet_payload` 가 sync `_call_gemma` 와 동등한 결과 (animation_hint + frameTags + sprite_meta enrich). UI 4행 modality + ko/en `Batch spritesheet` msgid. 신규 의존성 0. **+38 신규 테스트** (1490 → **1528 passed + 3 skipped + 56 deselected**, 회귀 0). spec: [`docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md`](./docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md), plan: [`docs/superpowers/plans/2026-05-21-m11-2-batch-spritesheet-modality.md`](./docs/superpowers/plans/2026-05-21-m11-2-batch-spritesheet-modality.md), verification: [`milestones/M11_2_verification.md`](./milestones/M11_2_verification.md). 7 commits: `f953417` (phase1 modality split) + `78ee90b` (phase2 classifier) + `cd9e063` (phase3 prompt+builder) + `8a1f006` (phase4 manager) + `2c3fdb1` (phase5 poller) + `3b6343c` (phase6 UI/i18n) + (phase7 docs+옵트인) — PR 단계에서 squash 예정 |
 
 각 마일스톤의 상세 계획·체크리스트·검증 결과는 `milestones/M{N}_plan.md`, `M{N}_todo.md`, `M{N}_verification.md`.
 
@@ -185,22 +185,33 @@ MCP stdio 서버 모드:
 python -m assetcache --mcp
 ```
 
-## 8. 다음 작업 (PR #18 머지 완료 — 다음 세션 M11.2 implement)
+## 8. 다음 작업 (M11.2 implement 완료 — 다음 세션 PR 머지 + v0.2.2 publish 결정)
 
-v1 (M0~M8) + M10~M11.1 + v0.1.1~v0.2.1 PyPI publish 완료. **PR #18 v0.2.x patches main 머지 완료** ([commit `12ebc42`](https://github.com/v0o0v/assetcache-mcp/commit/12ebc42)) — M11.1 의 batch stub persist 한계 3건 해소. **M11.2 spec 작성됨** ([batch-spritesheet-modality](docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md)) — grid-only 시트 animation 라벨 해소가 다음 세션 implement 대상.
+v1 (M0~M8) + M10~M11.1 + v0.1.1~v0.2.1 PyPI publish 완료. PR #18 v0.2.x patches main 머지. **M11.2 implement 완료** — `feat/m11-2-batch-spritesheet-modality` 브랜치 7 commit (Phase 1~7), 회귀 1490 → **1528 passed + 3 skipped + 56 deselected** (+38 신규, 회귀 0). 다음 세션: PR 생성 → 머지 → v0.2.2 tag 푸시 (Trusted Publishing 5회째) 또는 v0.2.2 publish 보류 후 M12 진입 사용자 결정.
 
 ### 8.1 현재 상태
 
-- **현재 브랜치 = `main`** (PR #18 squash merge tag `12ebc42`)
-- 회귀 **1490 passed + 3 skipped + 56 deselected** (PR #18 +66 신규, 회귀 0)
-- PyPI Latest: [v0.2.1](https://pypi.org/project/assetcache-mcp/0.2.1/) (PR #18 변경은 아직 publish 안 함 — v0.2.2 publish 는 M11.2 와 묶을지 별도일지 사용자 결정)
+- **현재 브랜치 = `feat/m11-2-batch-spritesheet-modality`** (M11.2 implement 7 commit, main `12ebc42` 기준 +7)
+- 회귀 **1528 passed + 3 skipped + 56 deselected** (M11.2 +38 신규, 회귀 0)
+- PyPI Latest: [v0.2.1](https://pypi.org/project/assetcache-mcp/0.2.1/) (M11.2 변경은 아직 publish 안 함 — v0.2.2 publish 사용자 결정)
 - GitHub Latest release: [v0.2.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.1)
 - **Trusted Publishing (OIDC)** 안정 — `git tag vX.Y.Z; git push origin vX.Y.Z` 한 줄로 자동 (패턴 4회 검증, 평균 30초)
 - GitHub Actions workflow: `actions/checkout@v6` + `actions/setup-python@v6` (Node.js 24 호환)
-- MCP **20 도구** (PR #18 신규 0)
+- MCP **20 도구** (M11.2 신규 0)
 - 사용자 데이터: `%APPDATA%\AssetCacheMCP\`
 
-### 8.2 다음 세션 작업 — M11.2 implement (Batch Spritesheet Modality)
+### 8.2 다음 세션 작업 — PR 생성 + 머지 + v0.2.2 publish 결정
+
+1. 브랜치 push:
+   ```powershell
+   git push -u origin feat/m11-2-batch-spritesheet-modality
+   ```
+2. PR 생성 (`gh pr create`) — 한글 본문. 핵심 변경: chat_spritesheet modality 신설로 PR #18 한계 (grid-only 시트 animation 라벨) 해소. +38 신규, 회귀 0.
+3. 머지 (squash) — main 갱신.
+4. (선택) v0.2.2 publish: `git tag v0.2.2 && git push origin v0.2.2` → Trusted Publishing 자동.
+5. 또는 M12/M11.3 등 다음 마일스톤 진입 사용자 결정.
+
+### 8.2 (구) M11.2 implement — 완료됨 (참고)
 
 **목표**: `chat_spritesheet` modality 신설로 PR #18 한계 (grid-only 시트가 animation 라벨 비어 있음) 해소.
 
@@ -265,7 +276,7 @@ v1 (M0~M8) + M10~M11.1 + v0.1.1~v0.2.1 PyPI publish 완료. **PR #18 v0.2.x patc
 | **M11** | Multi-backend LLM Architecture | ✅ v0.2.0 ([PR #16](https://github.com/v0o0v/assetcache-mcp/pull/16) `f68ef88`) |
 | **M11.1** | Gemini Batch API + /analyzing dashboard | ✅ v0.2.1 ([PR #17](https://github.com/v0o0v/assetcache-mcp/pull/17) `782a047`) |
 | **v0.2.x patches** | batch persist 보강 (label/meta/spritesheet) | ✅ ([PR #18](https://github.com/v0o0v/assetcache-mcp/pull/18) `12ebc42`, 회귀 1490) |
-| **M11.2** | **Batch Spritesheet Modality** (`chat_spritesheet` 신설) | 📋 spec 작성됨, **다음 세션 implement** |
+| **M11.2** | **Batch Spritesheet Modality** (`chat_spritesheet` 신설) | ✅ feat 브랜치, PR 대기 (+38 신규, 회귀 1528) |
 | M12 | C4 측정/학습/벤치마크 (6 backend 정확도) | 📋 미정 (M11 의존) |
 | M13 | Mac/Linux 검증 | 📋 미정 (M11 의존) |
 | M14 | MCP 원격 통신 (HTTP/SSE + 인증) | 📋 미정 |

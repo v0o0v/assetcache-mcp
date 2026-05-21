@@ -67,3 +67,46 @@ def test_batch_get_unknown_returns_error(gemini_real):
     from assetcache.core.llm.base import BackendError
     with pytest.raises(BackendError):
         gemini_real.batch_get("batches/does-not-exist-9999-fake")
+
+
+def test_batch_chat_spritesheet_submit_and_cancel(gemini_real):
+    """M11.2 — chat_spritesheet modality 실 Gemini batch 제출 + 즉시 cancel.
+
+    composite PNG (8 frame stripe) 를 base64 인코딩해 inlined request 로 전송.
+    Gemini 가 chat_spritesheet 도 model_image 로 처리하는지 확인.
+    """
+    import base64
+    import io
+
+    from PIL import Image
+
+    from assetcache.core.batch.types import BatchChatRequest
+    from assetcache.core.llm.base import ChatMessage
+
+    # 256x32 composite strip
+    img = Image.new("RGBA", (256, 32), (50, 50, 200, 255))
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+
+    job_name = gemini_real.batch_chat(
+        modality="chat_spritesheet",
+        requests=[BatchChatRequest(
+            asset_id=1,
+            messages=[
+                ChatMessage(
+                    role="system",
+                    content="Respond ONLY with valid JSON: {\"animation_hint\": [\"walk\"]}",
+                ),
+                ChatMessage(
+                    role="user",
+                    content="Identify the animation in this strip.",
+                    images_b64=[b64],
+                ),
+            ],
+            force_json=True,
+        )],
+    )
+    assert job_name.startswith("batches/")
+    # 즉시 cancel — 실제 분석 비용 0
+    gemini_real.batch_cancel(job_name)
