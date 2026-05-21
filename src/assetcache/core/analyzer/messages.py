@@ -45,6 +45,24 @@ BATCH_AUDIO_PROMPT = (
     "description (one sentence), confidence (float 0..1)."
 )
 
+# M11.2 — Spritesheet batch 전용 prompt.  sync SpritesheetAnalyzer._call_gemma 의
+# system prompt 와 동일한 schema — animation_hint enum 은 호출 시점에 builder
+# 가 동적 주입한다.  ``{anim_enum}`` placeholder 는 build_spritesheet_chat_messages
+# 가 ``.format(anim_enum=...)`` 로 치환.
+BATCH_SPRITESHEET_PROMPT = (
+    "You are a game animation labeler. Respond ONLY with valid JSON.\n\n"
+    "Input is a horizontal strip of sprite frames.\n"
+    "Schema:\n"
+    "- animation_hint: array (1..4) from [{anim_enum}]\n"
+    "- description: one sentence\n"
+    "- subject: short noun phrase\n"
+    "- category: 'character'\n"
+    "- style: 'pixel_art'\n"
+    "- mood: []\n"
+    "- palette: []\n"
+    "- confidence: float 0..1\n"
+)
+
 
 def build_image_chat_messages(*, abs_path: Path, prompt: str) -> list[ChatMessage]:
     """이미지 1장 원본 바이트를 base64 인코딩해 ChatMessage 1개 반환.
@@ -69,4 +87,45 @@ def build_audio_chat_messages(*, abs_path: Path, prompt: str) -> list[ChatMessag
     mime = _AUDIO_MIME_BY_SUFFIX.get(abs_path.suffix.lower(), "application/octet-stream")
     return [
         ChatMessage(role="user", content=prompt, audio_b64=[(audio_b64, mime)]),
+    ]
+
+
+def build_spritesheet_chat_messages(
+    *,
+    abs_path: Path,
+    detection,
+    prompt: str,
+    anim_enum: str,
+    max_long_edge: int = 768,
+) -> list[ChatMessage]:
+    """시트 자산을 batch 전송하기 위한 composite strip + 시트 전용 prompt.
+
+    detect_sheet 결과의 frames 를 ``make_preview_composite`` 로 8칸 가로 strip
+    으로 합성한 뒤 PNG base64 로 인코딩.  system 메시지에 schema (enum 동적
+    주입) + user 메시지에 합성 이미지 1장.  sync SpritesheetAnalyzer 의
+    ``_call_gemma`` 와 동일 schema.
+    """
+    import io
+
+    from PIL import Image as _PILImage
+
+    from ..sheet.preview import make_preview_composite
+
+    with _PILImage.open(abs_path) as src:
+        src.load()
+        composite = make_preview_composite(
+            src, list(detection.frames), max_size=max_long_edge,
+        )
+    buf = io.BytesIO()
+    composite.save(buf, format="PNG")
+    img_b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+
+    system_content = prompt.format(anim_enum=anim_enum)
+    return [
+        ChatMessage(role="system", content=system_content),
+        ChatMessage(
+            role="user",
+            content="Identify the animation in this strip.",
+            images_b64=[img_b64],
+        ),
     ]
