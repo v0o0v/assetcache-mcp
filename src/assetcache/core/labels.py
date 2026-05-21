@@ -127,6 +127,7 @@ SEED_LABELS: dict[str, list[tuple[str, str]]] = {
         ("cool",         "Dominantly blues, greens, purples."),
         ("neutral",      "Balanced or grayscale-leaning palette."),
         ("monochrome",   "Single hue plus black/white variations."),
+        ("high_contrast", "Strong dark-to-light separation, punchy black/white anchor."),
         ("vibrant",      "Highly saturated, energetic colors."),
         ("saturated",    "Rich color intensity throughout."),
         ("muted",        "Subdued, low-saturation palette."),
