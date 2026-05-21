@@ -99,7 +99,47 @@ Expected: 17 case 그대로 (M11.3 은 외부 API 호출 변경 0).
 - BatchManager instance memory cache 가 multi-process 환경에서 공유 X — tray app 은 single-process 라 영향 없음.  M14 (원격 통신) 진입 시 검토.
 - Aseprite 비균일 hash-mode 시트의 frames 좌표 (각 frame x,y,w,h) 는 sprite_meta 만으론 복원 불가.  BatchPoller persist 단계는 라벨 합산만 필요해 영향 X — composite builder (BatchManager classify) 는 detection 객체 직접 사용해 cache hit 가능.
 
-## 4. 검증 완료 후
+## 4. LIVE 검증 결과 (2026-05-21)
+
+`drive_batch.py` (BatchManager + BatchPoller 직접 입력) 로 grid-only 6 + Aseprite 6 + sprite 1 = 13 자산 처리.
+
+### 4.1 detect_sheet 호출 횟수
+
+| Path | 호출 횟수 | 비고 |
+|---|---:|---|
+| `classify_image_assets` (chat_image sweep) | 13 | 1 sweep 1 row, cache populate |
+| `classify_image_assets` (chat_spritesheet sweep) | 0 | **옵션 C cache hit, 12 row 우회** ✓ |
+| `BatchPoller._try_enrich_with_sheet` | 1 | single_orb (sprite) 만, 12 sheet 은 **옵션 B cache hit** ✓ |
+| **총 14회** vs legacy **38회** | **24회 절약 (63% 감소)** |
+
+### 4.2 sprite_meta 영속 (옵션 B)
+
+- 12 sheet 모두 `frame_w/h/count` 채워짐 (chat_image classify 단계의 `save_sprite_meta=True`).
+- Aseprite 시트 6개 (id 1~6) — `animations_json` 정확히 frameTags 보존 (idle/walk, anim).
+- grid-only 6개 (id 7~12) — frame info enrich 됨, `animations_json=None` (Gemma animation_hint 부재 — M11.2 알려진 한계).
+- single_orb (id 13) — sprite kind 유지, sprite_meta=None.
+
+### 4.3 batch_job 결과
+
+| job_id | modality | state | count | success | failure |
+|---:|---|---|---:|---:|---:|
+| 2 | chat_image | succeeded | 1 | 1 | 0 |
+| 3 | chat_spritesheet | succeeded | 12 | 10 | 2 |
+
+* 실패 2건 (id 7, 9): Gemini 응답 schema list 형식 → `payload_parser.validate_image_payload` 의 `dict(payload)` ValueError — **M11.3 와 무관 pre-existing bug** (별 patch 후보).
+
+### 4.4 시나리오 매핑
+
+| # | 결과 |
+|---:|---|
+| 2.1 grid-only | ✅ kind=spritesheet, frame info enrich, animation 라벨 0 (Gemma 한계 그대로) |
+| 2.2 Aseprite | ✅ animations_json + animation 라벨 frameTags 보존 |
+| 2.3 sprite-only | ✅ kind=sprite, sprite_meta=None, state=ok |
+| 2.4 chains 누락 호환성 | ✅ `chainsInit` JSON 에 `chat_spritesheet: ["gemini"]` 자동 채움 — 단 `modalityOrder` 의 UI 위젯 표시는 M11.2 의 별 gap |
+| 2.5 /analyzing 4행 modality | ✅ `Batch image / 배치 시트 / Batch audio / Batch embed` 4행 + 부분 ko 번역 |
+| 2.6 detection cache | ✅ 24회 → 14회 detect_sheet (63% 감소) — 위 §4.1 |
+
+## 5. 검증 완료 후
 
 1. M11.2 + M11.3 모두 통과 → tag v0.2.2:
    ```powershell
@@ -108,3 +148,11 @@ Expected: 17 case 그대로 (M11.3 은 외부 API 호출 변경 0).
    ```
 2. Trusted Publishing OIDC workflow 자동 트리거 — 5회째 자동 publish (평균 30초 예상).
 3. [PyPI v0.2.2 publish 확인](https://pypi.org/project/assetcache-mcp/0.2.2/) + GitHub release 자동 생성 확인.
+
+## 6. 별 patch 후보 (M11.3 PR 미포함)
+
+| 항목 | 우선순위 | 발견 |
+|---|---|---|
+| `/settings` UI `modalityOrder` 에 `chat_spritesheet` 누락 | 중 | M11.2 의 UI rendering 누락 |
+| `payload_parser.validate_image_payload` 의 list payload ValueError | 중 | Gemini 응답 schema 변동 — graceful handling 필요 |
+| Gemini `batch_embed` API transient error | 낮 | 인프라 의존, retry/fallback 정책 검토 |
