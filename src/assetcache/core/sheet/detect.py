@@ -51,11 +51,15 @@ def detect_sheet(image_path: Path) -> "SheetDetection | None":
         return None
 
     # GridLayout 을 FrameSpec 시퀀스로 풀어쓴다 (균일 간격 가정)
+    # M11.3 patch D-2 — FrameSpec.w/h 는 slot 크기 (stride) 사용.  grid_detect
+    # 의 ``layout.frame_w`` 는 alpha-tight 경계라 content 가 작은 시트에서
+    # 실제 frame slot 보다 작게 (예: 32 slot 에 17 content) 보고됨.  사용자의
+    # sprite_meta.frame_w 는 애니메이션 재생 슬롯 크기를 기대하므로 stride 가
+    # 일반적으로 더 정확.
     frames: list[FrameSpec] = []
     with _PILImage.open(image_path) as img:
         total_w, total_h = img.size
     # grid_detect 가 rows ≥ 1, cols ≥ 1 보장 (단일 프레임은 None 반환).
-    # 방어적 if 는 lint 안심용. v1.
     stride_x = total_w // layout.cols if layout.cols > 0 else layout.frame_w
     stride_y = total_h // layout.rows if layout.rows > 0 else layout.frame_h
     idx = 0
@@ -63,7 +67,7 @@ def detect_sheet(image_path: Path) -> "SheetDetection | None":
         for c in range(layout.cols):
             frames.append(FrameSpec(
                 x=c * stride_x, y=r * stride_y,
-                w=layout.frame_w, h=layout.frame_h,
+                w=stride_x, h=stride_y,
                 duration_ms=0, name=str(idx),
             ))
             idx += 1

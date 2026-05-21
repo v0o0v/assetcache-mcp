@@ -888,6 +888,10 @@ msgid "Image chain"
 msgstr "Image chain"
 
 #: src/assetcache/web/templates/settings.html
+msgid "Spritesheet chain"
+msgstr "Spritesheet chain"
+
+#: src/assetcache/web/templates/settings.html
 msgid "Audio chain"
 msgstr "Audio chain"
 

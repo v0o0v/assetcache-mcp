@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from ..sheet.types import AnimationSpec
 from ..store import LabelScore, SpriteMeta
 
 if TYPE_CHECKING:
@@ -62,6 +63,34 @@ def enrich_sprite_meta_with_sheet(
         animation_tags=animation_tags,
         animations_json=animations_json or None,
     )
+
+
+def animations_json_to_specs(
+    animations_json: dict | None,
+) -> list[AnimationSpec]:
+    """``sprite_meta.animations_json`` (dict) → :class:`AnimationSpec` 리스트.
+
+    M11.3 옵션 B — DB 에 저장된 enrich 된 ``sprite_meta`` 의 ``animations_json``
+    필드는 ``enrich_sprite_meta_with_sheet`` 가 만든 ``{name: {start_frame,
+    end_frame, fps_hint, source}}`` 형태.  이를 다시 :class:`AnimationSpec`
+    리스트로 복원해 ``detection_to_animation_labels`` 같은 라벨 합산 helper
+    에 그대로 넣을 수 있게 한다.
+
+    누락 필드는 안전 기본값 (start_frame=end_frame=0, fps_hint=12,
+    source='cached').  ``animations_json`` 이 ``None`` 이면 빈 리스트 반환.
+    """
+    if not animations_json:
+        return []
+    out: list[AnimationSpec] = []
+    for name, info in animations_json.items():
+        out.append(AnimationSpec(
+            name=name,
+            start_frame=int(info.get("start_frame", 0)),
+            end_frame=int(info.get("end_frame", 0)),
+            fps_hint=int(info.get("fps_hint", 12)),
+            source=str(info.get("source", "cached")),
+        ))
+    return out
 
 
 def detection_to_animation_labels(

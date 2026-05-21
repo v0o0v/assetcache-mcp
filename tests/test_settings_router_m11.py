@@ -245,13 +245,40 @@ def test_settings_page_includes_backends_section(client):
 
 
 def test_settings_page_includes_chains_section(client):
-    """/settings 페이지가 3 modality 이름 모두 렌더링."""
+    """/settings 페이지가 4 modality (M11.2 chat_spritesheet 포함) 모두 렌더링."""
     r = client.get("/settings")
     assert r.status_code == 200
     body = r.text
     assert "chat_image" in body
+    assert "chat_spritesheet" in body
     assert "chat_audio" in body
     assert "text_embed" in body
+
+
+def test_settings_page_modality_order_includes_chat_spritesheet(client):
+    """M11.3 patch A — modalityOrder JS 배열에 chat_spritesheet 가 명시적으로 포함."""
+    r = client.get("/settings")
+    assert r.status_code == 200
+    body = r.text
+    # JS 배열 리터럴 확인 — chat_spritesheet 가 modalityOrder 안에
+    assert "modalityOrder:" in body
+    # 배열 시작부터 chat_spritesheet 까지 같은 줄/구간에 등장하는지 거친 검사
+    idx_order = body.index("modalityOrder:")
+    idx_end = body.index("modalityLabels:", idx_order)
+    order_slice = body[idx_order:idx_end]
+    assert "chat_spritesheet" in order_slice, "modalityOrder 에 chat_spritesheet 누락"
+
+
+def test_settings_page_chain_add_initializer_includes_chat_spritesheet(client):
+    """M11.3 patch A — chainAdd 초기화 dict 에도 chat_spritesheet 키 포함."""
+    r = client.get("/settings")
+    assert r.status_code == 200
+    body = r.text
+    assert "chainAdd:" in body
+    idx = body.index("chainAdd:")
+    end = body.index("}", idx)
+    snippet = body[idx:end]
+    assert "chat_spritesheet" in snippet, "chainAdd 에 chat_spritesheet 누락"
 
 
 def test_settings_page_shows_current_backend_state(client, web_deps):

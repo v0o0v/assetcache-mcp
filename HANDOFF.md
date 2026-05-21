@@ -1,19 +1,23 @@
 # HANDOFF — Cowork → Claude Code (또는 다음 세션)
 
-**마지막 인계 시각**: 2026-05-21 (M11.2 implement 완료 — `feat/m11-2-batch-spritesheet-modality` 브랜치 7 commit, PR 대기)
-**마지막 완료 작업**: **M11.2 — Batch Spritesheet Modality implement** — `chat_spritesheet` modality 신설로 PR #18 한계 (grid-only 시트 animation 라벨 부재) 해소. 7 Phase TDD 사이클 (modality 분리 → sheet_classifier → composite prompt → BatchManager classify-on-fetch → BatchPoller _persist_spritesheet_payload → UI/i18n → docs/옵트인). 회귀 1490 → **1528 passed + 3 skipped + 56 deselected** (+38 신규, 회귀 0). 신규 의존성 0.
-**M11.2 7 commits** (squash 예정):
-- `f953417` — phase 1: modality split (`chat_image=sprite`, `chat_spritesheet=spritesheet`)
-- `78ee90b` — phase 2: `core/batch/sheet_classifier.py` (detect_sheet + kind promote)
-- `cd9e063` — phase 3: `BATCH_SPRITESHEET_PROMPT` + `build_spritesheet_chat_messages` (composite strip)
-- `8a1f006` — phase 4: BatchManager classify-on-fetch + AnalysisQueue 4-modality + Gemini batch_chat
-- `2c3fdb1` — phase 5: BatchPoller `_persist_spritesheet_payload` (sync 와 동등)
-- `3b6343c` — phase 6: UI 4행 modality + ko/en `Batch spritesheet` msgid
-- (phase 7) — verification + 옵트인 + docs (이 commit)
+**마지막 인계 시각**: 2026-05-21 (M11.2 [PR #19](https://github.com/v0o0v/assetcache-mcp/pull/19) main 머지 + M11.3 detection cache spec 작성)
+**마지막 완료 작업**: **M11.2 PR #19 main squash 머지** (`d34f1dd`) — chat_spritesheet modality 신설로 PR #18 한계 (grid-only 시트 animation 라벨 부재) 해소. 회귀 1490 → **1528 passed + 3 skipped + 56 deselected** (+38 신규, 회귀 0). 신규 의존성 0. **M11.3 spec 작성 완료** ([`docs/superpowers/specs/2026-05-21-m11-3-detection-cache.md`](./docs/superpowers/specs/2026-05-21-m11-3-detection-cache.md)) + `milestones/M11_3_plan.md` starter — `detect_sheet` 시트당 3중 호출을 2-층 cache (옵션 B + C) 로 1회 압축.
 
-**현재 브랜치**: `feat/m11-2-batch-spritesheet-modality` (main `12ebc42` 기준 +7 commit)
+**M11.2 PR #19 산출물** (squash 후 `d34f1dd`):
+- `core/batch/sheet_classifier.py` — detect_sheet + kind promote
+- `core/analyzer/messages.py` — `BATCH_SPRITESHEET_PROMPT` + `build_spritesheet_chat_messages` (composite strip)
+- `core/batch/manager.py` — classify-on-fetch + chat_spritesheet 분기
+- `core/batch/poller.py` — `_persist_spritesheet_payload` (sync 와 동등)
+- UI 4행 modality + ko/en `Batch spritesheet` msgid
 
-**다음 세션 작업**: PR 생성 → 머지 → v0.2.2 publish (Trusted Publishing 5회째) 결정. spec/plan/verification 은 §5 참조.
+**M11.3 핵심 설계** (다음 세션 implement 대상):
+- 옵션 B: `sprite_meta.animations_json` 활용 DB cross-sweep cache — BatchPoller 가 detect 우회
+- 옵션 C: `BatchManager._detection_cache: OrderedDict` LRU (max 1024) — same-sweep chat_image ↔ chat_spritesheet 재사용
+- 마이그 0, 신규 의존성 0, ~+15 신규 테스트, 작업 시간 ~0.7일
+
+**현재 브랜치**: `feat/m11-3-detection-cache` (main `d34f1dd` 기준 spec/plan starter 만 누적, implement 미시작)
+
+**다음 세션 작업**: M11.3 implement → main 머지 → 수동 검증 (M11.2 + M11.3 묶어서) → tag v0.2.2 → Trusted Publishing 자동 publish. 자세한 시작 절차는 CLAUDE.md §8.2 참조.
 
 이 문서는 작업이 중단될 때 다음 세션이 "현재 어디까지 와 있는가"를 한 번에 파악하도록 작성된 스냅샷이다.
 

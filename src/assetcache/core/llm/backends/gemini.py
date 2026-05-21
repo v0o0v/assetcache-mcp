@@ -219,18 +219,23 @@ class GeminiBackend:
         """배치 임베딩 작업 제출. Gemini job name 'batches/xxx' 반환.
 
         `client.batches.create_embeddings` 사용 — `chat` batch 와 다른 SDK 엔드포인트.
-        각 text → `inlined_requests` 의 한 항목 ({"content": {"parts": [{"text": t}], "role": "user"}}).
+
+        M11.3 patch C — google-genai SDK 의 ``EmbeddingsBatchJobSource.inlined_requests``
+        는 단일 dict 형태 (옵션 ``config`` + ``contents: List[Content]``) 로 받는다.
+        예전 list-of-dict 형식은 pydantic ValidationError 로 거부됨.
         """
         if not texts:
             raise ValueError("batch_embed requires non-empty texts")
-        inlined = [
-            {"content": {"parts": [{"text": t}], "role": "user"}}
-            for t in texts
-        ]
+        inlined_requests = {
+            "contents": [
+                {"parts": [{"text": t}], "role": "user"}
+                for t in texts
+            ],
+        }
         try:
             job = self._client.batches.create_embeddings(
                 model=self.model_embed,
-                src={"inlined_requests": inlined},
+                src={"inlined_requests": inlined_requests},
                 config={"display_name": f"assetcache-text_embed-{int(time.time())}"},
             )
         except Exception as e:

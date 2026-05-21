@@ -123,7 +123,28 @@ def test_batch_embed_returns_job_name(gemini_backend):
     kw = client.batches.create_embeddings.call_args.kwargs
     assert kw["model"] == "gemini-embedding-001"
     assert "inlined_requests" in kw["src"]
-    assert len(kw["src"]["inlined_requests"]) == 2
+
+
+def test_batch_embed_inlined_requests_uses_dict_with_contents_key(gemini_backend):
+    """M11.3 patch C — SDK 가 `inlined_requests` 를 dict-with-contents 로 요구.
+
+    `EmbeddingsBatchJobSource.inlined_requests` 는 단일 dict (옵션 config +
+    contents: List[Content]) 형식 — list 로 보내면 pydantic ValidationError 로
+    transient=True 처리되어 무한 retry.  실 SDK 호출 shape 을 단위 테스트가
+    잡아둬야 회귀 방지.
+    """
+    backend, client = gemini_backend
+    fake_job = MagicMock()
+    fake_job.name = "batches/embed-2"
+    client.batches.create_embeddings.return_value = fake_job
+    backend.batch_embed(texts=["a", "b", "c"])
+    kw = client.batches.create_embeddings.call_args.kwargs
+    inlined = kw["src"]["inlined_requests"]
+    assert isinstance(inlined, dict), f"inlined_requests must be dict, got {type(inlined).__name__}"
+    assert "contents" in inlined
+    assert len(inlined["contents"]) == 3
+    assert inlined["contents"][0]["parts"][0]["text"] == "a"
+    assert inlined["contents"][2]["parts"][0]["text"] == "c"
 
 
 def test_batch_embed_empty_list_raises(gemini_backend):

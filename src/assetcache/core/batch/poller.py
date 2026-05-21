@@ -25,12 +25,13 @@ from ..analyzer.payload_parser import (
     validate_image_payload,
 )
 from ..analyzer.spritesheet_meta import (
+    animations_json_to_specs,
     detection_to_animation_labels,
     enrich_sprite_meta_with_sheet,
 )
 from ..analyzer.tech_meta import compute_sound_meta, compute_sprite_meta
 from ..searchable import build_searchable
-from ..sheet.detect import detect_sheet
+from ..sheet.detect import SheetDetection, detect_sheet
 
 if TYPE_CHECKING:
     from ..analysis_queue import AnalysisQueue
@@ -377,9 +378,22 @@ class BatchPoller(threading.Thread):
 
         시트가 아니거나 검출 실패 시 None — 일반 sprite 로 진행한다.
         library_dir 가 없거나 검출에서 예외가 나면 silently skip.
+
+        M11.3 옵션 B — ``store.get_sprite_meta`` 가 이미 enrich 된 (animations_json
+        또는 frame_w 가 채워진) ``SpriteMeta`` 를 반환하면 ``detect_sheet`` 우회.
+        ``animations_json`` 으로 :class:`AnimationSpec` 재구성 후 동일 라벨 반환.
         """
         if self._library_dir is None:
             return None
+        existing = self._store.get_sprite_meta(asset.id)
+        if existing is not None and (
+            existing.animations_json or existing.frame_w is not None
+        ):
+            anim_specs = animations_json_to_specs(existing.animations_json)
+            cached_detection = SheetDetection(
+                frames=[], tags=anim_specs, source="cached",
+            )
+            return existing, detection_to_animation_labels(cached_detection)
         try:
             abs_path = (self._library_dir / asset.path).resolve()
             detection = detect_sheet(abs_path)
