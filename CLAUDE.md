@@ -36,7 +36,8 @@
 | **M11.1 — Gemini Batch API + /analyzing dashboard + v0.2.1 publish** | ✅ 완료 ([PR #17](https://github.com/v0o0v/assetcache-mcp/pull/17) main `782a047` + [PyPI v0.2.1](https://pypi.org/project/assetcache-mcp/0.2.1/) + [GitHub release v0.2.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.1)) + Manual verification 시나리오 1~4 통과 | Gemini Batch API 50% 비용 + 24h SLO, image/audio/embed 모든 modality + hybrid 정책 (임계값 30, auto/forced_on/forced_off toggle) + `/analyzing` dashboard (5초 자동 새로고침) + Qt tray toggle + i18n 18 msgid + M11 한계(`mark_asset_backends`) 동시 해결. 신규 의존성 0. **+174 신규 테스트 + 3 옵트인 추가** (총 **1426** + 옵트인 16). spec/plan/verification: [spec](./docs/superpowers/specs/2026-05-20-gemini-batch-api-design.md) / [plan](./docs/superpowers/plans/2026-05-20-gemini-batch-api.md) / [verification](./milestones/M11_1_verification.md). **Trusted Publishing 4회째 자동 publish 31초 성공** ([run 26206683356](https://github.com/v0o0v/assetcache-mcp/actions/runs/26206683356)). 수동 검증 중 4 patch squash 포함. 알려진 한계 3건 (batch stub persist) → **PR #18 v0.2.x patches 에서 모두 해소** |
 | **v0.2.x patches — batch persist 보강 (PR #18)** | ✅ 완료 ([PR #18](https://github.com/v0o0v/assetcache-mcp/pull/18) main 머지 `12ebc42`, v0.2.2 publish 미정) | M11.1 의 batch stub persist 한계를 3 단계로 해결: patch A (`68a3257`) `core/analyzer/payload_parser.py` 신설 + BatchPoller `registry` 주입으로 batch payload → validated labels / patch B (`bdde0e0`) `core/analyzer/tech_meta.py` 신설 + BatchPoller `library_dir` 주입으로 sprite_meta/sound_meta 충전 / patch C (`65fb4aa`) `core/analyzer/spritesheet_meta.py` 신설 + BatchPoller 가 `detect_sheet` 호출로 Aseprite/TexturePacker frameTags hit 시 frame_w/h/count + animations_json + frameTags 라벨 + `kind='spritesheet'` promote. **+66 신규 테스트** (회귀 1424 → **1490 passed + 3 skipped + 56 deselected**, 회귀 0). 신규 의존성 0. MCP 20 도구 그대로. 알려진 한계: grid-only 시트 (frameTags 없음) 의 animation 라벨 비어 있음 → **M11.2 candidate** |
 | **M11.2 — Batch Spritesheet Modality** | ✅ 완료 ([PR #19](https://github.com/v0o0v/assetcache-mcp/pull/19) main `d34f1dd` squash 머지, v0.2.2 publish 미정 — M11.3 와 묶어 진행) | `chat_spritesheet` modality 신설로 PR #18 한계 (grid-only 시트 animation 라벨 부재) 해소. 신규 모듈 2 (`core/batch/sheet_classifier.py` + `BATCH_SPRITESHEET_PROMPT` + `build_spritesheet_chat_messages` in `core/analyzer/messages.py`). BatchManager `_do_submit("chat_image")` 가 fetch 후 `detect_sheet` 로 시트 식별 → kind promote (다음 sweep 의 chat_spritesheet 가 픽업). BatchPoller `_persist_spritesheet_payload` 가 sync `_call_gemma` 와 동등한 결과 (animation_hint + frameTags + sprite_meta enrich). UI 4행 modality + ko/en `Batch spritesheet` msgid. 신규 의존성 0. **+38 신규 테스트** (1490 → **1528 passed + 3 skipped + 56 deselected**, 회귀 0). spec: [`docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md`](./docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md), plan: [`docs/superpowers/plans/2026-05-21-m11-2-batch-spritesheet-modality.md`](./docs/superpowers/plans/2026-05-21-m11-2-batch-spritesheet-modality.md), verification: [`milestones/M11_2_verification.md`](./milestones/M11_2_verification.md). 알려진 한계: `detect_sheet` 시트당 3중 호출 → **M11.3 detection cache 가 해소** |
-| **M11.3 — Detection Cache (다음 세션 implement 대상)** | 📋 spec 작성됨, implement 대기 (feat 브랜치 `feat/m11-3-detection-cache` 생성됨) | M11.2 의 `detect_sheet` 시트당 3중 호출 (chat_image classify / chat_spritesheet classify / BatchPoller persist) 을 2-층 캐시로 1회로 압축. **옵션 B + C 결합** — (B) `sprite_meta.animations_json` 활용 DB cross-sweep cache + (C) `BatchManager._detection_cache` LRU 메모리 dict same-sweep cache. grid-only 시트 100장 sweep 당 ~6초 절약 예상. 신규 의존성 0, 마이그 0, 작업 시간 ~0.7일, ~+15 신규 테스트. spec: [`docs/superpowers/specs/2026-05-21-m11-3-detection-cache.md`](./docs/superpowers/specs/2026-05-21-m11-3-detection-cache.md), plan starter: [`milestones/M11_3_plan.md`](./milestones/M11_3_plan.md) |
+| **M11.3 — Detection Cache + 부수 patch 4건** | ✅ 완료 ([PR #20](https://github.com/v0o0v/assetcache-mcp/pull/20) main `7ad0f3d` squash 머지, v0.2.2 publish 대기) | M11.2 의 `detect_sheet` 시트당 3중 호출을 2-층 캐시 (옵션 B `sprite_meta.animations_json` DB cross-sweep cache + 옵션 C `BatchManager._detection_cache` LRU 메모리 sweep cache) 로 압축.  LIVE 검증 v1 24회→14회 (37% 감소), v2 16회→8회 (50% 감소). 부수 patch 4건 동시 fix — **B** `payload_parser` list/None 안전 (`_coerce_to_dict` + list-with-dict-first silent unwrap), **A** `/settings` UI `chat_spritesheet` modalityOrder + chainAdd + i18n "Spritesheet chain"/"스프라이트시트 체인", **C** Gemini `batch_embed` SDK schema 형식 (list-of-dict → `{"contents":[...]}` 단일 dict, 실 API 200 OK 검증), **D-2** `detect_sheet` FrameSpec.w/h 가 `stride_x/y` (slot 크기) 사용. **+30 신규 테스트** (1528 → **1559 passed + 1 skipped + 57 deselected**, 0 회귀). 신규 의존성 0, 마이그 0, MCP 20 도구 그대로. spec: [`docs/superpowers/specs/2026-05-21-m11-3-detection-cache.md`](./docs/superpowers/specs/2026-05-21-m11-3-detection-cache.md), plan: [`milestones/M11_3_plan.md`](./milestones/M11_3_plan.md), verification: [`milestones/M11_3_verification.md`](./milestones/M11_3_verification.md). 알려진 한계 2건 (M11.4 candidate): grid_detect alpha-only edge 검출 (color-cycling effect 시트 누락) + Gemma 분류 정확도 (inventory item) |
+| **M11.4 — grid_detect 강화 + LLM 분류 정확도 (다음 세션 implement 대상)** | 📋 spec/plan 작성됨, implement 대기 (M11.3 LIVE 검증 v2 한계 해소) | (D-1) grid_detect 에 color-edge 시그널 합성 → color-cycling 시트 검출 + (LLM #3) LabelRegistry seed 확장 (`inventory_item`/`ui_icon`) + BATCH 프롬프트 enum 명시 + palette tone group (hex 거부). 작업 시간 ~2.5일, ~+20 신규 테스트, 신규 의존성 0. spec: [`docs/superpowers/specs/2026-05-21-m11-4-grid-detect-strengthen-llm-accuracy.md`](./docs/superpowers/specs/2026-05-21-m11-4-grid-detect-strengthen-llm-accuracy.md), plan starter: [`milestones/M11_4_plan.md`](./milestones/M11_4_plan.md) |
 
 각 마일스톤의 상세 계획·체크리스트·검증 결과는 `milestones/M{N}_plan.md`, `M{N}_todo.md`, `M{N}_verification.md`.
 
@@ -186,75 +187,51 @@ MCP stdio 서버 모드:
 python -m assetcache --mcp
 ```
 
-## 8. 다음 작업 (M11.2 PR #19 머지 완료 — 다음 세션 M11.3 implement)
+## 8. 다음 작업 (M11.3 PR #20 머지 완료 — 다음 세션 v0.2.2 publish 또는 M11.4 implement)
 
-v1 (M0~M8) + M10~M11.2 + v0.1.1~v0.2.1 PyPI publish 완료. **PR #19 M11.2 main 머지 완료** ([commit `d34f1dd`](https://github.com/v0o0v/assetcache-mcp/commit/d34f1dd)) — chat_spritesheet modality 신설로 grid-only 시트 animation 라벨 해소. **M11.3 spec 작성됨** ([detection-cache](docs/superpowers/specs/2026-05-21-m11-3-detection-cache.md)) — `detect_sheet` 시트당 3중 호출을 2-층 cache (옵션 B+C) 로 1회 압축. 다음 세션 implement.
+v1 (M0~M8) + M10~M11.3 + v0.1.1~v0.2.1 PyPI publish 완료. **PR #20 M11.3 main 머지 완료** ([commit `7ad0f3d`](https://github.com/v0o0v/assetcache-mcp/commit/7ad0f3d)) — Detection Cache (옵션 B+C) + 부수 patch 4건 (B/A/C/D-2). LIVE 검증 v1+v2 모두 통과. **v0.2.2 publish 대기**. **M11.4 spec 작성됨** ([grid-detect-strengthen](docs/superpowers/specs/2026-05-21-m11-4-grid-detect-strengthen-llm-accuracy.md)) — grid_detect color-edge + LLM 분류 정확도. 다음 세션 implement.
 
 ### 8.1 현재 상태
 
-- **현재 브랜치 = `feat/m11-3-detection-cache`** (M11.3 spec/plan starter 만 누적, implement 미시작)
-- 마지막 main commit: `d34f1dd` (PR #19 M11.2 squash merge)
-- 회귀 baseline **1528 passed + 3 skipped + 56 deselected**
-- PyPI Latest: [v0.2.1](https://pypi.org/project/assetcache-mcp/0.2.1/) (M11.2 publish 안 함 — M11.3 와 묶어서 v0.2.2 진행 예정 = 수동 검증 한 번에)
+- **현재 브랜치 = `main`** (M11.3 PR #20 머지 완료)
+- 마지막 main commit: `7ad0f3d` (PR #20 M11.3 squash merge)
+- 회귀 baseline **1559 passed + 1 skipped + 57 deselected**
+- PyPI Latest: [v0.2.1](https://pypi.org/project/assetcache-mcp/0.2.1/) (v0.2.2 publish 대기 — tag 만 push 하면 Trusted Publishing 자동)
 - GitHub Latest release: [v0.2.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.1)
 - **Trusted Publishing (OIDC)** 안정 — `git tag vX.Y.Z; git push origin vX.Y.Z` 한 줄로 자동 (패턴 4회 검증, 평균 30초)
 - GitHub Actions workflow: `actions/checkout@v6` + `actions/setup-python@v6` (Node.js 24 호환)
-- MCP **20 도구** (M11.2 신규 0)
+- MCP **20 도구** (M11.3 신규 0)
 - 사용자 데이터: `%APPDATA%\AssetCacheMCP\`
 
-### 8.2 다음 세션 작업 — M11.3 implement (Detection Cache, 옵션 B + C)
+### 8.2 다음 세션 작업 — 두 가지 옵션
 
-**목표**: M11.2 의 `detect_sheet` 시트당 3중 호출 (chat_image classify / chat_spritesheet classify / BatchPoller persist) 을 2-층 캐시로 1회로 압축. grid-only 시트 100장 sweep 당 ~6초 절약.
+#### 8.2.A — v0.2.2 publish (먼저 권장)
 
-**산출물 (예상)**:
-- `core/batch/sheet_classifier.py` — `classify_image_assets` 에 `cache` + `save_sprite_meta` 인자 추가 (시트 hit 시 자동 enrich+save)
-- `core/batch/manager.py` — `BatchManager._detection_cache: OrderedDict` LRU (max 1024) + classify 호출 시 전달
-- `core/batch/poller.py` — `_try_enrich_with_sheet` 가 `store.get_sprite_meta` 확인 → animations_json 있으면 detect 우회
-- ~15 신규 테스트, 신규 의존성 0, 마이그 0, 작업 시간 ~0.7일
+PR #20 의 검증이 LIVE v1+v2 모두 통과했으므로 v0.2.2 publish 진행:
 
-**진입 절차**:
+```powershell
+git tag v0.2.2
+```
+```powershell
+git push origin v0.2.2
+```
 
-1. 환경 복원:
-   ```powershell
-   & "$env:USERPROFILE\.venvs\gah\Scripts\Activate.ps1"
-   ```
-   ```powershell
-   cd D:\ClaudeCowork\game-asset-helper\game-asset-helper
-   ```
+→ Trusted Publishing OIDC workflow 자동 (5회째, 평균 30초). [PyPI v0.2.2](https://pypi.org/project/assetcache-mcp/0.2.2/) + GitHub release 자동 생성.
 
-2. 브랜치 확인:
-   ```powershell
-   git checkout feat/m11-3-detection-cache
-   ```
-   (이미 main `d34f1dd` 기준으로 생성됨, spec/plan 누적)
+#### 8.2.B — M11.4 implement (grid_detect 강화 + LLM 분류 정확도)
 
-3. 회귀 baseline:
-   ```powershell
-   pytest -q
-   ```
-   → `1528 passed, 3 skipped, 56 deselected` 확인.
+**목표**: M11.3 LIVE 검증 v2 에서 발견된 두 한계 해소.
 
-4. spec/plan 읽기:
-   - [`docs/superpowers/specs/2026-05-21-m11-3-detection-cache.md`](./docs/superpowers/specs/2026-05-21-m11-3-detection-cache.md)
-   - [`milestones/M11_3_plan.md`](./milestones/M11_3_plan.md)
-
-5. **다음 단계** — plan starter 를 `superpowers:writing-plans` 로 확장 또는 곧바로 TDD → Phase 1 (classify cache 인자) 부터.
-
-### 8.3 그 후 사용자 결정 (M11.3 완료 후)
-
-- **수동 검증** — M11.2 + M11.3 묶어서 `milestones/M11_3_verification.md` 시나리오 6건 (M11.2 의 5건 + M11.3 의 cache hit 1건)
-- **v0.2.2 publish** — `git tag v0.2.2 && git push origin v0.2.2` → Trusted Publishing 자동 (5회째)
-- 또는 M12 (C4 측정/벤치마크) / M13 (Mac/Linux) 진입 사용자 결정
-
-### 8.4 (구) M11.2 implement — 완료됨 (PR #19 참고)
-
-**목표**: `chat_spritesheet` modality 신설로 PR #18 한계 (grid-only 시트가 animation 라벨 비어 있음) 해소.
+* (D-1) `grid_detect.py` alpha + color-edge 합성 → color-cycling 시트 검출
+* (LLM #3) LabelRegistry seed 확장 (`inventory_item`/`ui_icon`) + BATCH 프롬프트 enum 명시 + palette tone group
 
 **산출물 (예상)**:
-- 새 모듈: `core/batch/sheet_classifier.py` + `core/analyzer/messages.py` 의 `BATCH_SPRITESHEET_PROMPT` + `build_spritesheet_chat_messages`
-- 변경: `core/store.py` (`_MODALITY_KIND_FILTER` 갱신), `core/batch/manager.py` (modality 분기), `core/batch/poller.py` (`_persist_spritesheet_payload`)
-- UI: /settings + /analyzing dashboard modality 4행 + i18n 6~10 신규 msgid
-- ~30~50 신규 테스트, 신규 의존성 0, 작업 시간 ~2~3일
+- `core/sheet/grid_detect.py` — color-edge 시그널 합성
+- `core/config.py` — `grid_detect_alpha_color_weight: float = 0.5` 신설
+- LabelRegistry seed 확장
+- `core/analyzer/messages.py` — BATCH prompt 강화 (enum 명시 + tone group)
+- `core/analyzer/payload_parser.py` — palette tone group whitelist
+- ~20 신규 테스트, 신규 의존성 0, 마이그 0, 작업 시간 ~2.5일
 
 **진입 절차**:
 
@@ -278,27 +255,20 @@ v1 (M0~M8) + M10~M11.2 + v0.1.1~v0.2.1 PyPI publish 완료. **PR #19 M11.2 main 
    ```powershell
    pytest -q
    ```
-   → `1490 passed, 3 skipped, 56 deselected` 확인.
+   → `1559 passed, 1 skipped, 57 deselected` 확인.
 
 4. 새 브랜치:
    ```powershell
-   git checkout -b feat/m11-2-batch-spritesheet-modality
+   git checkout -b feat/m11-4-grid-detect-strengthen
    ```
 
 5. spec/plan 읽기:
-   - [`docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md`](./docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md) — 설계 spec (Architecture, Module breakdown, Test strategy)
-   - [`milestones/M11_2_plan.md`](./milestones/M11_2_plan.md) — plan starter (7 Phase 분할)
+   - [`docs/superpowers/specs/2026-05-21-m11-4-grid-detect-strengthen-llm-accuracy.md`](./docs/superpowers/specs/2026-05-21-m11-4-grid-detect-strengthen-llm-accuracy.md)
+   - [`milestones/M11_4_plan.md`](./milestones/M11_4_plan.md)
 
-6. **다음 단계** — plan 을 `superpowers:writing-plans` 로 확장 → `M11_2_todo.md` 체크리스트 → Phase 1 TDD red→green 부터.
+6. **다음 단계** — Phase 1 (D-1 grid_detect color-edge) TDD red→green 부터.
 
-### 8.3 그 후 사용자 결정 (M11.2 완료 후)
-
-- **v0.2.2 publish** — PR #18 + M11.2 묶어 publish 또는 별도
-- **M12** — C4 측정/학습/벤치마크 (6 backend 정확도 비교) — 큰 새 마일스톤
-- **M13** — Mac/Linux 검증 + M11 cross-platform
-- **잔존 reactive patch backlog** — B (BatchPoller silent fail root cause), C (list_labels_raw race), D (OpenAI/Anthropic Batch API), E (file destination batch) — 우선순위 사용자 결정
-
-### 8.4 마일스톤 정렬 (전체)
+### 8.3 마일스톤 정렬 (전체)
 
 | # | 이름 | 상태 |
 |---:|---|---|
@@ -312,7 +282,8 @@ v1 (M0~M8) + M10~M11.2 + v0.1.1~v0.2.1 PyPI publish 완료. **PR #19 M11.2 main 
 | **M11.1** | Gemini Batch API + /analyzing dashboard | ✅ v0.2.1 ([PR #17](https://github.com/v0o0v/assetcache-mcp/pull/17) `782a047`) |
 | **v0.2.x patches** | batch persist 보강 (label/meta/spritesheet) | ✅ ([PR #18](https://github.com/v0o0v/assetcache-mcp/pull/18) `12ebc42`, 회귀 1490) |
 | **M11.2** | **Batch Spritesheet Modality** (`chat_spritesheet` 신설) | ✅ ([PR #19](https://github.com/v0o0v/assetcache-mcp/pull/19) main `d34f1dd`, +38 신규, 회귀 1528) |
-| **M11.3** | **Detection Cache** (옵션 B+C 결합) | 📋 spec 작성됨, **다음 세션 implement** (feat 브랜치 생성 됨) |
+| **M11.3** | **Detection Cache + 부수 patch 4건** | ✅ ([PR #20](https://github.com/v0o0v/assetcache-mcp/pull/20) main `7ad0f3d`, +30 신규, 회귀 1559) — **v0.2.2 publish 대기** |
+| **M11.4** | **grid_detect 강화 + LLM 분류 정확도** (v0.2.3 candidate) | 📋 spec/plan 작성됨, **다음 세션 implement** |
 | M12 | C4 측정/학습/벤치마크 (6 backend 정확도) | 📋 미정 (M11 의존) |
 | M13 | Mac/Linux 검증 | 📋 미정 (M11 의존) |
 | M14 | MCP 원격 통신 (HTTP/SSE + 인증) | 📋 미정 |
