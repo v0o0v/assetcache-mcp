@@ -190,6 +190,62 @@ def test_image_payload_to_labels_skips_empty_values():
     assert [l.label for l in labels] == ["heroic"]
 
 
+# === M11.3 patch B — non-dict / list payload graceful handling ============
+
+
+def test_validate_image_payload_list_with_dict_first_uses_it(image_registry):
+    """Gemma 가 list 로 응답한 경우 첫 element 가 dict 면 그걸로 처리."""
+    payload = [
+        {"category": "character", "style": "pixel_art", "mood": ["heroic"]},
+        {"category": "ignored"},
+    ]
+    ok, err, fixed = validate_image_payload(payload, image_registry)
+    assert ok is True
+    assert err is None
+    assert fixed["category"] == "character"
+    assert fixed["style"] == "pixel_art"
+
+
+def test_validate_image_payload_empty_list_falls_back_to_defaults(image_registry):
+    """빈 list payload → 빈 dict 처리 + violation 보고 + 라벨 'other' fallback."""
+    ok, err, fixed = validate_image_payload([], image_registry)
+    assert ok is False
+    assert err is not None
+    assert fixed["category"] == "other"  # fallback
+    assert fixed["style"] == "other"
+
+
+def test_validate_image_payload_non_dict_scalar_falls_back(image_registry):
+    """payload 가 str/None/숫자 등 dict 도 list 도 아닌 경우 → 빈 dict."""
+    for bad in ("just a string", None, 42, ["only_a_string"]):
+        ok, err, fixed = validate_image_payload(bad, image_registry)
+        assert ok is False
+        assert err is not None
+        assert isinstance(fixed, dict)
+        # category fallback 적용됨
+        assert fixed["category"] == "other"
+
+
+def test_validate_audio_payload_list_with_dict_first_uses_it(audio_registry):
+    """audio 도 list 첫 dict 사용."""
+    payload = [
+        {"category": "sfx", "mood": ["calm"], "tempo": "medium"},
+        {"category": "ignored"},
+    ]
+    ok, fixed, err = validate_audio_payload(payload, audio_registry)
+    assert ok is True
+    assert err is None
+    assert fixed["category"] == "sfx"
+
+
+def test_validate_audio_payload_non_dict_falls_back(audio_registry):
+    """audio 도 비-dict 입력 → 빈 dict fallback."""
+    for bad in ([], None, "x", 99):
+        ok, fixed, err = validate_audio_payload(bad, audio_registry)
+        assert ok is False
+        assert isinstance(fixed, dict)
+
+
 # === Audio (sound) ====================================================
 
 

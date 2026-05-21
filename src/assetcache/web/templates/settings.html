@@ -232,13 +232,15 @@ function settingsForm() {
 
         // M11 — chains
         chains: chainsInit,
-        modalityOrder: ["chat_image", "chat_audio", "text_embed"],
+        // M11.3 patch A — chat_spritesheet 도 UI 카드 표시
+        modalityOrder: ["chat_image", "chat_spritesheet", "chat_audio", "text_embed"],
         modalityLabels: {
             chat_image: "{{ _("Image chain") }}",
+            chat_spritesheet: "{{ _("Spritesheet chain") }}",
             chat_audio: "{{ _("Audio chain") }}",
             text_embed: "{{ _("Embedding chain") }}",
         },
-        chainAdd: { chat_image: "", chat_audio: "", text_embed: "" },
+        chainAdd: { chat_image: "", chat_spritesheet: "", chat_audio: "", text_embed: "" },
         chainSaving: false,
         chainSaveError: "",
 

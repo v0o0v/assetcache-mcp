@@ -29,17 +29,44 @@ IMAGE_CATEGORY_FALLBACK = "other"
 IMAGE_STYLE_FALLBACK = "other"
 
 
+def _coerce_to_dict(payload: object) -> dict:
+    """LLM 응답이 dict 가 아닌 경우 graceful fallback.
+
+    M11.3 patch B — Gemini batch 응답이 가끔 ``list`` 또는 scalar 로 와서
+    ``dict(payload)`` 가 ValueError/TypeError 를 던지는 경우가 있다.  이
+    helper 는:
+
+    * ``dict`` → 그대로 dict copy
+    * ``list`` + 첫 element 가 dict → 첫 element copy
+    * 기타 (list of non-dict, str, None, int…) → 빈 dict
+
+    빈 dict 가 반환되면 후속 violation 검사가 모든 enum 필드를 fallback
+    으로 채워 ``ok=False`` 로 응답하므로 caller 의 기존 흐름 그대로 동작.
+    """
+    if isinstance(payload, dict):
+        return dict(payload)
+    if isinstance(payload, list) and payload and isinstance(payload[0], dict):
+        return dict(payload[0])
+    return {}
+
+
 def validate_image_payload(
-    payload: dict, registry: "LabelRegistry",
+    payload: object, registry: "LabelRegistry",
 ) -> tuple[bool, str | None, dict]:
     """Whitelist-check sprite enums against the registry.
 
     Returns ``(ok, error, fixed)`` — matches the legacy
     ``SpriteAnalyzer._validate_payload`` tuple order so callers can drop in
     without changes.
+
+    M11.3 patch B — payload 가 dict 가 아닌 경우 (list, str, None…) 도 안전.
     """
-    fixed = dict(payload)
+    fixed = _coerce_to_dict(payload)
     violations: list[str] = []
+    if not isinstance(payload, dict) and not (
+        isinstance(payload, list) and payload and isinstance(payload[0], dict)
+    ):
+        violations.append(f"payload_not_dict={type(payload).__name__}")
 
     def _squash_single(key: str) -> object:
         value = fixed.get(key)
@@ -150,16 +177,22 @@ AUDIO_SINGLE_AXES: tuple[tuple[str, str], ...] = (
 
 
 def validate_audio_payload(
-    payload: dict, registry: "LabelRegistry",
+    payload: object, registry: "LabelRegistry",
 ) -> tuple[bool, dict, str | None]:
     """Whitelist-check sound enums against the registry.
 
     Returns ``(ok, fixed, error)`` — matches the legacy
     ``SoundAnalyzer._validate`` tuple order (note: arg order differs from
     :func:`validate_image_payload` to preserve back-compat).
+
+    M11.3 patch B — payload 가 dict 가 아닌 경우 (list, None…) 도 안전.
     """
-    fixed = dict(payload)
+    fixed = _coerce_to_dict(payload)
     violations: list[str] = []
+    if not isinstance(payload, dict) and not (
+        isinstance(payload, list) and payload and isinstance(payload[0], dict)
+    ):
+        violations.append(f"payload_not_dict={type(payload).__name__}")
 
     def _squash_single(key: str) -> object:
         value = fixed.get(key)

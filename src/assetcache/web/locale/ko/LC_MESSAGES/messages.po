@@ -878,6 +878,10 @@ msgid "Image chain"
 msgstr "이미지 체인"
 
 #: src/assetcache/web/templates/settings.html
+msgid "Spritesheet chain"
+msgstr "스프라이트시트 체인"
+
+#: src/assetcache/web/templates/settings.html
 msgid "Audio chain"
 msgstr "오디오 체인"
 
