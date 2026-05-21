@@ -33,7 +33,7 @@
 | v0.1.1 yagni-clean (chore patch) + PyPI publish | ✅ 완료 ([PR #14](https://github.com/v0o0v/assetcache-mcp/pull/14) main 머지 + [PyPI v0.1.1 publish](https://pypi.org/project/assetcache-mcp/0.1.1/) + [GitHub release v0.1.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.1)) | v0.0.1 마이그레이션 helper (Phase 1) 코드 + 테스트 + i18n 일괄 제거 → version 0.1.0 → 0.1.1 bump. 신규 의존성 0. **회귀 -24** (1103 → **1079**). MCP 20 도구 변동 없음. **Trusted Publishing (OIDC) 첫 자동 publish 검증 ✅ 32초 성공** ([run 26139260454](https://github.com/v0o0v/assetcache-mcp/actions/runs/26139260454)). spec: [`docs/superpowers/specs/2026-05-20-v011-yagni-clean-v001-compat-design.md`](./docs/superpowers/specs/2026-05-20-v011-yagni-clean-v001-compat-design.md) |
 | v0.1.2 PyPI 페이지 정직성 patch + PyPI publish | ✅ 완료 ([PR #15](https://github.com/v0o0v/assetcache-mcp/pull/15) main 머지 + [PyPI v0.1.2 publish](https://pypi.org/project/assetcache-mcp/0.1.2/) + [GitHub release v0.1.2](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.2)) | README PyInstaller exe 섹션 제거 (release artifact 0건 거짓 안내), DESIGN/docs stale 명령어 `python -m gah`/`game-asset-helper` → `assetcache` 갱신, pyproject classifiers 보강 (Games/Entertainment + Sound/Audio), CLAUDE.md M10 worktree 안내 제거. 코드 변경 0, 신규 의존성 0, 회귀 1079 그대로. **Trusted Publishing 2회째 자동 publish 29초 성공** ([run 26141958223](https://github.com/v0o0v/assetcache-mcp/actions/runs/26141958223)) — 패턴 안정성 확인 |
 | **M11 — Multi-backend LLM Architecture + v0.2.0 publish** | ✅ 완료 ([PR #16](https://github.com/v0o0v/assetcache-mcp/pull/16) main 머지 + [PyPI v0.2.0](https://pypi.org/project/assetcache-mcp/0.2.0/) + [GitHub release v0.2.0](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.0)) | 6 backend (Ollama + Gemini + Claude + OpenAI + OpenRouter + HuggingFace) + modality 별 chain + 자동 fallback + `/settings` 페이지 backend 카드 (가격·셋업 안내 partial 12, ko/en) + chain ▲/▼ 우선순위 + i18n 27 msgid + DB `backend_image/audio/embed` 컬럼 + MCP `find_asset` 응답 `backend_used` + 검색 카드 🤖 배지. Gemini default = `gemini-3.1-flash-lite` (output -40% 비용 vs 2.5-flash). 신규 의존성 4 (`google-genai`/`anthropic`/`openai`/`huggingface_hub`). **+173 신규 테스트 + 13 옵트인 `llm_integration` 마커** (총 **1252**). 수동 검증 중 5 fix 누적. spec: [`docs/superpowers/specs/2026-05-20-m11-multi-backend-llm-design.md`](./docs/superpowers/specs/2026-05-20-m11-multi-backend-llm-design.md), plan: [`milestones/M11_plan.md`](./milestones/M11_plan.md), verification: [`milestones/M11_verification.md`](./milestones/M11_verification.md). MCP 20 도구 그대로 (응답 schema 만 확장). 알려진 한계: AnalysisQueue → mark_asset_backends write hook + Gemini Batch API 미적용 — v0.2.x candidate |
-| **M11.1 — Gemini Batch API + /analyzing dashboard** | ✅ 구현 완료 (feat/m11-1-gemini-batch-api 브랜치, **PR + v0.2.1 publish 대기**) | Gemini Batch API 50% 비용 + 24h SLO, image/audio/embed 모든 modality + hybrid 정책 (임계값 30, auto/forced_on/forced_off toggle) + `/analyzing` dashboard (5초 자동 새로고침) + Qt tray toggle + i18n 18 msgid + M11 한계(`mark_asset_backends`) 동시 해결. 신규 의존성 0. **+174 신규 테스트 + 3 옵트인 추가** (총 **1426** + 옵트인 16). spec: [`docs/superpowers/specs/2026-05-20-gemini-batch-api-design.md`](./docs/superpowers/specs/2026-05-20-gemini-batch-api-design.md), plan: [`milestones/M11_1_plan.md`](./milestones/M11_1_plan.md), verification: [`milestones/M11_1_verification.md`](./milestones/M11_1_verification.md). MCP 20 도구 그대로. |
+| **M11.1 — Gemini Batch API + /analyzing dashboard + v0.2.1 publish** | ✅ 완료 ([PR #17](https://github.com/v0o0v/assetcache-mcp/pull/17) main `782a047` + [PyPI v0.2.1](https://pypi.org/project/assetcache-mcp/0.2.1/) + [GitHub release v0.2.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.1)) + Manual verification 시나리오 1~4 통과 | Gemini Batch API 50% 비용 + 24h SLO, image/audio/embed 모든 modality + hybrid 정책 (임계값 30, auto/forced_on/forced_off toggle) + `/analyzing` dashboard (5초 자동 새로고침) + Qt tray toggle + i18n 18 msgid + M11 한계(`mark_asset_backends`) 동시 해결. 신규 의존성 0. **+174 신규 테스트 + 3 옵트인 추가** (총 **1426** + 옵트인 16). spec/plan/verification: [spec](./docs/superpowers/specs/2026-05-20-gemini-batch-api-design.md) / [plan](./docs/superpowers/plans/2026-05-20-gemini-batch-api.md) / [verification](./milestones/M11_1_verification.md). **Trusted Publishing 4회째 자동 publish 31초 성공** ([run 26206683356](https://github.com/v0o0v/assetcache-mcp/actions/runs/26206683356)). 수동 검증 중 4 patch squash 포함 (tray cfg sync `8e06c7b` / DESIGN.md stale `3f4e113` / labels race defensive `4a798fd` / BatchPoller debug log `a83d4d8`). MCP 20 도구 그대로. 알려진 한계: image/audio Gemini batch 결과 → label parsing 미구현 (현재 stub: empty labels + mark ok) — v0.2.x reactive patch candidate |
 
 각 마일스톤의 상세 계획·체크리스트·검증 결과는 `milestones/M{N}_plan.md`, `M{N}_todo.md`, `M{N}_verification.md`.
 
@@ -183,30 +183,46 @@ MCP stdio 서버 모드:
 python -m assetcache --mcp
 ```
 
-## 8. 다음 작업 (M11.1 구현 완료 — 다음 세션 PR + v0.2.1 publish)
+## 8. 다음 작업 (M11.1 v0.2.1 publish 완료 — 다음 세션 v0.2.x reactive patches)
 
-v1 (M0~M8) + M10~M11 + v0.1.1~v0.2.0 PyPI publish 완료 + **M11.1 Gemini Batch API 구현 완료** (feat/m11-1-gemini-batch-api 브랜치, PR 대기). Trusted Publishing OIDC 자동 publish 3회 검증 (v0.1.1 32초 + v0.1.2 29초 + v0.2.0 ~30초).
+v1 (M0~M8) + M10~M11 + v0.1.1~v0.2.1 PyPI publish 완료. **M11.1 Gemini Batch API + /analyzing dashboard publish 완료** ([PR #17](https://github.com/v0o0v/assetcache-mcp/pull/17) main `782a047`, [PyPI v0.2.1 Latest](https://pypi.org/project/assetcache-mcp/0.2.1/), [GitHub release v0.2.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.1)). **Trusted Publishing OIDC 자동 publish 4회 검증** (v0.1.1 32초 + v0.1.2 29초 + v0.2.0 ~30초 + v0.2.1 31초). Manual verification 시나리오 1~4 통과 (시각 검증).
 
 **현재 상태**:
 
-- PyPI Latest: [v0.2.0](https://pypi.org/project/assetcache-mcp/0.2.0/) (M11.1 v0.2.1 후보 PR 대기)
-- GitHub Latest release: [v0.2.0](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.0)
+- PyPI Latest: [v0.2.1](https://pypi.org/project/assetcache-mcp/0.2.1/)
+- GitHub Latest release: [v0.2.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.1)
 - GitHub repo: `v0o0v/assetcache-mcp` (M10 rename 완료)
-- **Trusted Publishing (OIDC)** 안정 — `git tag v0.2.1; git push origin v0.2.1` 한 줄로 자동 (패턴 3회 검증)
+- **Trusted Publishing (OIDC)** 안정 — `git tag vX.Y.Z; git push origin vX.Y.Z` 한 줄로 자동 (패턴 4회 검증)
 - GitHub Actions workflow: `actions/checkout@v6` + `actions/setup-python@v6` (Node.js 24 호환)
 
 ### 8.1 현재 상태
 
-- **현재 브랜치 = `feat/m11-1-gemini-batch-api`** (PR 대기, main `f68ef88` 기준)
-- 회귀 **1426 passed + 1 skipped + 56 deselected** (M11 1252 + 174 신규 + 3 옵트인 추가, 총 옵트인 16)
-- **M11 v0.2.0 publish 완료** — Trusted Publishing OIDC 3회째 자동 (~30초). [PyPI v0.2.0 Latest](https://pypi.org/project/assetcache-mcp/0.2.0/) + [GitHub release v0.2.0](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.0) + [PR #16](https://github.com/v0o0v/assetcache-mcp/pull/16) squash merge
-- **M11.1 구현 완료** — feat/m11-1-gemini-batch-api, PR 머지 + v0.2.1 tag push 대기. 신규 의존성 0.
+- **현재 브랜치 = `main`** (v0.2.1 tag = `782a047`, feat/m11-1-gemini-batch-api PR merge 후 자동 삭제)
+- 회귀 **1426 passed + 1 skipped + 56 deselected** + 옵트인 16
+- **M11.1 v0.2.1 publish 완료** + Manual verification 시나리오 1~4 통과 + 후속 4 patch squash 포함 (tray cfg sync / DESIGN.md stale / labels race defensive / BatchPoller debug log)
 - Gemini default = `gemini-3.1-flash-lite` (output -40% 비용 vs 2.5-flash, 속도 +64%)
 - MCP **20 도구** (M11.1 신규 0, MCP 응답 schema 변경 없음)
-- 설치: `pipx install --upgrade assetcache-mcp` (v0.2.0 Latest, v0.2.1 PR 머지 후 갱신 예정)
+- 설치: `pipx install --upgrade assetcache-mcp` (v0.2.1 Latest)
 - 콘솔 스크립트: `assetcache` (트레이/MCP 통합) + `assetcache-mcp` (MCP stdio 전용)
 - 사용자 데이터: `%APPDATA%\AssetCacheMCP\`
 - **로드맵 spec**: [`docs/superpowers/specs/2026-05-20-roadmap-design.md`](docs/superpowers/specs/2026-05-20-roadmap-design.md) — M11 ✅ + M11.1 ✅ + M12~M18 정렬
+
+### 8.2 다음 세션 작업 — v0.2.x reactive patches (사용자 명시)
+
+세션 인계 시점에 정리된 patch backlog 후보 (HANDOFF.md §5.0 동일):
+
+| # | 항목 | 영향 | 시간 |
+|---|---|---|---|
+| A | **M11.1 image/audio Gemini batch 결과 → label parsing** (현재 stub: empty labels + mark ok → SpriteAnalyzer/SoundAnalyzer payload parser 와 동등 추출) | batch 가 의미 있는 결과 생성 | ~수시간 |
+| B | **`BatchPoller polling silent fail` root cause 조사** (M11.1 manual 검증 중 사용자 첫 tray 가 polling 안 한 이유 — silent crash 의심, thread-local SQLite connection 가능성) | reproducibility + production reliability | ~수시간 |
+| C | **`store.list_labels_raw` race condition 진짜 원인** + thread-safe enforce | rare 발생, worker crash 가능 (defensive skip 이미 `4a798fd` patch) | ~수시간 |
+| D | **OpenAI Batch API** + **Anthropic Batch API** (Gemini 외 backend 도 batch — 50% 할인) | 다중 backend batch | 1~2일 |
+| E | **file destination batch** (>20MB inline 우회) | 큰 batch 지원 | 1일 |
+| F | **사용자 PR feedback / GitHub Issues monitoring** | reactive | passive |
+
+가장 시급 추천: **A** (batch 결과가 의미 있는 labels 생성하도록 — 현재는 batch submit 까지만 작동, 결과는 stub) + **B** (root cause 조사하여 production reliability 강화).
+
+### 8.3 마일스톤 정렬 (큰 단위 — patch backlog 정리 후 또는 별 트랙)
 
 ### 8.2 다음 세션 진입 시 첫 작업
 

@@ -1,16 +1,16 @@
 # HANDOFF — Cowork → Claude Code (또는 다음 세션)
 
-**마지막 인계 시각**: 2026-05-21 (M11.1 Gemini Batch API + /analyzing dashboard 완료)
-**마지막 완료 작업**: **M11.1 완료** — feat/m11-1-gemini-batch-api 브랜치 (PR 대기). Gemini Batch API hybrid 정책 (50% 비용, 24h SLO) + `/analyzing` dashboard + M11 알려진 한계(`mark_asset_backends` write hook) 동시 해결. 회귀 **1252 → 1426 (+174) + 옵트인 13 → 16**. 신규 의존성 0.
-**M11.1 결과**: `core/batch/` 패키지 (types/manager/poller) + DB `batch_jobs` table + `assets.batch_job_id/batch_state` + Store 13 신규 메서드 + GeminiBackend batch_chat/embed/get/cancel/download + BatchManager(try_submit/cancel) + BatchPoller(daemon, 30분 주기) + AnalysisQueue hook + BatchConfig + /settings batch 카드 + /analyzing dashboard + Qt tray toggle + i18n 18 msgid. spec: [`docs/superpowers/specs/2026-05-20-gemini-batch-api-design.md`](docs/superpowers/specs/2026-05-20-gemini-batch-api-design.md), verification: [`milestones/M11_1_verification.md`](milestones/M11_1_verification.md)
-**현재 브랜치**: `feat/m11-1-gemini-batch-api` (PR 대기 — main `f68ef88` 기준)
-**다음 세션 작업**: **PR 생성 + main 머지 + v0.2.1 tag → PyPI publish** (Trusted Publishing OIDC, ~30초). 그 후 M12 (C4 측정/학습/벤치마크) 또는 M13 (Mac/Linux 검증) 사용자 결정.
+**마지막 인계 시각**: 2026-05-21 (M11.1 v0.2.1 PyPI publish 완료 + manual verification 통과)
+**마지막 완료 작업**: **M11.1 v0.2.1 publish 완료** — [PR #17](https://github.com/v0o0v/assetcache-mcp/pull/17) squash merge → main `782a047` → tag v0.2.1 → Trusted Publishing OIDC 자동 publish 4회째 (31초 성공, [run 26206683356](https://github.com/v0o0v/assetcache-mcp/actions/runs/26206683356)) → [PyPI v0.2.1 Latest](https://pypi.org/project/assetcache-mcp/0.2.1/) + [GitHub release v0.2.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.1). 회귀 1252 → **1426 passed + 1 skipped + 56 deselected** + 옵트인 13 → 16. 신규 의존성 0.
+**M11.1 결과**: `core/batch/` 패키지 (types/manager/poller) + DB `batch_jobs` table + `assets.batch_job_id/batch_state` + Store 13 신규 메서드 + GeminiBackend batch_chat/embed/get/cancel/download + BatchManager(try_submit/cancel) + BatchPoller(daemon, poll_interval cfg) + AnalysisQueue hook + BatchConfig + /settings batch 카드 + /analyzing dashboard + Qt tray toggle + i18n 18 msgid. **Manual verification 시나리오 1~4 통과** (시각 검증). 후속 fix 4건 squash 안 포함됨. spec: [`docs/superpowers/specs/2026-05-20-gemini-batch-api-design.md`](docs/superpowers/specs/2026-05-20-gemini-batch-api-design.md), verification: [`milestones/M11_1_verification.md`](milestones/M11_1_verification.md)
+**현재 브랜치**: `main` (v0.2.1 tag `782a047`, feat/m11-1-gemini-batch-api PR merge 시 자동 삭제됨)
+**다음 세션 작업**: **v0.2.x reactive patches** (사용자 명시) — backlog 정리 후 우선순위 선택. 후보: (A) M11.1 image/audio Gemini batch 결과 → label parsing (현재 stub), (B) BatchPoller polling silent fail root cause 조사, (C) store.list_labels_raw race condition 진짜 원인, (D) OpenAI/Anthropic Batch API, (E) file destination batch (>20MB). 자세한 list 는 §5 참조.
 
 이 문서는 작업이 중단될 때 다음 세션이 "현재 어디까지 와 있는가"를 한 번에 파악하도록 작성된 스냅샷이다.
 
 ## 1. 한 줄 요약
 
-**M11.1 완료** (feat/m11-1-gemini-batch-api 브랜치, PR 대기). Gemini Batch API hybrid 정책 (50% 비용, 24h SLO) + `/analyzing` dashboard + M11 한계 (`mark_asset_backends`) 해결. 회귀 **1426 passed + 1 skipped + 56 deselected** (M11 v0.2.0 1252 + 174 신규 + 3 옵트인 추가). 신규 의존성 0. MCP 20 도구 그대로. 다음 세션: **PR 생성 + v0.2.1 PyPI publish** (Trusted Publishing OIDC, ~30초).
+**M11.1 v0.2.1 publish 완료** (main `782a047`, PyPI Latest). Gemini Batch API hybrid 정책 (50% 비용, 24h SLO) + `/analyzing` dashboard + M11 한계 (`mark_asset_backends`) 해결. 회귀 **1426 passed + 1 skipped + 56 deselected**. 신규 의존성 0. MCP 20 도구 그대로. **Trusted Publishing OIDC** 자동 publish 4회째 성공 (v0.1.1/v0.1.2/v0.2.0/v0.2.1 — 평균 31초). Manual verification 통과 + 후속 fix 4건 (tray cfg sync, DESIGN.md stale, labels race defensive, BatchPoller debug log) squash 포함. 다음 세션: **v0.2.x reactive patches** (사용자 명시).
 
 ## 2. 검증된 사실 (M10 완료 시점)
 
@@ -70,13 +70,26 @@ git pull
 pytest -q
 ```
 
-→ main 기준: `1252 passed, 1 skipped, 53 deselected` (M11 v0.2.0 baseline).
+→ main 기준 (v0.2.1 publish 후): **`1426 passed, 1 skipped, 56 deselected`**.
 
-feat/m11-1-gemini-batch-api 브랜치에서 PR 머지 후: `1426 passed, 1 skipped, 56 deselected` 예상.
+**현재 브랜치 = `main`** (v0.2.1 tag = `782a047`, feat/m11-1-gemini-batch-api PR merge 시 자동 삭제). 다음 작업은 새 patch 브랜치에서.
 
-**현재 브랜치 = `feat/m11-1-gemini-batch-api`** (PR 대기, main `f68ef88` 기준). PR 머지 후 v0.2.1 tag push → Trusted Publishing 자동 publish.
+## 5. 다음 세션 진입 절차 (M11.1 v0.2.1 publish 완료 — v0.2.x patch 진행)
 
-## 5. 다음 세션 진입 절차 (M11.1 완료 — v0.2.1 publish 후 M12/M13)
+### 5.0 v0.2.x reactive patch backlog (사용자 명시 선택)
+
+세션 인계 시점에 정리된 후보 — 우선순위 사용자 결정:
+
+| # | 항목 | 영향 | 시간 |
+|---|---|---|---|
+| A | **M11.1 image/audio Gemini batch 결과 → label parsing** (현재 stub: empty labels + mark ok → SpriteAnalyzer/SoundAnalyzer payload parser 와 동등 추출) | batch 가 의미 있는 결과 생성 | ~수시간 |
+| B | **`BatchPoller polling silent fail` root cause 조사** (M11.1 manual 검증 중 사용자 첫 tray 가 polling 안 한 이유 — silent crash 의심, thread-local SQLite connection 가능성) | reproducibility + production reliability | ~수시간 |
+| C | **`store.list_labels_raw` race condition 진짜 원인** + thread-safe enforce | rare 발생, worker crash 가능 (defensive skip 이미 `4a798fd` patch) | ~수시간 |
+| D | **OpenAI Batch API** + **Anthropic Batch API** (Gemini 외 backend 도 batch — 50% 할인) | 다중 backend batch | 1~2일 |
+| E | **file destination batch** (>20MB inline 우회) | 큰 batch 지원 | 1일 |
+| F | **사용자 PR feedback / GitHub Issues monitoring** | reactive | passive |
+
+가장 시급 추천: A (M11.1 의 batch 결과가 의미 있는 labels 생성하도록 — 현재는 batch submit 까지만 작동, 결과는 stub) + B (root cause 조사하여 production reliability 강화).
 
 ### 5.1 로드맵 (2026-05-20 brainstorm 확정)
 
