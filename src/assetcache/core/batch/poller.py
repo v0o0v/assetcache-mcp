@@ -24,8 +24,13 @@ from ..analyzer.payload_parser import (
     validate_audio_payload,
     validate_image_payload,
 )
+from ..analyzer.spritesheet_meta import (
+    detection_to_animation_labels,
+    enrich_sprite_meta_with_sheet,
+)
 from ..analyzer.tech_meta import compute_sound_meta, compute_sprite_meta
 from ..searchable import build_searchable
+from ..sheet.detect import detect_sheet
 
 if TYPE_CHECKING:
     from ..analysis_queue import AnalysisQueue
@@ -234,12 +239,19 @@ class BatchPoller(threading.Thread):
         위반은 ``other`` 로 demote 되며, 모두 demote 됐어도 ``state='ok'``
         (partial 라벨이라도 검색은 가능).
 
-        ``self._library_dir`` 가 있으면 ``compute_sprite_meta`` 로 sync 와
-        동등한 tech 메타 (width/height/alpha/pixel_art/dominant_colors) 를
-        함께 채운다.  파일이 없거나 손상되면 meta 만 skip + labels/FTS 는 계속.
+        ``self._library_dir`` 가 있으면:
+          * ``compute_sprite_meta`` 로 tech 메타 (width/height/alpha/
+            pixel_art/dominant_colors) 채움.
+          * ``detect_sheet`` 로 spritesheet 검출 → 시트면 frame_w/h/count
+            + animations_json (Aseprite frameTags) 채움 + frameTags 기반
+            animation 라벨 추가 + kind='spritesheet' promote.
 
         ``self._registry`` 가 None 이면 (테스트 fallback) 이전 동작 —
         labels 빈 채로 mark ok.
+
+        한계: batch prompt 는 시트를 의식하지 않으므로 sync 와 달리 Gemma
+        의 ``animation_hint`` 추측 라벨은 없음.  Aseprite frameTags 가
+        없는 grid-only 시트는 animation 라벨이 비어 있음.
         """
         analyzed_at = int(time.time())
         if self._registry is None:
@@ -256,12 +268,17 @@ class BatchPoller(threading.Thread):
                 asset.id, err,
             )
         labels = image_payload_to_labels(fixed)
-        descs = collect_label_descriptions(labels, self._registry)
 
         sprite_meta = self._try_compute_sprite_meta(asset)
         if sprite_meta is not None:
+            sheet_result = self._try_enrich_with_sheet(asset, sprite_meta)
+            if sheet_result is not None:
+                sprite_meta, anim_labels = sheet_result
+                labels.extend(anim_labels)
+                self._store.update_asset_kind(asset.id, "spritesheet")
             self._store.save_sprite_meta(asset.id, sprite_meta)
 
+        descs = collect_label_descriptions(labels, self._registry)
         searchable = build_searchable(
             meta=sprite_meta,
             labels=labels,
@@ -288,6 +305,29 @@ class BatchPoller(threading.Thread):
                 asset.id, asset.path, e,
             )
             return None
+
+    def _try_enrich_with_sheet(self, asset, base_meta):
+        """detect_sheet 가 hit 하면 (enriched_meta, animation_labels) 튜플 반환.
+
+        시트가 아니거나 검출 실패 시 None — 일반 sprite 로 진행한다.
+        library_dir 가 없거나 검출에서 예외가 나면 silently skip.
+        """
+        if self._library_dir is None:
+            return None
+        try:
+            abs_path = (self._library_dir / asset.path).resolve()
+            detection = detect_sheet(abs_path)
+        except Exception as e:  # noqa: BLE001 — sheet 검출 자체가 실패해도 sprite 진행
+            log.warning(
+                "batch: spritesheet 검출 실패 — asset_id=%d path=%s: %s",
+                asset.id, asset.path, e,
+            )
+            return None
+        if detection is None:
+            return None
+        enriched = enrich_sprite_meta_with_sheet(base_meta, detection)
+        anim_labels = detection_to_animation_labels(detection)
+        return enriched, anim_labels
 
     def _persist_audio_payload(self, asset, payload: dict) -> None:
         """오디오 batch 결과를 실 labels + sound_meta + searchable text 로 persist.
