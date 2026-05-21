@@ -31,6 +31,8 @@ _AUDIO_MIME_BY_SUFFIX: dict[str, str] = {
 # 범용 JSON metadata 요청.  분석 이후 BatchPoller 에서 enum 정규화 수행.
 # M11.4 Phase 3: category enum + palette tone group 을 prompt 에 직접 명시
 # 해 inventory_item / ui_icon / hex 거부 정확도를 끌어올린다.
+# M11.6 A2-prompt: "do NOT use 'other'" 가이드 — M11.5 LIVE 에서 animation
+# /category axis 가 'other' fallback 라벨을 합산하는 패턴 차단.
 BATCH_IMAGE_PROMPT = (
     "You are a game asset metadata generator. Respond ONLY with valid JSON.\n"
     "Fields:\n"
@@ -50,7 +52,10 @@ BATCH_IMAGE_PROMPT = (
     "- Use 'inventory_item' for crown, sword, potion, gem, scroll, key, "
     "or other carry-and-use objects — NOT 'character'.\n"
     "- Use 'ui_icon' for HUD buttons, settings cog, heart counter, or "
-    "stand-alone interface graphics — NOT 'icon' or 'ui'."
+    "stand-alone interface graphics — NOT 'icon' or 'ui'.\n"
+    "- Do NOT use \"other\" as a response value on any axis. "
+    "Always pick the closest enum value above; if none feels right, "
+    "still pick the closest one and put your reasoning in `description`."
 )
 
 BATCH_AUDIO_PROMPT = (
@@ -65,6 +70,10 @@ BATCH_AUDIO_PROMPT = (
 # system prompt 와 동일한 schema — animation_hint enum 은 호출 시점에 builder
 # 가 동적 주입한다.  ``{anim_enum}`` placeholder 는 build_spritesheet_chat_messages
 # 가 ``.format(anim_enum=...)`` 로 치환.
+# M11.6 A1: palette tone group enum + hex 금지 — BATCH_IMAGE_PROMPT 와 동일
+# 가이드를 적용해 시트 자산에도 palette 라벨이 채워지도록.
+# M11.6 A2-prompt: "do NOT use 'other'" 가이드 — animation_hint 가 'other'
+# fallback 으로 덤프되는 패턴 차단 (M11.5 LIVE 별도 발견 #2).
 BATCH_SPRITESHEET_PROMPT = (
     "You are a game animation labeler. Respond ONLY with valid JSON.\n\n"
     "Input is a horizontal strip of sprite frames.\n"
@@ -74,9 +83,17 @@ BATCH_SPRITESHEET_PROMPT = (
     "- subject: short noun phrase\n"
     "- category: 'character'\n"
     "- style: 'pixel_art'\n"
-    "- mood: []\n"
-    "- palette: []\n"
-    "- confidence: float 0..1\n"
+    "- mood: array of strings — pick from heroic, dark, playful, neutral, "
+    "minimalist, calm, mysterious, intense, or similar\n"
+    "- palette: array of strings — pick tone group names from "
+    "[warm, cool, monochrome, high_contrast, pastel, neutral]; "
+    "do NOT use hex codes like #FDD835\n"
+    "- confidence: float 0..1\n\n"
+    "Guidance:\n"
+    "- Do NOT use \"other\" as a response value on any axis (especially "
+    "animation_hint).  Always pick the closest enum value above; if none "
+    "feels right, still pick the closest one and put your reasoning in "
+    "`description`."
 )
 
 
