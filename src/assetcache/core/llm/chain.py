@@ -18,7 +18,7 @@ from .base import BackendError, ChatMessage, LLMBackend
 
 log = logging.getLogger(__name__)
 
-Modality = Literal["chat_image", "chat_audio", "text_embed"]
+Modality = Literal["chat_image", "chat_spritesheet", "chat_audio", "text_embed"]
 
 
 class BackendChain:
@@ -31,7 +31,7 @@ class BackendChain:
         result: list[LLMBackend] = []
         for b in self.backends:
             cap = b.info.capabilities
-            if self.modality == "chat_image" and cap.supports_chat_image:
+            if self.modality in ("chat_image", "chat_spritesheet") and cap.supports_chat_image:
                 result.append(b)
             elif self.modality == "chat_audio" and cap.supports_chat_audio:
                 result.append(b)

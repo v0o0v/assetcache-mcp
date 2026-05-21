@@ -108,3 +108,32 @@ def test_corrupt_toml_is_backed_up_and_defaults_used(tmp_appdata: Path) -> None:
     assert backup.exists(), "corrupt config should be moved aside as .bak"
     # a fresh config.toml should now exist with default values
     assert cfg.ollama_url == "http://127.0.0.1:11434"
+
+
+def test_default_chains_includes_chat_spritesheet():
+    """기본 chains 에 chat_spritesheet 가 등록되어 있어야 — chat_image 와 동일 순서."""
+    from assetcache.config import Config
+
+    cfg = Config()
+    assert "chat_spritesheet" in cfg.chains
+    assert cfg.chains["chat_spritesheet"] == cfg.chains["chat_image"]
+
+
+def test_from_mapping_accepts_chat_spritesheet_chain():
+    """사용자가 chat_spritesheet 를 명시하면 그대로 저장."""
+    from assetcache.config import Config
+
+    cfg = Config.from_mapping({
+        "chains": {"chat_spritesheet": ["gemini", "ollama"]},
+    })
+    assert cfg.chains["chat_spritesheet"] == ["gemini", "ollama"]
+
+
+def test_from_mapping_chat_spritesheet_defaults_to_chat_image_when_absent():
+    """사용자 config 에 chat_spritesheet 가 없으면 chat_image 와 동일 chain 으로 fallback."""
+    from assetcache.config import Config
+
+    cfg = Config.from_mapping({
+        "chains": {"chat_image": ["gemini", "ollama"]},
+    })
+    assert cfg.chains["chat_spritesheet"] == ["gemini", "ollama"]

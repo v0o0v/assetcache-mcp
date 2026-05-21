@@ -17,7 +17,7 @@ from .chain import BackendChain
 
 log = logging.getLogger(__name__)
 
-Modality = Literal["chat_image", "chat_audio", "text_embed"]
+Modality = Literal["chat_image", "chat_spritesheet", "chat_audio", "text_embed"]
 BackendFactory = Callable[..., LLMBackend]
 
 

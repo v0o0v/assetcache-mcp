@@ -446,7 +446,8 @@ CREATE INDEX IF NOT EXISTS idx_batch_jobs_backend_job_id ON batch_jobs(backend_j
 """
 
 _MODALITY_KIND_FILTER: dict[str, tuple[str, ...]] = {
-    "chat_image": ("sprite", "spritesheet"),
+    "chat_image": ("sprite",),
+    "chat_spritesheet": ("spritesheet",),
     "chat_audio": ("sound",),
     # text_embed → 모든 kind (dict 에 없으면 kind 필터 미적용)
 }
