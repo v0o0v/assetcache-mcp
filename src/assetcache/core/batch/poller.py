@@ -12,6 +12,7 @@ import json
 import logging
 import threading
 import time
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -23,6 +24,7 @@ from ..analyzer.payload_parser import (
     validate_audio_payload,
     validate_image_payload,
 )
+from ..analyzer.tech_meta import compute_sound_meta, compute_sprite_meta
 from ..searchable import build_searchable
 
 if TYPE_CHECKING:
@@ -73,6 +75,7 @@ class BatchPoller(threading.Thread):
         analysis_queue: "AnalysisQueue",
         cfg: "Config",
         registry: "LabelRegistry | None" = None,
+        library_dir: Path | None = None,
     ) -> None:
         super().__init__(daemon=True, name="assetcache-batch-poller")
         self._store = store
@@ -82,6 +85,9 @@ class BatchPoller(threading.Thread):
         # M11.1 patch — LabelRegistry 가 있을 때만 batch 결과 → label 변환을 수행.
         # None 이면 (이전 동작) labels 빈 채로 mark ok — 기존 옵트인 테스트 호환.
         self._registry = registry
+        # v0.2.x patch — library_dir 가 있으면 batch 경로도 sprite_meta /
+        # sound_meta 를 sync 와 동등하게 채움.  None 이면 meta 충전 skip.
+        self._library_dir = library_dir
         self._stop_event = threading.Event()
 
     def stop(self, timeout: float = 5.0) -> None:
@@ -221,19 +227,19 @@ class BatchPoller(threading.Thread):
         self._aq.enqueue_asset(asset.id)
 
     def _persist_image_payload(self, asset, payload: dict) -> None:
-        """이미지 batch 결과를 실 labels + searchable text 로 persist.
+        """이미지 batch 결과를 실 labels + sprite_meta + searchable text 로 persist.
 
         sync SpriteAnalyzer 와 동일한 ``validate_image_payload`` →
         ``image_payload_to_labels`` 경로를 사용한다.  enum whitelist
         위반은 ``other`` 로 demote 되며, 모두 demote 됐어도 ``state='ok'``
         (partial 라벨이라도 검색은 가능).
 
+        ``self._library_dir`` 가 있으면 ``compute_sprite_meta`` 로 sync 와
+        동등한 tech 메타 (width/height/alpha/pixel_art/dominant_colors) 를
+        함께 채운다.  파일이 없거나 손상되면 meta 만 skip + labels/FTS 는 계속.
+
         ``self._registry`` 가 None 이면 (테스트 fallback) 이전 동작 —
         labels 빈 채로 mark ok.
-
-        tech meta (width/height/alpha) 는 batch 경로에서 계산하지 않음 —
-        이 컬럼은 비어 있다.  FTS 는 labels + description + path 만으로
-        구성되므로 검색 정확도는 sync 경로 대비 조금 떨어진다.
         """
         analyzed_at = int(time.time())
         if self._registry is None:
@@ -251,8 +257,13 @@ class BatchPoller(threading.Thread):
             )
         labels = image_payload_to_labels(fixed)
         descs = collect_label_descriptions(labels, self._registry)
+
+        sprite_meta = self._try_compute_sprite_meta(asset)
+        if sprite_meta is not None:
+            self._store.save_sprite_meta(asset.id, sprite_meta)
+
         searchable = build_searchable(
-            meta=None,
+            meta=sprite_meta,
             labels=labels,
             label_descriptions=descs,
             description=fixed.get("description") or "",
@@ -264,12 +275,28 @@ class BatchPoller(threading.Thread):
             asset.id, "ok", error=None, analyzed_at=analyzed_at,
         )
 
+    def _try_compute_sprite_meta(self, asset):
+        """library_dir 가 있으면 파일에서 SpriteMeta 계산, 실패 시 None."""
+        if self._library_dir is None:
+            return None
+        try:
+            abs_path = (self._library_dir / asset.path).resolve()
+            return compute_sprite_meta(abs_path)
+        except Exception as e:  # noqa: BLE001 — file I/O 오류 robust skip
+            log.warning(
+                "batch: sprite_meta 계산 실패 — asset_id=%d path=%s: %s",
+                asset.id, asset.path, e,
+            )
+            return None
+
     def _persist_audio_payload(self, asset, payload: dict) -> None:
-        """오디오 batch 결과를 실 labels + searchable text 로 persist.
+        """오디오 batch 결과를 실 labels + sound_meta + searchable text 로 persist.
 
         sync SoundAnalyzer 와 동일한 ``validate_audio_payload`` →
-        ``audio_payload_to_labels`` 경로.  tempo/intensity 등 sound_meta
-        컬럼은 batch 경로에서 채우지 않는다 (sound_meta None).
+        ``audio_payload_to_labels`` 경로.  ``self._library_dir`` 가 있으면
+        ``compute_sound_meta`` 로 tech (duration/sr/channels/loudness/bpm)
+        + payload (category/loopable/tempo 등) 를 합쳐서 SoundMeta 채움.
+        ``audio_path_used`` 는 ``'batch'`` 로 표시.
         """
         analyzed_at = int(time.time())
         if self._registry is None:
@@ -287,8 +314,13 @@ class BatchPoller(threading.Thread):
             )
         labels = audio_payload_to_labels(fixed)
         descs = collect_label_descriptions(labels, self._registry)
+
+        sound_meta = self._try_compute_sound_meta(asset, fixed)
+        if sound_meta is not None:
+            self._store.save_sound_meta(asset.id, sound_meta)
+
         searchable = build_searchable(
-            meta=None,
+            meta=sound_meta,
             labels=labels,
             label_descriptions=descs,
             description=fixed.get("description") or "",
@@ -299,6 +331,22 @@ class BatchPoller(threading.Thread):
         self._store.mark_asset_state(
             asset.id, "ok", error=None, analyzed_at=analyzed_at,
         )
+
+    def _try_compute_sound_meta(self, asset, payload: dict):
+        """library_dir 가 있으면 파일에서 SoundMeta 계산, 실패 시 None."""
+        if self._library_dir is None:
+            return None
+        try:
+            abs_path = (self._library_dir / asset.path).resolve()
+            return compute_sound_meta(
+                abs_path, payload=payload, audio_path_used="batch",
+            )
+        except Exception as e:  # noqa: BLE001 — 파일 I/O 오류 robust skip
+            log.warning(
+                "batch: sound_meta 계산 실패 — asset_id=%d path=%s: %s",
+                asset.id, asset.path, e,
+            )
+            return None
 
     def _get_gemini_embed_model(self) -> str:
         """Phase 4.4 fix — cfg.backends.gemini.model_embed 의 안전한 access path.

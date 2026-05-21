@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING
 from ..llm.base import BackendError
 from ..ollama_client import ChatMessage, OllamaError
 from ..searchable import build_searchable
-from ..store import LabelScore, SpriteMeta
+from ..store import LabelScore
 from .base import AnalyzerInput, AnalyzerResult
 from .payload_parser import (
     IMAGE_CATEGORY_FALLBACK,
@@ -32,6 +32,7 @@ from .payload_parser import (
     image_payload_to_labels,
     validate_image_payload,
 )
+from .tech_meta import compute_sprite_meta
 
 if TYPE_CHECKING:
     from ..clip_labeler import ClipLabeler
@@ -61,19 +62,13 @@ class SpriteAnalyzer:
     # -- public API ---------------------------------------------------
 
     def analyze(self, inp: AnalyzerInput) -> AnalyzerResult:
-        import numpy as np
         from PIL import Image
 
         # ── 1. 기술 특성 ─────────────────────────────────────────────
-        img = Image.open(inp.abs_path)
-        width, height = img.size
-        has_alpha = self._has_alpha(img)
-        rgb = img.convert("RGB")
-        arr = np.asarray(rgb, dtype=np.uint8)
-        is_pixel_art = self._is_pixel_art(arr)
-        dominant = self._dominant_colors(arr, k=5)
+        sprite_meta = compute_sprite_meta(inp.abs_path)
 
         # ── 2. 리샘플 + base64 ───────────────────────────────────────
+        img = Image.open(inp.abs_path)
         resampled = self._resample(img, self.max_long_edge)
         buf = io.BytesIO()
         resampled.save(buf, format="PNG")
@@ -102,11 +97,6 @@ class SpriteAnalyzer:
                 log.exception("CLIP scoring failed for %s", inp.abs_path)
 
         # ── 5. searchable 텍스트 + 임베딩 ───────────────────────────
-        sprite_meta = SpriteMeta(
-            width=width, height=height,
-            has_alpha=has_alpha, is_pixel_art=is_pixel_art,
-            dominant_colors=dominant,
-        )
         label_descs = collect_label_descriptions(labels, self.registry)
         searchable = build_searchable(
             meta=sprite_meta, labels=labels, label_descriptions=label_descs,
@@ -139,83 +129,6 @@ class SpriteAnalyzer:
         )
 
     # -- technical helpers ------------------------------------------
-
-    @staticmethod
-    def _has_alpha(img) -> bool:
-        if img.mode in ("RGBA", "LA"):
-            return True
-        return img.info.get("transparency") is not None
-
-    @staticmethod
-    def _is_pixel_art(arr) -> bool:
-        """Heuristic: very few unique colors AND low neighbour variance.
-
-        Very low color counts (≤ 16) skip the variance check entirely —
-        a 4-colour 32×32 sprite is unmistakably pixel art even when the
-        randomly-placed palette produces high inter-pixel differences.
-        """
-        import numpy as np
-
-        h, w, _ = arr.shape
-        step = max(1, max(h, w) // 64)
-        sampled = arr[::step, ::step]
-        flat = sampled.reshape(-1, 3)
-        packed = (flat[:, 0].astype(np.int64) * 65536
-                  + flat[:, 1].astype(np.int64) * 256
-                  + flat[:, 2].astype(np.int64))
-        unique_colors = len(np.unique(packed))
-        if unique_colors <= 16:
-            return True
-        if unique_colors > 96:
-            return False
-        d = np.abs(np.diff(sampled.astype(np.int16), axis=1)).mean()
-        return d < 60.0
-
-    @staticmethod
-    def _dominant_colors(arr, *, k: int = 5) -> list[str]:
-        """Tiny k-means++ on a downsampled image — returns hex colors."""
-        import numpy as np
-
-        h, w, _ = arr.shape
-        step = max(1, max(h, w) // 96)
-        flat = arr[::step, ::step].reshape(-1, 3).astype(np.float32)
-        if len(flat) <= k:
-            # 픽셀이 너무 적으면 단순 unique 로 채움
-            unique = np.unique(flat, axis=0)
-            picks = unique[:k]
-            return [_rgb_to_hex(c) for c in picks] + [
-                "#000000"
-            ] * (k - len(picks))
-
-        rng = np.random.default_rng(seed=0)
-        # k-means++ 초기화 (한 점에서 시작 → 거리 비례로 다음 중심)
-        centers = [flat[rng.integers(0, len(flat))]]
-        for _ in range(k - 1):
-            dists = np.min(
-                np.linalg.norm(flat[:, None, :] - np.stack(centers)[None],
-                               axis=2),
-                axis=1,
-            )
-            total = float(dists.sum())
-            if total <= 0:
-                # 모든 점이 기존 중심과 정확히 일치 — 임의 점으로 진행
-                centers.append(flat[rng.integers(0, len(flat))])
-                continue
-            probs = (dists.astype(np.float64) / total)
-            # 부동소수 합이 정확히 1 이 되도록 한 번 더 정규화 (numpy.choice 의 까다로운 합 검사용)
-            probs = probs / probs.sum()
-            idx = int(rng.choice(len(flat), p=probs))
-            centers.append(flat[idx])
-        c = np.stack(centers)
-        # 8 iter Lloyd
-        for _ in range(8):
-            d = np.linalg.norm(flat[:, None, :] - c[None], axis=2)
-            assign = d.argmin(axis=1)
-            for ki in range(k):
-                pts = flat[assign == ki]
-                if len(pts) > 0:
-                    c[ki] = pts.mean(axis=0)
-        return [_rgb_to_hex(ci) for ci in c]
 
     @staticmethod
     def _resample(img, max_edge: int):
@@ -317,6 +230,3 @@ class SpriteAnalyzer:
                 return axis
         return None
 
-def _rgb_to_hex(c) -> str:
-    r, g, b = (int(max(0, min(255, x))) for x in c)
-    return f"#{r:02x}{g:02x}{b:02x}"
