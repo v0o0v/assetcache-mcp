@@ -1,16 +1,21 @@
 # HANDOFF — Cowork → Claude Code (또는 다음 세션)
 
-**마지막 인계 시각**: 2026-05-21 (M11.1 v0.2.1 PyPI publish 완료 + manual verification 통과)
-**마지막 완료 작업**: **M11.1 v0.2.1 publish 완료** — [PR #17](https://github.com/v0o0v/assetcache-mcp/pull/17) squash merge → main `782a047` → tag v0.2.1 → Trusted Publishing OIDC 자동 publish 4회째 (31초 성공, [run 26206683356](https://github.com/v0o0v/assetcache-mcp/actions/runs/26206683356)) → [PyPI v0.2.1 Latest](https://pypi.org/project/assetcache-mcp/0.2.1/) + [GitHub release v0.2.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.1). 회귀 1252 → **1426 passed + 1 skipped + 56 deselected** + 옵트인 13 → 16. 신규 의존성 0.
-**M11.1 결과**: `core/batch/` 패키지 (types/manager/poller) + DB `batch_jobs` table + `assets.batch_job_id/batch_state` + Store 13 신규 메서드 + GeminiBackend batch_chat/embed/get/cancel/download + BatchManager(try_submit/cancel) + BatchPoller(daemon, poll_interval cfg) + AnalysisQueue hook + BatchConfig + /settings batch 카드 + /analyzing dashboard + Qt tray toggle + i18n 18 msgid. **Manual verification 시나리오 1~4 통과** (시각 검증). 후속 fix 4건 squash 안 포함됨. spec: [`docs/superpowers/specs/2026-05-20-gemini-batch-api-design.md`](docs/superpowers/specs/2026-05-20-gemini-batch-api-design.md), verification: [`milestones/M11_1_verification.md`](milestones/M11_1_verification.md)
-**현재 브랜치**: `main` (v0.2.1 tag `782a047`, feat/m11-1-gemini-batch-api PR merge 시 자동 삭제됨)
-**다음 세션 작업**: **v0.2.x reactive patches** (사용자 명시) — backlog 정리 후 우선순위 선택. 후보: (A) M11.1 image/audio Gemini batch 결과 → label parsing (현재 stub), (B) BatchPoller polling silent fail root cause 조사, (C) store.list_labels_raw race condition 진짜 원인, (D) OpenAI/Anthropic Batch API, (E) file destination batch (>20MB). 자세한 list 는 §5 참조.
+**마지막 인계 시각**: 2026-05-21 (v0.2.x patch A/B/C [PR #18](https://github.com/v0o0v/assetcache-mcp/pull/18) main 머지 + M11.2 spec 작성)
+**마지막 완료 작업**: **v0.2.x patches PR #18 머지** (main `12ebc42`) — batch 경로가 sync 와 동등한 결과 (labels + sprite_meta + sound_meta + spritesheet frame meta + frameTags 라벨 + kind promote) 를 생성하도록 3 단계 보강. 회귀 1424 → **1490 passed + 3 skipped + 56 deselected** (+66 신규, 회귀 0). 신규 의존성 0. **M11.2 spec 작성 완료** ([`docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md`](./docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md)) + `milestones/M11_2_plan.md` starter 작성됨.
+**PR #18 산출물** (3 patches squash):
+- patch A (`68a3257`) — `core/analyzer/payload_parser.py` 신설 + BatchPoller `registry` 주입으로 batch payload → validated labels 변환
+- patch B (`bdde0e0`) — `core/analyzer/tech_meta.py` 신설 + BatchPoller `library_dir` 주입으로 sprite_meta/sound_meta 충전
+- patch C (`65fb4aa`) — `core/analyzer/spritesheet_meta.py` 신설 + BatchPoller 가 `detect_sheet` 호출로 Aseprite/TexturePacker frameTags hit 시 frame_w/h/count + animations_json + frameTags 라벨 + `kind='spritesheet'` promote
+
+**현재 브랜치**: `main` (PR #18 squash merge tag `12ebc42`, fix/batch-label-parsing 브랜치 자동 삭제)
+
+**다음 세션 작업**: **M11.2 implement** — batch spritesheet modality (`chat_spritesheet`) 신설로 PR #18 한계 (grid-only 시트 animation 라벨 비어 있음) 해소. spec: [`docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md`](./docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md), plan starter: [`milestones/M11_2_plan.md`](./milestones/M11_2_plan.md). 자세한 시작 절차는 §5 참조.
 
 이 문서는 작업이 중단될 때 다음 세션이 "현재 어디까지 와 있는가"를 한 번에 파악하도록 작성된 스냅샷이다.
 
 ## 1. 한 줄 요약
 
-**M11.1 v0.2.1 publish 완료** (main `782a047`, PyPI Latest). Gemini Batch API hybrid 정책 (50% 비용, 24h SLO) + `/analyzing` dashboard + M11 한계 (`mark_asset_backends`) 해결. 회귀 **1426 passed + 1 skipped + 56 deselected**. 신규 의존성 0. MCP 20 도구 그대로. **Trusted Publishing OIDC** 자동 publish 4회째 성공 (v0.1.1/v0.1.2/v0.2.0/v0.2.1 — 평균 31초). Manual verification 통과 + 후속 fix 4건 (tray cfg sync, DESIGN.md stale, labels race defensive, BatchPoller debug log) squash 포함. 다음 세션: **v0.2.x reactive patches** (사용자 명시).
+**v0.2.x patches PR #18 머지 완료** (main `12ebc42`). M11.1 batch 의 "stub persist" 한계를 3 단계로 해결 (payload_parser / tech_meta / spritesheet_meta + BatchPoller registry/library_dir 주입). 회귀 **1490 passed + 3 skipped + 56 deselected** (+66 신규, 회귀 0). 신규 의존성 0. MCP 20 도구 그대로. **M11.2 spec 작성됨** (batch spritesheet modality `chat_spritesheet` 신설로 grid-only 시트 animation 라벨 해소). 다음 세션 첫 작업: M11.2 spec 읽고 plan 확장 → TDD.
 
 ## 2. 검증된 사실 (M10 완료 시점)
 
@@ -70,90 +75,127 @@ git pull
 pytest -q
 ```
 
-→ main 기준 (v0.2.1 publish 후): **`1426 passed, 1 skipped, 56 deselected`**.
+→ main 기준 (PR #18 머지 후): **`1490 passed, 3 skipped, 56 deselected`**.
 
-**현재 브랜치 = `main`** (v0.2.1 tag = `782a047`, feat/m11-1-gemini-batch-api PR merge 시 자동 삭제). 다음 작업은 새 patch 브랜치에서.
+**현재 브랜치 = `main`** (PR #18 squash merge tag `12ebc42`, fix/batch-label-parsing 자동 삭제). 다음 작업은 새 feature 브랜치에서 (`feat/m11-2-batch-spritesheet-modality`).
 
-## 5. 다음 세션 진입 절차 (M11.1 v0.2.1 publish 완료 — v0.2.x patch 진행)
+## 5. 다음 세션 진입 절차 (PR #18 머지 완료 — M11.2 시작)
 
-### 5.0 v0.2.x reactive patch backlog (사용자 명시 선택)
+### 5.0 첫 작업 — M11.2 implement
 
-세션 인계 시점에 정리된 후보 — 우선순위 사용자 결정:
+**spec 읽기**:
+
+```powershell
+code docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md
+```
+
+```powershell
+code milestones/M11_2_plan.md
+```
+
+**브랜치 생성 + baseline 확인**:
+
+```powershell
+git checkout -b feat/m11-2-batch-spritesheet-modality
+```
+
+```powershell
+pytest -q
+```
+
+→ 1490 passed 확인 후 Phase 1 부터.
+
+**Phase 1 시작**: store `_MODALITY_KIND_FILTER` 갱신 (sprite/spritesheet 분리) + chain `chat_spritesheet` 자동 fallback. 자세한 phase 분할은 [`milestones/M11_2_plan.md`](./milestones/M11_2_plan.md) §3 참조.
+
+### 5.0.1 v0.2.x reactive patch backlog (M11.2 외 잔존)
+
+PR #18 (patch A/B/C) 머지 완료로 backlog 정리됨. 남은 후보:
 
 | # | 항목 | 영향 | 시간 |
 |---|---|---|---|
-| A | **M11.1 image/audio Gemini batch 결과 → label parsing** (현재 stub: empty labels + mark ok → SpriteAnalyzer/SoundAnalyzer payload parser 와 동등 추출) | batch 가 의미 있는 결과 생성 | ~수시간 |
-| B | **`BatchPoller polling silent fail` root cause 조사** (M11.1 manual 검증 중 사용자 첫 tray 가 polling 안 한 이유 — silent crash 의심, thread-local SQLite connection 가능성) | reproducibility + production reliability | ~수시간 |
-| C | **`store.list_labels_raw` race condition 진짜 원인** + thread-safe enforce | rare 발생, worker crash 가능 (defensive skip 이미 `4a798fd` patch) | ~수시간 |
-| D | **OpenAI Batch API** + **Anthropic Batch API** (Gemini 외 backend 도 batch — 50% 할인) | 다중 backend batch | 1~2일 |
+| ~~A~~ | ~~image/audio Gemini batch 결과 → label parsing~~ | ✅ **PR #18 patch A 완료** | — |
+| B | **`BatchPoller polling silent fail` root cause 조사** (M11.1 manual 검증 중 사용자 첫 tray 가 polling 안 한 이유 — silent crash 의심, thread-local SQLite connection 가능성) | reproducibility | ~수시간 |
+| C | **`store.list_labels_raw` race condition 진짜 원인** + thread-safe enforce | rare 발생 (defensive skip 이미 `4a798fd` patch) | ~수시간 |
+| D | **OpenAI Batch API** + **Anthropic Batch API** | 다중 backend batch | 1~2일 |
 | E | **file destination batch** (>20MB inline 우회) | 큰 batch 지원 | 1일 |
-| F | **사용자 PR feedback / GitHub Issues monitoring** | reactive | passive |
 
-가장 시급 추천: A (M11.1 의 batch 결과가 의미 있는 labels 생성하도록 — 현재는 batch submit 까지만 작동, 결과는 stub) + B (root cause 조사하여 production reliability 강화).
+M11.2 implement 후 사용자 결정 — backlog B/C/D/E 중 우선순위 또는 M12 (C4 측정) 진행.
 
-### 5.1 로드맵 (2026-05-20 brainstorm 확정)
+### 5.1 로드맵 (2026-05-20 brainstorm + M11.2 추가)
 
 상세 spec: [`docs/superpowers/specs/2026-05-20-roadmap-design.md`](docs/superpowers/specs/2026-05-20-roadmap-design.md) (main `b3f8fe8`).
 
 | Tier | M# | 마일스톤 | 의존 |
 |---|---|---|---|
-| **0** (1차 implement 대상) | **M11** | Multi-backend LLM Architecture — 6 backend (Ollama/Gemini/Claude/OpenAI/OpenRouter/HF), modality 별 chain + 자동 fallback, /settings UI. design 3/3 확정 | — |
-| **1** (M11 직속) | M12 | C4 측정 / 학습 / 벤치마크 (6 backend 정확도 비교) | M11 |
+| **0** (완료) | M11 | Multi-backend LLM Architecture | ✅ v0.2.0 |
+| **0** (완료) | M11.1 | Gemini Batch API + /analyzing dashboard | ✅ v0.2.1 |
+| **0** (다음) | **M11.2** | **Batch Spritesheet Modality** (`chat_spritesheet` 신설) — PR #18 한계 (grid-only 시트 animation 라벨) 해소 | M11.1 + PR #18 |
+| **1** | M12 | C4 측정 / 학습 / 벤치마크 (6 backend 정확도 비교) | M11 |
 | 1 | M13 | Mac/Linux 검증 + M11 cross-platform | M11 |
-| **2** (큰 새 기능) | M14 | MCP 원격 통신 (HTTP/SSE + 인증, server↔client 다른 머신) | 독립 |
+| **2** (큰 새 기능) | M14 | MCP 원격 통신 (HTTP/SSE + 인증) | 독립 |
 | 2 | M15 | Unity Editor 통합 (drag-drop / 자동 import) | 독립 |
-| **3** (검색 확장 / 성능 / 분산) | M16 | C2 이미지/사운드 유사 검색 | M11 (embedding) |
-| 3 | M17 | 성능 (대량 라이브러리 처리량 + 메모리/시작 시간) | 독립 |
-| 3 | M18 | 분산 분석 (여러 PC 라이브러리 공유 + 분석 분담) | **M14 필수** |
+| **3** | M16 | C2 이미지/사운드 유사 검색 | M11 |
+| 3 | M17 | 성능 (대량 라이브러리) | 독립 |
+| 3 | M18 | 분산 분석 (여러 PC 공유) | **M14 필수** |
 
-권장 다음: **PR 생성 + main 머지 + v0.2.1 tag push** → Trusted Publishing OIDC 자동 publish (패턴 검증 4회째). 그 후 M12 (C4 측정/학습) 또는 M13 (Mac/Linux 검증) 사용자 결정.
+권장 다음: **M11.2 implement** → PR → main → tag v0.2.2 → Trusted Publishing 자동 publish (5회째).
 
 ### 5.2 Reactive backlog (별도 트리거 시)
 
 | 항목 | 트리거 |
 |---|---|
-| 사용자 피드백 수집 | [PyPI download 통계](https://pypistats.org/packages/assetcache-mcp) + [GitHub Issues](https://github.com/v0o0v/assetcache-mcp/issues) (1주 후 모니터링) |
-| v0.1.3+ patch 누적 | bug fix 발견 시 — tag push 한 줄로 자동 publish (Trusted Publishing 검증된 30초 패턴) |
-| 코드 서명 + 자동 업데이트 (M9 복귀) | SignPath 채택 결정 시 — spec/plan 보존됨 (`docs/superpowers/{plans,specs}/2026-05-19-m9-*.md`), feat/m9 브랜치는 deleted, reflog 30일 또는 spec 기반 redo |
+| 사용자 피드백 수집 | [PyPI download 통계](https://pypistats.org/packages/assetcache-mcp) + [GitHub Issues](https://github.com/v0o0v/assetcache-mcp/issues) |
+| v0.2.x patch 누적 | bug fix 발견 시 — tag push 한 줄로 자동 publish (Trusted Publishing 30초 패턴, 4회 검증) |
+| 코드 서명 + 자동 업데이트 (M9 복귀) | SignPath 채택 결정 시 — spec/plan 보존됨, feat/m9 브랜치는 deleted |
 
 ### 5.3 worktree 상태
 
-✅ `git worktree list` → main 만 출력. v0.1.1 yagni-clean 부터는 worktree 사용 X — memory feedback `feedback_no_worktrees` 적용 ("워크트리 사용 금지, 메인 저장소에서 직접 branch checkout").
+✅ `git worktree list` → main 만 출력. memory feedback `feedback_no_worktrees` 적용.
 
 ### 5.4 다음 세션이 자동 로드하는 메모리
 
-자동 — `MEMORY.md` 의 `project_m10_complete` 가 최신 스냅샷 (v0.1.2 publish + 8 마일스톤 로드맵 표 + 브랜치 cleanup 까지 포함). `project_trusted_publishing_pattern` 는 v0.1.1+v0.1.2 양쪽 검증 후 패턴 안정성 confirmed. `project_m9_pivot_state` 는 historical (feat/m9 deleted). [[m10-phase4-partial]] / [[m10-pr-pending]] / [[m10-inflight-phase2-task21]] / [[m10-phase2-complete]] 는 STALE 표시.
+자동 — `MEMORY.md` 의 `project_pr18_batch_persist_patches_merged` (이번 세션 신규) 가 최신 스냅샷. `project_m11_2_starter` (이번 세션 신규) 가 M11.2 진입 가이드. 이전 `project_m11_1_v021_publish` / `project_m10_complete` / `project_m11_phase0_progress` 는 historical (PR #18 머지로 supersede).
 
 ## 6. 마일스톤 정렬
 
 | # | 이름 | 상태 |
 |---:|---|---|
 | M0~M8 | v1 (뼈대 ~ 패키징 + i18n) | ✅ 완료 (main 머지) |
-| M9 | 코드 서명 + 자동 업데이트 (GitHub releases) | ⚠️ implementation 완료 / **path pivot** (PyPI 채택, version/checker/banner/tray 일부 모듈 M10 Phase 2 cherry-pick), feat/m9 브랜치 deleted (2026-05-20), spec/plan 만 보존 |
-| M10 | **PyPI 배포 + AssetCacheMCP rename** | ✅ 완료 ([PR #11](https://github.com/v0o0v/assetcache-mcp/pull/11) + [PR #12](https://github.com/v0o0v/assetcache-mcp/pull/12) main 머지); Phase 1 마이그레이션 helper 는 v0.1.1 yagni-clean |
-| v0.1.1 | v0.0.1 마이그레이션 helper 제거 + 첫 Trusted Publishing OIDC 자동 publish | ✅ 완료 ([PR #14](https://github.com/v0o0v/assetcache-mcp/pull/14) + 32초 publish) |
-| v0.1.2 | PyPI 페이지 정직성 patch (README/DESIGN/docs/CLAUDE stale 일괄 정리, classifiers 보강) + Trusted Publishing 2회째 자동 publish | ✅ 완료 ([PR #15](https://github.com/v0o0v/assetcache-mcp/pull/15) + 29초 publish) |
-| **로드맵 brainstorm** | M11~M18 8 마일스톤 design + Reactive backlog ([roadmap-design.md](docs/superpowers/specs/2026-05-20-roadmap-design.md)) | ✅ 완료 (main `b3f8fe8`) |
-| **M11** | Multi-backend LLM Architecture (Ollama+Gemini+Claude+OpenAI+OpenRouter+HF) | ✅ v0.2.0 publish 완료 ([PR #16](https://github.com/v0o0v/assetcache-mcp/pull/16) main 머지 `f68ef88`, [PyPI v0.2.0 Latest](https://pypi.org/project/assetcache-mcp/0.2.0/), [GitHub release v0.2.0](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.2.0)). 회귀 1079 → 1252 (+173 + 13 옵트인). 신규 의존성 4. Trusted Publishing 3회째 자동 (~30초). [verification](milestones/M11_verification.md) |
-| **M11.1** | Gemini Batch API (50% 비용, 24h SLO) + /analyzing dashboard + M11 한계 해결 | ✅ 구현 완료 (feat/m11-1-gemini-batch-api 브랜치, **PR + v0.2.1 publish 대기**). 회귀 1252 → 1426 (+174 + 3 옵트인). 신규 의존성 0. [verification](milestones/M11_1_verification.md) |
-| M12~M18 | 측정/Mac-Linux/원격 통신/Unity Editor/유사 검색/성능/분산 | 📋 미정 (사용자 결정) |
+| M9 | 코드 서명 + 자동 업데이트 | ⚠️ implementation 완료 / path pivot (feat/m9 deleted, spec/plan 만 보존) |
+| M10 | PyPI 배포 + AssetCacheMCP rename | ✅ 완료 (PR #11/#12 main 머지) |
+| v0.1.1 | yagni-clean + 첫 Trusted Publishing OIDC | ✅ ([PR #14](https://github.com/v0o0v/assetcache-mcp/pull/14)) |
+| v0.1.2 | PyPI 페이지 정직성 patch | ✅ ([PR #15](https://github.com/v0o0v/assetcache-mcp/pull/15)) |
+| 로드맵 brainstorm | M11~M18 8 마일스톤 design | ✅ (main `b3f8fe8`) |
+| M11 | Multi-backend LLM Architecture | ✅ v0.2.0 ([PR #16](https://github.com/v0o0v/assetcache-mcp/pull/16) `f68ef88`, [PyPI](https://pypi.org/project/assetcache-mcp/0.2.0/)) |
+| M11.1 | Gemini Batch API + /analyzing dashboard | ✅ v0.2.1 ([PR #17](https://github.com/v0o0v/assetcache-mcp/pull/17) `782a047`, [PyPI](https://pypi.org/project/assetcache-mcp/0.2.1/)) |
+| **v0.2.x patches** | batch persist 보강 (label/meta/spritesheet) | ✅ ([PR #18](https://github.com/v0o0v/assetcache-mcp/pull/18) main 머지 `12ebc42`, 회귀 1424 → 1490). v0.2.2 publish 미정 (M11.2 와 묶을지 별도일지 사용자 결정) |
+| **M11.2** | **Batch Spritesheet Modality** (`chat_spritesheet` 신설) | 📋 spec 작성됨, **다음 세션 implement 대상**. [spec](./docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md) / [plan starter](./milestones/M11_2_plan.md) |
+| M12~M18 | 측정/Mac-Linux/원격 통신/Unity Editor/유사 검색/성능/분산 | 📋 미정 |
 
-## 7. M10 후속 정리거리 (해결됨/잔존)
+## 7. 후속 정리거리 (해결됨/잔존)
 
-- ✅ M9 의 SignPath 신청 docs (`docs/SIGNPATH_APPLICATION.md` + `docs/CODE_SIGNING_POLICY.md`) — feat/m9 브랜치 2026-05-20 deleted (브랜치 cleanup), 향후 SignPath 채택 시 spec/plan (`docs/superpowers/{plans,specs}/2026-05-19-m9-*.md`) 기반 redo
-- ✅ TestPyPI / 정식 PyPI entire-account scope token 2개 revoke 완료 (2026-05-20, 보안 정리)
-- ✅ GitHub Actions Node.js 20 deprecation 경고 → v6 로 갱신 (PR #12)
-- ✅ v0.0.1 마이그레이션 helper (Phase 1) yagni-clean — [PR #14](https://github.com/v0o0v/assetcache-mcp/pull/14) main 머지 (회귀 1103 → 1079, -24; version 0.1.0 → 0.1.1)
-- ✅ v0.1.1 PyPI publish — Trusted Publishing (OIDC) 첫 자동 publish 검증 ✅ 32초 성공 ([run 26139260454](https://github.com/v0o0v/assetcache-mcp/actions/runs/26139260454)) + [GitHub release v0.1.1](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.1) 생성
-- ✅ v0.1.2 PyPI publish — Trusted Publishing 자동 publish 2회째 ✅ 29초 성공 ([run 26141958223](https://github.com/v0o0v/assetcache-mcp/actions/runs/26141958223)) + [GitHub release v0.1.2](https://github.com/v0o0v/assetcache-mcp/releases/tag/v0.1.2) 생성. [PR #15](https://github.com/v0o0v/assetcache-mcp/pull/15) — README PyInstaller exe 섹션 제거 (release artifact 0건 거짓 안내), DESIGN/docs stale 명령어 (`python -m gah` / `game-asset-helper` → `assetcache`) 갱신, classifiers 보강 (Games/Entertainment + Sound/Audio), CLAUDE.md M10 worktree 안내 제거. 회귀 1079 그대로 (코드 변경 0)
-- ✅ feat/m10-pypi-and-rename + feat/m9-code-signing-and-auto-update 브랜치 cleanup (2026-05-20) — 둘 다 deleted. M10 평행 implementation 의 핵심 기능 (`handle_pypi_update` slot) 은 main `_on_update_clicked` 로 동등 구현 검증 후. M9 는 spec/plan 만 보존 (`docs/superpowers/{plans,specs}/2026-05-19-m9-*.md`). 복구는 reflog 30일 이내
-- ✅ M11~M18 로드맵 brainstorm + spec 작성 (2026-05-20, main `b3f8fe8`) — 8 마일스톤 정렬 + Reactive backlog. M11 (Multi-backend LLM Architecture) design 3/3 확정 (web research image+audio 6 backend 비교 포함). spec: [`docs/superpowers/specs/2026-05-20-roadmap-design.md`](./docs/superpowers/specs/2026-05-20-roadmap-design.md)
-- 📋 M11 implementation 시작 자연 — detail design spec 작성 → writing-plans → `milestones/M11_plan.md` → TDD cycle
+### 7.1 PR #18 (이번 세션) 직접 정리
+
+- ✅ M11.1 v0.2.1 의 batch stub persist 한계 3건 모두 해소 (label/meta/spritesheet) — verification [§ "알려진 한계"](./milestones/M11_1_verification.md) 표시
+- ✅ `core/analyzer/payload_parser.py` / `tech_meta.py` / `spritesheet_meta.py` 신설 — sync/batch 공유 패턴 정착 (sound 만 비대칭 — librosa.load 2회 비용 회피)
+- ✅ BatchPoller 가 `registry` + `library_dir` 모두 주입 받음 (graceful fallback 유지)
+- ✅ 회귀 1424 → 1490 (+66 신규 테스트, 회귀 0), 신규 의존성 0
+- 📋 **v0.2.2 publish** — M11.2 와 묶을지 별도일지 사용자 결정. 별도라면 지금 `git tag v0.2.2 && git push origin v0.2.2` 한 줄로 Trusted Publishing 자동 (5회째 패턴 검증)
+
+### 7.2 잔존 (M11.2 대상)
+
+- 📋 **batch 경로 grid-only 시트 animation 라벨 부재** — Aseprite/TexturePacker frameTags 없는 시트는 frame 차원만 채워지고 animation 라벨은 비어 있음. M11.2 spec 작성됨 → 다음 세션 implement.
+
+### 7.3 historical (참고용)
+
+- ✅ M0~M11.1 모두 main 머지 + PyPI publish 완료 (v0.1.0~v0.2.1, Trusted Publishing 4회 자동)
+- ✅ M9 path pivot — feat/m9 브랜치 deleted, spec/plan 만 `docs/superpowers/{plans,specs}/2026-05-19-m9-*.md` 보존
+- ✅ M10~v0.1.2 cleanup — TestPyPI/PyPI token revoke, GitHub Actions Node.js 24 호환 (v6)
 
 자세한 plan / spec / verification:
 
-- [`milestones/M10_plan.md`](./milestones/M10_plan.md) — 5 Phase 상세
-- [`milestones/M10_todo.md`](./milestones/M10_todo.md) — task 체크리스트 (모두 마크 완료)
-- [`milestones/M10_verification.md`](./milestones/M10_verification.md) — 자동 + 수동 검증 시나리오 7건
-- [`docs/superpowers/plans/2026-05-19-m10-pypi-and-rename.md`](./docs/superpowers/plans/2026-05-19-m10-pypi-and-rename.md) — implementation plan
-- [`docs/superpowers/specs/2026-05-19-m10-pypi-and-rename.md`](./docs/superpowers/specs/2026-05-19-m10-pypi-and-rename.md) — design spec
+- [`docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md`](./docs/superpowers/specs/2026-05-21-m11-2-batch-spritesheet-modality.md) — **M11.2 spec (다음 세션 implement 대상)**
+- [`milestones/M11_2_plan.md`](./milestones/M11_2_plan.md) — **M11.2 plan starter**
+- [`milestones/M11_1_verification.md`](./milestones/M11_1_verification.md) — M11.1 + PR #18 patches 의 한계/해소 표시
+- [`docs/superpowers/specs/2026-05-20-gemini-batch-api-design.md`](./docs/superpowers/specs/2026-05-20-gemini-batch-api-design.md) — M11.1 spec (전제)
+- [`docs/superpowers/specs/2026-05-20-roadmap-design.md`](./docs/superpowers/specs/2026-05-20-roadmap-design.md) — 전체 로드맵
