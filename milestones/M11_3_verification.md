@@ -139,6 +139,45 @@ Expected: 17 case 그대로 (M11.3 은 외부 API 호출 변경 0).
 | 2.5 /analyzing 4행 modality | ✅ `Batch image / 배치 시트 / Batch audio / Batch embed` 4행 + 부분 ko 번역 |
 | 2.6 detection cache | ✅ 24회 → 14회 detect_sheet (63% 감소) — 위 §4.1 |
 
+## 4b. LIVE 검증 v2 (2026-05-21) — 복잡 시트 6종
+
+더 복잡한 시트 (사이드카 있는 / 없는 / 단일 sprite 구분) 로 재검증.  `make_complex_sheets.py` 로 생성:
+
+| 자산 | kind | frame_w/h/count | animations_json | category | style |
+|---|---|---|---|---|---|
+| hero_warrior (Aseprite 4×4, 16f) | spritesheet | 64/64/16 | **idle/walk/attack/hurt 4 anims** ✓ | character | pixel_art |
+| mage_purple (Aseprite 3×4, 12f) | spritesheet | 48/48/12 | **cast/idle/walk 3 anims** ✓ | character | pixel_art |
+| knight_gold (grid 1×8) | spritesheet | 17/28/8 | None (grid-only) | character | pixel_art |
+| monster_red (grid 2×2) | spritesheet | 41/41/4 | None | other | cel_shaded |
+| elemental_cyan (grid 1×6) | **sprite** ⚠ | None | None | other | pixel_art |
+| crown_icon (single) | sprite | None | None | character | cel_shaded |
+
+### 4b.1 Cache 효과
+
+- `classify_image_assets` detect_sheet: 6회 (1 sweep, 6 rows)
+- `BatchPoller` detect_sheet: 2회 (sprite kind 인 crown_icon + elemental_cyan)
+- 합계 **8회** vs legacy ~16회 — **8회 절약 (50% 감소)** ✓
+
+### 4b.2 batch_job 결과
+
+- chat_image (job_id=6): count=2, success=2, failure=0 ✓
+- chat_spritesheet (job_id=7): count=4, success=4, failure=0 ✓
+- **Patch B 적용 → payload validation ValueError 0건** (이전 v1 검증 의 12 중 2 실패 supersede)
+
+### 4b.3 Gemma animation_hint LIVE 작동
+
+- animation 라벨 합계 9개:
+  - hero_warrior frameTags 4 (idle/walk/attack/hurt)
+  - mage_purple frameTags 3 (cast/idle/walk)
+  - **Gemma 추측 2 (idle/walk on grid-only)** ✓ ← M11.2 chat_spritesheet modality 의 핵심 가치 LIVE 확인
+
+### 4b.4 별 발견 (M11.3 + 부수 patch 와 무관)
+
+| 항목 | 한계 |
+|---|---|
+| `elemental_cyan` (1×6, 64×64) sprite 오분류 | color-cycling orb visual 이 grid_detect alpha 격자 분석 통과 못 함 — M6 detection 한계 |
+| 작은 시트 (32/48px) 의 frame_w 정확도 (17/41) | grid_detect 알고리즘이 alpha 경계 좁게 측정 — frame_count 는 정확 |
+
 ## 5. 검증 완료 후
 
 1. M11.2 + M11.3 모두 통과 → tag v0.2.2:
