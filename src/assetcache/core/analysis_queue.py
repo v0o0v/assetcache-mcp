@@ -282,13 +282,17 @@ class AnalysisQueue(QObject):
         row = self.store.get_asset_by_id(asset_id)
         if row is None:
             return
+        # M11.10 — race guard: batch_state='submitted/queued/completed' 이거나
+        # analysis_state != 'pending' 이면 worker 가 sync 분석 안 함.  atomic
+        # 'pending'+'none' → 'analyzing' UPDATE 가 0 row 변경하면 skip.
+        if not self.store.try_mark_asset_analyzing(asset_id):
+            return
         self._in_flight_path = row.path
         self._touched_packs.add(row.pack_id)
         self._emit_progress()
         t0 = self._clock()
         success = True
         try:
-            self.store.mark_asset_analyzing(asset_id)
             inp = self._build_input(row)
             # M6: 이미지 kind (sprite/spritesheet) 는 SpritesheetAnalyzer 로 라우팅.
             # 한 번 promote 된 spritesheet 도 재분석 시 같은 analyzer 가 받아야 함

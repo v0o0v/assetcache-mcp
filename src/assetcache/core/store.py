@@ -896,6 +896,26 @@ class Store:
                 (asset_id,),
             )
 
+    def try_mark_asset_analyzing(self, asset_id: int) -> bool:
+        """M11.10 — atomic 'pending'+'none' → 'analyzing'. race window 0.
+
+        worker thread 가 큐에서 pop 한 후 mark_asset_analyzing 하기 직전에
+        BatchManager 가 같은 asset 을 batch 에 넣어 ``batch_state='submitted'`` 으로
+        마킹하는 race 차단.  SQLite UPDATE … WHERE 가 atomic 이라 batch 가
+        이미 잡았으면 rowcount=0 반환 → worker skip.
+
+        Returns True 면 worker 가 analysis 진행, False 면 batch 또는 다른 worker 가
+        이미 잡았으므로 즉시 skip.
+        """
+        with self.write_lock:
+            cur = self.conn.execute(
+                "UPDATE assets SET analysis_state = 'analyzing'"
+                " WHERE id = ? AND analysis_state = 'pending'"
+                " AND batch_state = 'none'",
+                (asset_id,),
+            )
+            return cur.rowcount > 0
+
     def mark_asset_state(
         self,
         asset_id: int,
