@@ -1,7 +1,7 @@
 # HANDOFF — Cowork → Claude Code (또는 다음 세션)
 
-**마지막 인계 시각**: 2026-05-22 (M11.6 [PR #26](https://github.com/v0o0v/assetcache-mcp/pull/26) main 머지 (`da4f169`) + M11.7 [PR #27](https://github.com/v0o0v/assetcache-mcp/pull/27) main 머지 (`04c205e`) + M11.8 starter 작성)
-**마지막 완료 작업**: **M11.6 + M11.7 main 머지 + M11.8 starter** — M11.6 (PR #26) 가 M11.5 LIVE 의 별도 발견 2건 (시트 5/5 palette 라벨 부재 + animation='other' fallback) 을 BATCH_SPRITESHEET_PROMPT palette tone group enum + 두 prompt 의 "do NOT use 'other'" 가이드로 해소 — LIVE 결과 시트 palette 5/5 + 'other' 0/6 완전 차단.  M11.7 (PR #27) 가 M11.6 LIVE 의 mood 노이즈 2건 (crown 에 mood=heroic/playful + 시트 5/5 일률 mood=minimalist/neutral) 을 mood OPTIONAL + category 별 mood 차단으로 해소 — LIVE 결과 crown mood 2→0 (A2 완벽), 시트 mood 10→5 (58% 감소, A1 부분).  회귀 **1601 passed + 1 skipped + 63 deselected** + 옵트인 6/6 PASSED (M11.5 strict 2 + M11.6 신규 2 + M11.7 신규 2).  M11.7 한계: catch-all 'neutral' 시트 4/5 잔존 → **M11.8 spec/plan starter 작성됨** ([spec](./docs/superpowers/specs/2026-05-22-m11-8-mood-seed-disable.md) / [plan](./milestones/M11_8_plan.md)) — LabelRegistry 시드 `mood.neutral` + `mood.minimalist` `is_enabled=0` 마이그 (v0.2.7 candidate).  ⚠️ `palette.neutral` 은 절대 유지 (M11.6 tone group 핵심).
+**마지막 인계 시각**: 2026-05-22 (M11.8 [PR #30](https://github.com/v0o0v/assetcache-mcp/pull/30) main 머지 + [v0.2.7 publish](https://pypi.org/project/assetcache-mcp/0.2.7/) + M11.9 [PR #31](https://github.com/v0o0v/assetcache-mcp/pull/31) main squash 머지 `1c85eaf`)
+**마지막 완료 작업**: **M11.9 — 백엔드 정리 (6 → 3 backend) full purge** — claude / openrouter / huggingface 백엔드 + factory + config 키 + UI + i18n + 의존성 (anthropic + huggingface_hub) + docs 8 표면 atomic 정리.  43 file changed (322 insertions + 2307 deletions).  회귀 **1560 passed + 1 skipped + 57 deselected** (plan AC #15 band 1555~1569 정확 적중).  신규 red 9 케이스 (`tests/test_m11_9_backend_purge.py`) 모두 green.  v0.2.8 candidate (publish 보류).  ⚠️ **다음 세션 우선 작업**: CLIP torch 2.6 `weights_only=True` 호환 fix — M11.9 트레이 검증 중 발견 pre-existing 회귀 — spec: [2026-05-22-clip-torch26-weights-only-fix](./docs/superpowers/specs/2026-05-22-clip-torch26-weights-only-fix.md).
 
 **M11.3 PR #20 산출물** (squash 후 `7ad0f3d`):
 - `core/batch/sheet_classifier.py` — `classify_image_assets` 에 `cache` + `save_sprite_meta` 인자 추가 (시트 hit 시 자동 sprite_meta enrich+save)
@@ -23,14 +23,15 @@
 - `milestones/M11_4_verification.md` — auto 1592 + 옵트인 Gemini + 수동 synthetic + LIVE 시나리오 + 한계
 - 신규 test: 9 grid_detect color-edge + 3 seed + 9 payload/prompt + 5 sync (3 + 2 옵트인 llm_integration) + 5 wiring + 2 hex 일관성 + 2 guidance 동적화 = **+33**
 
-**현재 브랜치**: `main` (PR #27 squash 머지 완료, feat 브랜치 자동 삭제 + remote prune 완료)
+**현재 브랜치**: `main` (PR #31 M11.9 squash 머지 `1c85eaf`, feat 브랜치 자동 삭제 + remote prune 완료)
 
 **다음 세션 작업**:
-1. **M11.8 implement** — `milestones/M11_8_plan.md` 의 Phase 1 (시드 비활성화 + migration TDD) 부터.
-   - 신규 모듈/함수: `core/labels.py` `DISABLED_BY_DEFAULT` 상수 + `core/store.py` `set_label_enabled_if_unchanged` helper + `meta.disabled_by_default_signature` 마커
-   - ⚠️ **핵심 주의**: `palette.neutral` 은 절대 비활성화 X (M11.6 tone group enum 핵심 토큰).  `mood.neutral` + `mood.minimalist` 만 대상
-   - LIVE 검증: `scripts/drive_live_batch.py` 그대로 재사용
-2. (선택, M11.8 머지 후) v0.2.7 publish — `pyproject.toml` + `__init__.py` 0.2.2 → 0.2.7 bump + tag → Trusted Publishing 6회째 자동 (M11.4~M11.7 의 v0.2.3~v0.2.6 결번 누적 deliver).
+1. **CLIP torch 2.6 호환 fix** (우선) — M11.9 머지 후 트레이 부팅 검증에서 발견된 pre-existing 회귀.  `torch.load` 의 `weights_only=True` (PyTorch 2.6 default 변경) 가 ViT-B-32 TorchScript archive 와 충돌 — `RuntimeError`.  CLIP scoring 채널 (weight_semantic 0.35 + weight_label_match 0.20 = 55% 가중) 손실로 검색 정확도 저하.
+   - spec: [`docs/superpowers/specs/2026-05-22-clip-torch26-weights-only-fix.md`](./docs/superpowers/specs/2026-05-22-clip-torch26-weights-only-fix.md)
+   - 추정 0.5~1.5h, 4 option (recommended: Option B — open_clip upstream fix 버전 bump.  fallback Option A — `torch>=2.2,<2.6` pin)
+   - branch: `fix/clip-torch26-weights-only` (mini chore PR)
+2. (선택, CLIP fix 머지 후) **v0.2.8 publish** — `pyproject.toml` + `src/assetcache/__init__.py` 0.2.7 → 0.2.8 bump + tag.  Trusted Publishing 7회째 자동 (M11.9 backend 정리 + CLIP fix 동시 deliver, memory `feedback_commit_push_pr_auto_publish_manual` — publish 만 사용자 명시).
+3. (별도 backlog) **babel.cfg `**.py` recurse 이슈** — M11.9 verification §1.6 명시.  `**.py` → `**/*.py` 교정 + pot 재생성 chore PR.  M11.9 에서는 우회 (직접 .po 편집 + compile only).
 
 이 문서는 작업이 중단될 때 다음 세션이 "현재 어디까지 와 있는가"를 한 번에 파악하도록 작성된 스냅샷이다.
 

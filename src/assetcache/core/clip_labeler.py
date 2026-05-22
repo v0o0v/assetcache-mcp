@@ -135,8 +135,15 @@ class OpenClipBackend:
         cache_kw = {}
         if self._cache_dir is not None:
             cache_kw["cache_dir"] = str(self._cache_dir)
+        # torch 2.6 가 `torch.load` 의 default 를 `weights_only=True` 로 바꾼 뒤
+        # OpenAI ViT-B-32 의 TorchScript archive 는 `RuntimeError: Cannot use
+        # weights_only=True with TorchScript archives` 로 즉시 fail.  open_clip
+        # 3.3.0 의 `load_state_dict` 가 `except TypeError` 만 잡고 `RuntimeError`
+        # 는 잡지 않으므로 호출 측에서 명시적으로 `weights_only=False` 전달.
+        # OpenAI 공식 checkpoint 라 pickle 신뢰 가능 (spec: 2026-05-22-clip-torch26-weights-only-fix).
         model, _, preprocess = open_clip.create_model_and_transforms(
-            self._model_name, pretrained=self._pretrained, **cache_kw,
+            self._model_name, pretrained=self._pretrained,
+            weights_only=False, **cache_kw,
         )
         model.eval()
         model.to(self._device)
