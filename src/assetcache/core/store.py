@@ -958,19 +958,33 @@ class Store:
             )
 
     def next_pending_asset(self) -> Optional[AssetRow]:
+        """analysis_state='pending' AND batch_state='none' 인 asset 만 반환.
+
+        M11.10 — batch 처리 중 (`batch_state IN ('queued','submitted','completed','failed')`)
+        인 asset 은 worker 가 sync 분석하면 race.  BatchPoller 가 batch_get 응답을
+        받기 전에 worker 가 동일 sprite 를 sync 처리하던 LIVE 회귀 차단.
+        """
         row = self.conn.execute(
             "SELECT id, pack_id, path, kind, file_hash, file_size, added_at,"
             "       analyzed_at, analysis_state, analysis_error"
             " FROM assets WHERE analysis_state = 'pending'"
+            "   AND batch_state = 'none'"
             " ORDER BY added_at ASC, id ASC LIMIT 1"
         ).fetchone()
         return _asset_row(row) if row else None
 
     def pending_assets_for_pack(self, pack_id: int) -> list[AssetRow]:
+        """팩 내 analysis_state='pending' AND batch_state='none' asset 만.
+
+        M11.10 — drain_pending / enqueue_pack 시 batch 처리 중인 asset 을 큐에
+        다시 안 넣음.  count_pending_assets 는 변경 안 함 (대시보드는 batch
+        진행 중도 'pending' 으로 표시 — 분석 안 끝났으니).
+        """
         rows = self.conn.execute(
             "SELECT id, pack_id, path, kind, file_hash, file_size, added_at,"
             "       analyzed_at, analysis_state, analysis_error"
             " FROM assets WHERE pack_id = ? AND analysis_state = 'pending'"
+            "   AND batch_state = 'none'"
             " ORDER BY added_at, id",
             (pack_id,),
         ).fetchall()
