@@ -35,10 +35,19 @@ from ..sheet.detect import SheetDetection, detect_sheet
 
 if TYPE_CHECKING:
     from ..analysis_queue import AnalysisQueue
+    from ..clip_labeler import ClipLabeler
     from ..labels import LabelRegistry
     from ..llm.registry import BackendRegistry
     from ..store import Store
     from ...config import Config
+
+
+# M11.10 — sync SpriteAnalyzer 와 동일한 14 visual axes (clip_labeler 의 라벨 그룹).
+_CLIP_VISUAL_AXES = (
+    "category", "style", "mood", "palette", "color", "view",
+    "material", "lighting", "time_of_day", "weather", "theme",
+    "size_hint", "domain", "animation",
+)
 
 log = logging.getLogger(__name__)
 
@@ -86,6 +95,7 @@ class BatchPoller(threading.Thread):
         cfg: "Config",
         registry: "LabelRegistry | None" = None,
         library_dir: Path | None = None,
+        clip: "ClipLabeler | None" = None,
     ) -> None:
         super().__init__(daemon=True, name="assetcache-batch-poller")
         self._store = store
@@ -98,6 +108,9 @@ class BatchPoller(threading.Thread):
         # v0.2.x patch — library_dir 가 있으면 batch 경로도 sprite_meta /
         # sound_meta 를 sync 와 동등하게 채움.  None 이면 meta 충전 skip.
         self._library_dir = library_dir
+        # M11.10 — CLIP labeler 도 batch path 에 적용해 sync 와 라벨 풍부도 동등.
+        # None 이면 (이전 동작) CLIP 라벨 없이 Gemma 결과만.
+        self._clip = clip
         self._stop_event = threading.Event()
 
     def stop(self, timeout: float = 5.0) -> None:
@@ -348,6 +361,9 @@ class BatchPoller(threading.Thread):
                 self._store.update_asset_kind(asset.id, "spritesheet")
             self._store.save_sprite_meta(asset.id, sprite_meta)
 
+        # M11.10 — sync SpriteAnalyzer 와 동등하게 CLIP scoring 결과도 labels 에 추가.
+        self._apply_clip_scoring(asset, labels)
+
         descs = collect_label_descriptions(labels, self._registry)
         searchable = build_searchable(
             meta=sprite_meta,
@@ -413,6 +429,9 @@ class BatchPoller(threading.Thread):
                 self._store.update_asset_kind(asset.id, "spritesheet")
             self._store.save_sprite_meta(asset.id, sprite_meta)
 
+        # M11.10 — sync 와 동등하게 CLIP scoring 추가.
+        self._apply_clip_scoring(asset, labels)
+
         descs = collect_label_descriptions(labels, self._registry)
         searchable = build_searchable(
             meta=sprite_meta,
@@ -427,6 +446,44 @@ class BatchPoller(threading.Thread):
             asset.id, "ok", error=None, analyzed_at=analyzed_at,
         )
         return searchable.for_embed
+
+    def _apply_clip_scoring(self, asset, labels: list) -> None:
+        """M11.10 — sync SpriteAnalyzer 와 동일하게 CLIP scoring 결과를 labels 에 append.
+
+        ``self._clip`` / ``library_dir`` / ``registry`` 모두 있을 때만 호출.  실패는
+        swallow — chat 결과는 정상 'ok' 마킹 유지, CLIP 라벨만 누락.
+        """
+        if self._clip is None or not self._clip.enabled:
+            return
+        if self._library_dir is None or self._registry is None:
+            return
+        from ..store import LabelScore
+        try:
+            abs_path = (self._library_dir / asset.path).resolve()
+            clip_scores = self._clip.score_image(abs_path)
+        except Exception:
+            log.exception("batch CLIP scoring failed — asset_id=%d", asset.id)
+            return
+        for label_name, score in clip_scores.items():
+            axis = self._lookup_clip_axis_for_label(label_name)
+            if axis is None:
+                continue
+            labels.append(LabelScore(
+                axis=axis, label=label_name,
+                score=float(score), source="clip", weight=None,
+            ))
+
+    def _lookup_clip_axis_for_label(self, label: str) -> str | None:
+        """registry 의 14 visual axes 중 label 이 속한 axis 찾기."""
+        if self._registry is None:
+            return None
+        for axis in _CLIP_VISUAL_AXES:
+            try:
+                if label in self._registry.list_labels(axis):
+                    return axis
+            except Exception:
+                continue
+        return None
 
     def _try_compute_sprite_meta(self, asset):
         """library_dir 가 있으면 파일에서 SpriteMeta 계산, 실패 시 None."""

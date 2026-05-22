@@ -178,6 +178,7 @@ def run_tray(paths: AppPaths, config: Config, argv: Sequence[str] | None = None)
         cfg=config,
         registry=registry,
         library_dir=library_root,
+        clip=clip,
     )
     _batch_poller.start()
 

@@ -183,8 +183,17 @@ class AnalysisQueue(QObject):
         return db_count + queue_count
 
     def enqueue_pack(self, pack_id: int) -> int:
+        """팩의 모든 pending asset 을 분석 큐에 추가 + batch 우선 시도.
+
+        M11.10 — batch 를 큐 enqueue **전에** 시도하면 batch 가 row 들을
+        ``batch_state='submitted'`` 으로 atomic 마킹.  이후 큐에 push 해도
+        worker 가 pop 시 ``try_mark_asset_analyzing`` 가 ``batch_state='none'``
+        조건 실패로 skip → race window 0.
+        """
         rows = self.store.pending_assets_for_pack(pack_id)
         self._enqueued_packs.add(pack_id)
+        # M11.10 — batch 먼저 시도 (큐 enqueue 전 race 차단)
+        self._try_batch_submit()
         for row in rows:
             self._queue.put(row.id)
         self._emit_progress()
